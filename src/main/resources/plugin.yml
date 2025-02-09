@@ -1,4 +1,21 @@
-name: PersonalWorldManager
+name: MyWorldManager
 version: '1.0-SNAPSHOT'
-main: me.awabi2048.personal_world_manager.Main
+main: me.awabi2048.mw_manager.Main
 api-version: '1.21'
+
+permissions:
+  pw_manager.admin:
+    description: "admin"
+    children:
+      - pw_manager.command.register_world
+      - pw_manager.command.update_world
+      - pw_manager.command.check_world_updated
+
+  pw_manager.command.register_world:
+    description: "/register_world"
+
+  pw_manager.command.update_world:
+    description: "/update_world"
+
+  pw_manager.command.check_world_updated:
+    description: "/check_world_updated"

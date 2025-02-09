@@ -1,0 +1,2 @@
+register_world_command: "register_world"
+update_world_command: "update_world"
