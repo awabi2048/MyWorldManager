@@ -1,0 +1,4 @@
+name: PersonalWorldManager
+version: '1.0-SNAPSHOT'
+main: me.awabi2048.personal_world_manager.Main
+api-version: '1.21'
