@@ -1,0 +1,23 @@
+player_uuid-world_name:
+  limit_day: 90
+  last_update_date: "2025-02-10"
+
+player_uuid:
+  worlds:
+    world_name:
+      expire_in: 90
+      last_update_date: "2025-02-10"
+
+# Saved World Name: %world_name%[%player_name%]
+# Alias: %world_name%
+
+world_uuid:
+  world_name: ""
+  source_world: ""
+  last_updated: "2025-02-11"
+  expire_in: 90
+  owner: "owner_uuid"
+  player:
+    - "player_uuid_1" # includes owner
+    - "player_uuid_2"
+    - "player_uuid_3"

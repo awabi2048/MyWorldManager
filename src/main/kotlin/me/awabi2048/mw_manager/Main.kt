@@ -9,25 +9,31 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
     companion object {
-        val prefix = "§aPWManager §7»"
+        val prefix = "§aMWManager §7»"
 
         lateinit var registeredWorldData: FileConfiguration
         lateinit var configData: FileConfiguration
 
-        lateinit var instance: Main
+        lateinit var instance: JavaPlugin
         lateinit var mvWorldManager: MVWorldManager
     }
 
     override fun onEnable() {
-        registeredWorldData = Lib.YamlUtil.load("registered_worlds.yml")
-        configData = config
-
         instance = this
+
+        registeredWorldData = Lib.YamlUtil.load("world_data.yml")
+        configData = config
         mvWorldManager = (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager
 
         // command
-        getCommand(configData.getString("register_world_command", "register_world")!!)?.setExecutor(RegisterWorldCommand)
-        getCommand(configData.getString("update_world_command", "update_world")!!)?.setExecutor(UpdateWorld)
+//        getCommand("mwregister")?.setExecutor(RegisterWorldCommand)
+//        getCommand("mwupdate")?.setExecutor(UpdateWorld)
+        getCommand("myworldmanager")?.setExecutor(UpdateWorld)
+        getCommand("mwmanager")?.setExecutor(UpdateWorld)
+        getCommand("mwm")?.setExecutor(UpdateWorld)
+
+        saveDefaultConfig()
+        saveResource("world_data.yml", false)
 
     }
 

@@ -8,14 +8,13 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-// /check_world_updated player:%player%
-// /check_world_updated uuid:%uuid%
-// /check_world_updated list <-remove>
+// /mwcheck %world_name%
+// /mwcheck list <-remove>
 
 object CheckWorldUpdated: CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         // check permission
-        if (p0 is Player && !p0.hasPermission("pw_manager.register_world")) {
+        if (p0 is Player && !p0.hasPermission("mw_manager.register_world")) {
             val message = "$prefix §c権限がありません。"
 
             p0.sendMessage(message)
@@ -26,7 +25,7 @@ object CheckWorldUpdated: CommandExecutor, TabCompleter {
         if (p3.isNullOrEmpty()) {
             val message = when (p0 is Player) {
                 true -> "$prefix §c無効な引数です。"
-                else -> "PWManager >> Invalid argument."
+                else -> "MWManager >> Invalid argument."
             }
 
             p0.sendMessage(message)
@@ -42,7 +41,7 @@ object CheckWorldUpdated: CommandExecutor, TabCompleter {
             if (ownerPlayer == null) {
                 val message = when (p0 is Player) {
                     true -> "$prefix §c第一引数が無効です。"
-                    else -> "PWManager >> Invalid second argument."
+                    else -> "MWManager >> Invalid second argument."
                 }
 
                 p0.sendMessage(message)
@@ -51,6 +50,8 @@ object CheckWorldUpdated: CommandExecutor, TabCompleter {
 
 
         }
+
+        return true
     }
 
     override fun onTabComplete(

@@ -4,18 +4,64 @@ main: me.awabi2048.mw_manager.Main
 api-version: '1.21'
 
 permissions:
-  pw_manager.admin:
+  mw_manager.admin:
     description: "admin"
     children:
-      - pw_manager.command.register_world
-      - pw_manager.command.update_world
-      - pw_manager.command.check_world_updated
+      - mw_manager.command.register_world
+      - mw_manager.command.update_world
+      - mw_manager.command.check_world_updated
 
-  pw_manager.command.register_world:
+  mw_manager.command.register_world:
     description: "/register_world"
 
-  pw_manager.command.update_world:
+  mw_manager.command.update_world:
     description: "/update_world"
 
-  pw_manager.command.check_world_updated:
+  mw_manager.command.check_world_updated:
     description: "/check_world_updated"
+
+commands:
+  myworldmanager:
+    description: ""
+    aliases:
+      - mwm
+      - mwmanager
+
+# player specifier: -> specifies player.
+# uuid:<player uuid>
+# player:<player name>
+
+# world specifier: -> specifies MWM world.
+# world:<world name>
+
+# world manage flag: -> applies process with commands.
+# -remove: automatically removes expired worlds.
+# -log: outputs data to the console.
+
+## ADMIN COMMANDS
+# /mwm create <owner name> <clone source world name> [world name]
+  # creates MWM world for specified player.
+  # world name is set to owner's uuid by default.
+  # permission: admin
+
+# /mwm info [player specifier|world specifier] [flag]
+  # returns detailed data of the specified world or general data of worlds the specified player owns.
+  # returns general data of all MWM worlds when nothing specified.
+  # available flags: -remove, -log
+  # permission: admin
+
+# /mwm remove <world specifier>
+  # manually removes the specified world.
+  # note: after removal, world data will be transferred to temporary storage. temporary data will be
+  # automatically removed completely 90 days after the removal. (this can be configured)
+  # permission: admin
+
+# /mwm recover <world specifier>
+  # recovers removed world data from temporary storage.
+  # permission: admin
+
+# /mwm transfer <world specifier> <player specifier>
+  # transfers control of specified world to specified player.
+
+## NON-ADMIN COMMANDS
+# /mwm
