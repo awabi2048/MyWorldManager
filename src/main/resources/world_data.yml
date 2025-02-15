@@ -18,6 +18,6 @@ world_uuid:
   expire_in: 90
   owner: "owner_uuid"
   player:
-    - "player_uuid_1" # includes owner
+    - "player_uuid_1"
     - "player_uuid_2"
     - "player_uuid_3"

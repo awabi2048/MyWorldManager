@@ -1,10 +1,15 @@
 package me.awabi2048.mw_manager
 
 import com.onarandombox.MultiverseCore.api.MultiverseWorld
+import com.onarandombox.MultiverseCore.utils.FileUtils
+import jdk.vm.ci.meta.Local
+import me.awabi2048.mw_manager.Main.Companion.configData
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import java.io.File
 import java.time.LocalDate
 
 // worldName -> ワールド名
@@ -14,77 +19,121 @@ class MyWorld(val uuid: String) {
             return mvWorldManager.mvWorlds.find { it.name == "my_world.$uuid"}
         }
 
-    val alias: String?
+    val name: String?
         get() {
-            return world?.alias
+            return registeredWorldData.getString("$uuid.world_name")
         }
 
     val owner: Player?
         get() {
-            return if (alias != null) {
-                println(alias)
-                registeredWorldData
-            } else null
+            val ownerUUID = registeredWorldData.getString("$uuid.owner")?: return null
+            return Bukkit.getPlayer(ownerUUID)
+        }
+
+    val sourceWorldName: String?
+        get() {
+            return registeredWorldData.getString("$uuid.source_world")
+        }
+
+    val lastUpdated: LocalDate?
+        get() {
+            val dateString = registeredWorldData.getString("$uuid.last_updated")?: return null
+            return LocalDate.parse(dateString)
         }
 
     val expireDate: LocalDate?
         get() {
-            if (MyWorldManager.registeredWorld.contains(this)) {
-                if (!registeredWorldData.contains(alias!!)) return null
+            val lastUpdatedString = registeredWorldData.getString("$uuid.last_updated")?: return null
+            val lastUpdatedDate = LocalDate.parse(lastUpdatedString)
+            val expireIn = registeredWorldData.getInt("$uuid.expire_in")
+            val expireDate = lastUpdatedDate.plusDays(expireIn.toLong())
 
-                val limitDay = registeredWorldData.getInt("${owner!!.uniqueId}.worlds.$worldName.limit_day")
-                val lastUpdatedDate =
-                    LocalDate.parse(registeredWorldData.getString("${owner!!.uniqueId}.worlds.$worldName.last_updated"))
+            return expireDate
+        }
 
-                val limitDate = lastUpdatedDate.plusDays(limitDay.toLong())
-                return limitDate
-            } else return null
+    val players: List<Player>
+        get() {
+            return registeredWorldData.getStringList("$uuid.players").map {Bukkit.getPlayer(it)!!}
         }
 
     val isOutDated: Boolean?
         get() {
-            return if (owner != null) {
-                expireDate?.isBefore(LocalDate.now())
-            } else null
+            return expireDate?.isBefore(LocalDate.now())
         }
 
-    fun register(expireIn: Int): Boolean {
-        if (mvWorldManager.mvWorlds.any { it.name == worldName }) {
-            registeredWorldData.createSection(worldName)
-            registeredWorldData.set("$worldName.last_updated_date", LocalDate.now().toString())
-            registeredWorldData.set("$worldName.expire_in", expireIn)
-
-            Lib.YamlUtil.save("world_data.yml", registeredWorldData)
-
-            println(
-                "MWManager >> Registered world with Name: $worldName, ExpireDate: ${
-                    LocalDate.now().plusDays(expireIn.toLong())
-                } (Expires in $expireIn days)"
+    val fixedData: List<String>
+        get() {
+            return listOf(
+                "§7- §fUUID: §b$uuid",
+                "§7- §fWorld Name: §b$name",
+                "§7- §fSource: §b$sourceWorldName",
+                "§7- §fLast Updated: ${lastUpdated.toString()} (Expires in ${expireDate?.toEpochDay()?.minus(LocalDate.now().toEpochDay())})",
+                "§7- §fOwner: §b${owner?.displayName}",
+                "§7- §fJoined Player: §b${players.joinToString()}",
             )
-            return true
-        } else return false
+        }
+
+    fun initiate(sourceWorldName: String, owner: Player): Boolean {
+        if (!mvWorldManager.mvWorlds.any {it.name == sourceWorldName}) return false
+
+        // clone world
+        mvWorldManager.cloneWorld(sourceWorldName, "my_world.$uuid")
+
+        val expireIn = configData.getInt("default_expire_days")
+
+        // register
+        registeredWorldData.createSection(uuid)
+        registeredWorldData.set("$uuid.world_name", "my_world.${owner.displayName}")
+        registeredWorldData.set("$uuid.source_world", sourceWorldName)
+        registeredWorldData.set("$uuid.last_updated", LocalDate.now().toString())
+        registeredWorldData.set("$uuid.expire_in", expireIn)
+        registeredWorldData.set("$uuid.owner", owner.uniqueId.toString())
+        registeredWorldData.set("$uuid.players", listOf(owner.uniqueId.toString()))
+
+        Lib.YamlUtil.save("world_data.yml", registeredWorldData)
+
+        println(
+            "MWManager >> Registered world with UUID: $uuid, ExpireDate: ${
+                LocalDate.now().plusDays(expireIn.toLong())
+            } (Expires in $expireIn days)"
+        )
+        return true
     }
 
-    fun remove(): Boolean {
-        if (MyWorldManager.registeredWorld.contains(this)) {
-            mvWorldManager.removeWorldFromConfig(worldName)
-            mvWorldManager.removePlayersFromWorld(worldName)
-            mvWorldManager.unloadWorld(worldName)
-            mvWorldManager.deleteWorld(worldName)
+    fun deactivate(): Boolean {
+        if (world == null) return false
+        mvWorldManager.removePlayersFromWorld("my_world.$uuid")
+        println(instance.dataFolder.parentFile.parentFile.path)
+        if (world == null) return false
+        val worldFile = File(instance.dataFolder.parentFile.parentFile.path + File.separator + world!!.name)
+        val storageFile = File(instance.dataFolder.path + File.separator + "inactive_worlds")
 
-            println("MWManager >> Unloaded and Deleted world with Name: $worldName, UUID: $owner(${owner!!.name})")
+        FileUtils.copyFolder(worldFile, storageFile)
+//        FileUtils.deleteFolder(worldFile)
+        mvWorldManager.deleteWorld("my_world.$uuid")
 
-            return true
-        } else return false
+        println("MWManager >> Unloaded and Deleted world. UUID: $uuid")
+
+        return true
     }
+
+//    fun activate(): Boolean {
+//    }
 
     fun update(): Boolean {
-        if (MyWorldManager.registeredWorld.contains(this)) {
-            registeredWorldData.set(
-                "${owner!!.uniqueId}.worlds.$worldName.last_update_date",
-                LocalDate.now().toString()
-            )
-            return true
-        } else return false
+        if (registeredWorldData.getKeys(false).contains(uuid))
+
+        registeredWorldData.set(
+            "$uuid.last_updated",
+            LocalDate.now().toString()
+        )
+
+        Lib.YamlUtil.save("world_data.yml", registeredWorldData)
+        return true
+    }
+
+    fun addPlayer(player: Player) {
+
     }
 }
+

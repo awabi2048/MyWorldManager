@@ -6,7 +6,7 @@
 
     <groupId>me.awabi2048</groupId>
     <artifactId>MyWorldManager</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1-ALPHA</version>
     <packaging>jar</packaging>
 
     <name>MyWorldManager</name>

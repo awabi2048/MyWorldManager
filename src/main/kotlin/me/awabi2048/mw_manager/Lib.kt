@@ -1,12 +1,12 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.util.*
 
@@ -51,13 +51,16 @@ object Lib {
 
         } else if (specifier.startsWith("wuuid:")) {
             val worldUUID = specifier.substringAfter("wuuid:")
-            val myWorld = MyWorldManager.registeredWorld.find {it.worldName == "my_world.$worldUUID"}
+            val myWorld = MyWorldManager.registeredWorld.find {it.uuid == worldUUID}
 
             return myWorld
         } else return null
     }
 
-//    fun getPlayerWorld(player: Player): MyWorld? {
-//
-//    }
+    fun getVirtualItem(material: Material) {
+        val item = ItemStack(material)
+        item.itemMeta.apply {
+            
+        }
+    }
 }

@@ -2,8 +2,7 @@ package me.awabi2048.mw_manager
 
 import com.onarandombox.MultiverseCore.MultiverseCore
 import com.onarandombox.MultiverseCore.api.MVWorldManager
-import me.awabi2048.mw_manager.command.RegisterWorldCommand
-import me.awabi2048.mw_manager.command.UpdateWorld
+import me.awabi2048.mw_manager.command.MWMCommand
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -28,9 +27,9 @@ class Main : JavaPlugin() {
         // command
 //        getCommand("mwregister")?.setExecutor(RegisterWorldCommand)
 //        getCommand("mwupdate")?.setExecutor(UpdateWorld)
-        getCommand("myworldmanager")?.setExecutor(UpdateWorld)
-        getCommand("mwmanager")?.setExecutor(UpdateWorld)
-        getCommand("mwm")?.setExecutor(UpdateWorld)
+        getCommand("myworldmanager")?.setExecutor(MWMCommand)
+        getCommand("mwmanager")?.setExecutor(MWMCommand)
+        getCommand("mwm")?.setExecutor(MWMCommand)
 
         saveDefaultConfig()
         saveResource("world_data.yml", false)
