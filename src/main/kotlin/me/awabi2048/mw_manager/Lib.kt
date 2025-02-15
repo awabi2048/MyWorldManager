@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
+import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
 import org.bukkit.Bukkit
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -11,7 +13,8 @@ import java.util.*
 object Lib {
     object YamlUtil {
         fun load(filePath: String): YamlConfiguration {
-            val settingDataFile = File(instance.dataFolder.toString() + File.separator + filePath.replace("/", File.separator))
+            val settingDataFile =
+                File(instance.dataFolder.toString() + File.separator + filePath.replace("/", File.separator))
             return YamlConfiguration.loadConfiguration(settingDataFile)
         }
 
@@ -28,14 +31,30 @@ object Lib {
         }
     }
 
-    fun getPlayerFromSpecifier(specifier: String): Player? {
+    fun convertPlayerSpecifier(specifier: String): Player? {
         val player = when (specifier.split(":")[0]) {
             "player" -> Bukkit.getPlayer(specifier.split(":")[1])
-            "uuid" -> Bukkit.getPlayer(UUID.fromString(specifier.split(":")[1]))
+            "puuid" -> Bukkit.getPlayer(UUID.fromString(specifier.split(":")[1]))
             else -> null
         }
 
         return player
+    }
+
+    fun convertWorldSpecifier(specifier: String): MyWorld? {
+        if (specifier.startsWith("world:")) {
+            val worldName = specifier.substringAfter("world:")
+            val myWorld = MyWorld(worldName)
+
+            if (!MyWorldManager.registeredWorld.contains(myWorld)) return null
+            return myWorld
+
+        } else if (specifier.startsWith("wuuid:")) {
+            val worldUUID = specifier.substringAfter("wuuid:")
+            val myWorld = MyWorldManager.registeredWorld.find {it.worldName == "my_world.$worldUUID"}
+
+            return myWorld
+        } else return null
     }
 
 //    fun getPlayerWorld(player: Player): MyWorld? {

@@ -50,7 +50,7 @@ commands:
   # available flags: -remove, -log
   # permission: admin
 
-# /mwm remove <world specifier>
+# /mwm deactivate <world specifier>
   # manually removes the specified world.
   # note: after removal, world data will be transferred to temporary storage. temporary data will be
   # automatically removed completely 90 days after the removal. (this can be configured)

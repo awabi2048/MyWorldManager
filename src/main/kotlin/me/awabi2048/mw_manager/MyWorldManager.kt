@@ -6,12 +6,10 @@ object MyWorldManager {
     val registeredWorld: List<MyWorld>
         get() {
             val worldList = mutableListOf<MyWorld>()
-            registeredWorldData.getKeys(false).forEach {
-                registeredWorldData.getConfigurationSection("$it.worlds")?.getKeys(false)?.forEach {
-                    val worldName = it
-                    val world = MyWorld(worldName)
-                    worldList.add(world)
-                }
+
+            registeredWorldData.getKeys(false).forEach { worldUUID -> String
+                val myWorld = MyWorld(worldUUID)
+                worldList.add(myWorld)
             }
             return worldList
         }

@@ -39,6 +39,7 @@ object UpdateWorld : CommandExecutor, TabCompleter {
             return true
 
         } else { // update specific world
+
             // check permission
             if (p0 is Player && !p0.hasPermission("mw_manager.admin")) {
                 p0.sendMessage("$prefix §c権限がありません。")

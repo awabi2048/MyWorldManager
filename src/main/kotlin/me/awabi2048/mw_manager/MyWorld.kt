@@ -8,10 +8,10 @@ import org.bukkit.entity.Player
 import java.time.LocalDate
 
 // worldName -> ワールド名
-class MyWorld(val worldName: String) {
+class MyWorld(val uuid: String) {
     val world: MultiverseWorld?
         get() {
-            return mvWorldManager.mvWorlds.find { it.name == worldName }
+            return mvWorldManager.mvWorlds.find { it.name == "my_world.$uuid"}
         }
 
     val alias: String?
@@ -23,7 +23,7 @@ class MyWorld(val worldName: String) {
         get() {
             return if (alias != null) {
                 println(alias)
-                Bukkit.getPlayer(alias!!.substringBefore("["))
+                registeredWorldData
             } else null
         }
 
