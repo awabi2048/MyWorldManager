@@ -5,4 +5,5 @@ enum class Option {
     INFO,
     DEACTIVATE,
     ACTIVATE,
+    UPDATE,
 }

@@ -15,7 +15,7 @@ import org.bukkit.command.TabCompleter
 
 object MWMCommand: CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (args.isEmpty() || args[0] !in listOf("create", "info", "deactivate", "activate")) {
+        if (args.isEmpty() || args[0] !in listOf("create", "info", "deactivate", "activate", "update")) {
             sender.notify("§c無効なコマンドです。", null)
             return true
         }
@@ -26,6 +26,7 @@ object MWMCommand: CommandExecutor, TabCompleter {
             INFO -> TODO()
             DEACTIVATE -> TODO()
             ACTIVATE -> TODO()
+            UPDATE -> SubCommand(sender, args).update()
         }
 
         return true

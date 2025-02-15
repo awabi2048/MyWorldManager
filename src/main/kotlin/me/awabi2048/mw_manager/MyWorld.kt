@@ -2,7 +2,6 @@ package me.awabi2048.mw_manager
 
 import com.onarandombox.MultiverseCore.api.MultiverseWorld
 import com.onarandombox.MultiverseCore.utils.FileUtils
-import jdk.vm.ci.meta.Local
 import me.awabi2048.mw_manager.Main.Companion.configData
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
@@ -105,20 +104,33 @@ class MyWorld(val uuid: String) {
         mvWorldManager.removePlayersFromWorld("my_world.$uuid")
         println(instance.dataFolder.parentFile.parentFile.path)
         if (world == null) return false
-        val worldFile = File(instance.dataFolder.parentFile.parentFile.path + File.separator + world!!.name)
+        val worldFile = File(instance.dataFolder.parentFile.parentFile.path + File.separator + "my_world.$uuid")
         val storageFile = File(instance.dataFolder.path + File.separator + "inactive_worlds")
 
         FileUtils.copyFolder(worldFile, storageFile)
 //        FileUtils.deleteFolder(worldFile)
         mvWorldManager.deleteWorld("my_world.$uuid")
 
-        println("MWManager >> Unloaded and Deleted world. UUID: $uuid")
+        println("MWManager >> Deactivated world. UUID: $uuid")
 
         return true
     }
 
-//    fun activate(): Boolean {
-//    }
+    fun activate(): Boolean {
+        if (world == null) return false
+        println(instance.dataFolder.parentFile.parentFile.path)
+        if (world == null) return false
+        val worldFolder = File(instance.dataFolder.parentFile.parentFile.path + File.separator)
+        val worldFile = File(instance.dataFolder.path + File.separator + "inactive_worlds" + File.separator + "my_world.$uuid")
+
+        FileUtils.copyFolder(worldFile, worldFolder)
+        FileUtils.deleteFolder(worldFile)
+//        mvWorldManager.deleteWorld("my_world.$uuid")
+
+        println("MWManager >> Activated world. UUID: $uuid")
+
+        return true
+    }
 
     fun update(): Boolean {
         if (registeredWorldData.getKeys(false).contains(uuid))

@@ -1,0 +1,17 @@
+package me.awabi2048.mw_manager.listener
+
+import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
+import me.awabi2048.mw_manager.MyWorld
+import me.awabi2048.mw_manager.MyWorldManager
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerLoginEvent
+
+object EventListener : Listener {
+    @EventHandler
+    fun onPlayerLogin(event: PlayerLoginEvent) {
+        if (MyWorldManager.registeredWorld.any { it.owner == event.player }) {
+            MyWorldManager.registeredWorld.filter { it.owner == event.player }.forEach { it.update() }
+        }
+    }
+}

@@ -3,6 +3,7 @@ package me.awabi2048.mw_manager
 import com.onarandombox.MultiverseCore.MultiverseCore
 import com.onarandombox.MultiverseCore.api.MVWorldManager
 import me.awabi2048.mw_manager.command.MWMCommand
+import me.awabi2048.mw_manager.listener.EventListener
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -33,6 +34,8 @@ class Main : JavaPlugin() {
 
         saveDefaultConfig()
         saveResource("world_data.yml", false)
+
+        server.pluginManager.registerEvents(EventListener, instance)
 
     }
 

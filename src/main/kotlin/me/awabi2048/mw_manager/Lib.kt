@@ -41,7 +41,7 @@ object Lib {
         return player
     }
 
-    fun convertWorldSpecifier(specifier: String): MyWorld? {
+    fun translateWorldSpecifier(specifier: String): MyWorld? {
         if (specifier.startsWith("world:")) {
             val worldName = specifier.substringAfter("world:")
             val myWorld = MyWorld(worldName)
@@ -51,16 +51,18 @@ object Lib {
 
         } else if (specifier.startsWith("wuuid:")) {
             val worldUUID = specifier.substringAfter("wuuid:")
-            val myWorld = MyWorldManager.registeredWorld.find {it.uuid == worldUUID}
+            val myWorld = MyWorldManager.registeredWorld.find { it.uuid == worldUUID }
 
             return myWorld
         } else return null
     }
 
-    fun getVirtualItem(material: Material) {
+    fun getVirtualItem(material: Material): ItemStack {
         val item = ItemStack(material)
-        item.itemMeta.apply {
-            
-        }
+        item.setItemMeta(
+            item.itemMeta.apply {
+                isHideTooltip = true
+            })
+        return item
     }
 }

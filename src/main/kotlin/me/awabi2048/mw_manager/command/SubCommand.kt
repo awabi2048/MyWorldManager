@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.MyWorld
 import me.awabi2048.mw_manager.MyWorldManager
 import me.awabi2048.mw_manager.player_notify.notify
+import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import java.util.*
 
@@ -49,7 +50,7 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         if (args[1].startsWith("world:") || args[1].startsWith("wuuid:")) {
             val worldSpecifier = args[1].substringAfter("world:")
-            val specifiedWorld = Lib.convertWorldSpecifier(worldSpecifier)
+            val specifiedWorld = Lib.translateWorldSpecifier(worldSpecifier)
 
             if (specifiedWorld == null) {
                 sender.notify("§c指定されたワールドが見つかりませんでした。", null)
@@ -73,13 +74,30 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
             val worlds = MyWorldManager.registeredWorld.filter{it.owner == specifiedPlayer}
 
             worlds.forEach {
-                
+
             }
         }
 
         //
         val specifier = args[1]
 
+    }
+
+    fun update() {
+        if (args.size != 2) {
+            sender.notify("§c無効なコマンドです。", null)
+            return
+        }
+
+        val myWorld = Lib.translateWorldSpecifier(args[1])
+
+        if (myWorld == null) {
+            sender.notify("§c指定されたワールドが見つかりません。", null)
+            return
+        }
+
+        myWorld.update()
+        sender.notify("§a指定されたワールドを更新しました。", null)
     }
 
     fun toggleActive() {
