@@ -72,7 +72,7 @@ class MyWorld(val uuid: String) {
             )
         }
 
-    fun initiate(sourceWorldName: String, owner: Player): Boolean {
+    fun initiate(sourceWorldName: String, owner: Player, registerWorldName: String?): Boolean {
         if (!mvWorldManager.mvWorlds.any {it.name == sourceWorldName}) return false
 
         // clone world
@@ -80,9 +80,12 @@ class MyWorld(val uuid: String) {
 
         val expireIn = configData.getInt("default_expire_days")
 
+        //
+        val worldName = registerWorldName ?: "my_world.${owner.displayName}"
+
         // register
         registeredWorldData.createSection(uuid)
-        registeredWorldData.set("$uuid.world_name", "my_world.${owner.displayName}")
+        registeredWorldData.set("$uuid.world_name", worldName)
         registeredWorldData.set("$uuid.source_world", sourceWorldName)
         registeredWorldData.set("$uuid.last_updated", LocalDate.now().toString())
         registeredWorldData.set("$uuid.expire_in", expireIn)

@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.Main
+import me.awabi2048.mw_manager.Main.Companion.configData
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.MyWorld
 import me.awabi2048.mw_manager.MyWorldManager
@@ -19,6 +21,7 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
         //
         val ownerSpecifier = args[1]
         val sourceWorldName = args[2]
+        val worldName = args[3]
 
         val owner = Lib.convertPlayerSpecifier(ownerSpecifier)
         val uuid = UUID.randomUUID().toString()
@@ -28,17 +31,25 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        if (!mvWorldManager.mvWorlds.any {it.name == sourceWorldName}) {
+        if (!mvWorldManager.mvWorlds.any { it.name == sourceWorldName }) {
             sender.notify("§c指定されーたワールドが見つかりません。", null)
+            return
+        }
+
+        if (worldName in configData.getStringList("world_name_blacklist")) {
+            sender.notify("§cそのワールド名は利用できません。", null)
             return
         }
 
         // register
         val myWorld = MyWorld(uuid)
-        val initiated = myWorld.initiate(sourceWorldName, owner)
+        val initiated = myWorld.initiate(sourceWorldName, owner, worldName)
 
         if (initiated) {
-            sender.notify("Owner: ${owner.displayName}, Source: $sourceWorldName でワールドを生成しました。(UUID:$uuid)", null)
+            sender.notify(
+                "Owner: ${owner.displayName}, Source: $sourceWorldName でワールドを生成しました。(UUID:$uuid)",
+                null
+            )
         }
     }
 
@@ -71,7 +82,7 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
                 return
             }
 
-            val worlds = MyWorldManager.registeredWorld.filter{it.owner == specifiedPlayer}
+            val worlds = MyWorldManager.registeredWorld.filter { it.owner == specifiedPlayer }
 
             worlds.forEach {
 
