@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
@@ -64,5 +66,17 @@ object Lib {
                 isHideTooltip = true
             })
         return item
+    }
+
+    fun blockLocationToString(x: Int, y: Int, z: Int): String {
+        return "($x, $y, $z)"
+    }
+
+    fun stringToBlockLocation(string: String): List<Int>? {
+        return try {
+            string.filterNot { it == ' ' }.split(",").map { it.toInt() }
+        } catch (e: Exception) {
+            null
+        }
     }
 }

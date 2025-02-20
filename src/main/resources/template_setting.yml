@@ -1,0 +1,12 @@
+world_name:
+  # 表示名
+  name: "テンプレートワールド"
+
+  # 説明
+  description: "これはテンプレートです"
+
+  # アイコン
+  icon: GLASS
+
+  # スポーン座標（初期スポーン位置）
+  origin_location: "(0, 0, 0)"

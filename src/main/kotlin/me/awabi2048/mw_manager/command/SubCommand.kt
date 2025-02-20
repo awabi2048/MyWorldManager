@@ -1,14 +1,18 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.Main
 import me.awabi2048.mw_manager.Main.Companion.configData
+import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.MyWorld
-import me.awabi2048.mw_manager.MyWorldManager
+import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.my_world.CreationLevel
+import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.TemporalCreationData
 import me.awabi2048.mw_manager.player_notify.notify
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
+import org.bukkit.entity.Player
 import java.util.*
 
 class SubCommand(val sender: CommandSender, val args: Array<out String>) {
@@ -113,5 +117,17 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun toggleActive() {
 
+    }
+
+    fun startCreationSequence() {
+        if (sender is Player) {
+            val creationData = TemporalCreationData(sender, null, null, CreationLevel.WORLD_NAME)
+            creationDataSet += creationData
+
+            // 最初 → ワールド名設定
+            sender.sendMessage("$prefix §eワールド名§fを入力してください！")
+            sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
+
+        } else return
     }
 }

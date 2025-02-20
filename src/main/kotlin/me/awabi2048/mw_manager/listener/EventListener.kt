@@ -1,8 +1,6 @@
 package me.awabi2048.mw_manager.listener
 
-import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
-import me.awabi2048.mw_manager.MyWorld
-import me.awabi2048.mw_manager.MyWorldManager
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerLoginEvent

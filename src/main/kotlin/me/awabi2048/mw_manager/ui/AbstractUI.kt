@@ -3,10 +3,15 @@ package me.awabi2048.mw_manager.ui
 import me.awabi2048.mw_manager.Lib
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 
-abstract class AbstractUI {
+abstract class AbstractUI(owner: Player) {
+    val ui: Inventory by lazy { construct() }
+
     abstract fun open()
+
+    abstract fun construct(): Inventory
 
     fun createTemplate(row: Int, title: String): Inventory? {
         if (row !in 1..6) return null
@@ -18,7 +23,7 @@ abstract class AbstractUI {
         for (iRow in 0..<row) {
             for (iColumn in 0..8) {
                 val slot = iRow * 9 + iColumn
-                if (iRow == 0 || iRow == row - 1) menu.setItem(slot, gray) else menu.setItem(slot, gray)
+                if (iRow == 0 || iRow == row - 1) menu.setItem(slot, black) else menu.setItem(slot, gray)
             }
         }
 

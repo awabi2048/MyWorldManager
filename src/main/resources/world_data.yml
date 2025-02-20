@@ -1,23 +1,34 @@
-player_uuid-world_name:
-  limit_day: 90
-  last_update_date: "2025-02-10"
-
-player_uuid:
-  worlds:
-    world_name:
-      expire_in: 90
-      last_update_date: "2025-02-10"
-
-# Saved World Name: %world_name%[%player_name%]
-# Alias: %world_name%
-
 world_uuid:
+  # ワールド名（保存名とは別）
   world_name: ""
+
+  # クローン元のワールド名（保存名）
   source_world: ""
+
+  # 最後に更新された日付（LocalDate）
   last_updated: "2025-02-11"
+
+  # 最終更新からこの日数が経過したら期限切れ扱いになる
   expire_in: 90
+
+  # ボーダーの中心座標・一辺の長さ
+  border_center_pos: "(20, 30, 20)"
+  border_size: 80
+
+  # ゲスト・メンバーのワールドスポーン
+  spawn_pos_guest: "(20, 30, 20)"
+  spawn_pos_member: "(20, 30, 20)"
+
+  # オーナーのUUID
   owner: "owner_uuid"
-  player:
+
+  # モデレーターのUUID
+  moderator:
+    - "moderator_uuid_1"
+
+  # すべてのメンバーのUUID（オーナー・モデレーターも含む）
+  member:
     - "player_uuid_1"
     - "player_uuid_2"
     - "player_uuid_3"
+

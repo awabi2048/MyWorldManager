@@ -1,11 +1,6 @@
 package me.awabi2048.mw_manager.command
 
-import me.awabi2048.mw_manager.Main
-import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.prefix
-import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
-import me.awabi2048.mw_manager.MyWorld
-import me.awabi2048.mw_manager.MyWorldManager
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.command.Option.*
 import me.awabi2048.mw_manager.player_notify.notify
 import org.bukkit.command.Command

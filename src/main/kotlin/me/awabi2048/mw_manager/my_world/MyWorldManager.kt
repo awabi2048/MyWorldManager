@@ -1,4 +1,4 @@
-package me.awabi2048.mw_manager
+package me.awabi2048.mw_manager.my_world
 
 import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
 
