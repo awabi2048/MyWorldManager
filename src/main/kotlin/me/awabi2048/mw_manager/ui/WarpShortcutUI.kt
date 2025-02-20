@@ -16,6 +16,8 @@ class WarpShortcutUI(private val owner: Player): AbstractUI(owner) {
         val menu = createTemplate(4, "§8§lWarp Shortcut")!!
 
         val playerData = DataFiles.playerData.getConfigurationSection("")
+
+        return menu
     }
 
 }
