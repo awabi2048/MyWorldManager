@@ -9,7 +9,12 @@ import org.bukkit.persistence.PersistentDataType
 enum class CustomItem {
     WORLD_PORTAL;
 
-    fun get(customItem: CustomItem): ItemStack {
+    val item: ItemStack
+        get() {
+            return getItem(this)
+        }
+
+    private fun getItem(customItem: CustomItem): ItemStack {
         return when(customItem) {
             WORLD_PORTAL -> {
                 val item = ItemStack(Material.STRIPPED_CHERRY_WOOD)

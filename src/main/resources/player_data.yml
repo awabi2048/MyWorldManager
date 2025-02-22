@@ -2,5 +2,6 @@
   world_point: 0
   unlocked_warp_slot: 10
   unlocked_world_slot: 3
-  world_uuid_1:
-    icon: GRASS_BLOCK
+  warp_shortcuts:
+    - world_uuid
+

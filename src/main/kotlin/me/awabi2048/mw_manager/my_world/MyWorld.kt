@@ -125,6 +125,15 @@ class MyWorld(val uuid: String) {
             } else null
         }
 
+    val borderSize: Double?
+        get() {
+            if (isRegistered){
+                val extension = dataSection!!.getInt("border_extension")
+                val baseUnit = DataFiles.config.getInt("border_size_unit")
+                return ((extension + 1) * baseUnit).toDouble()
+            } else return null
+        }
+
     fun initiate(sourceWorldName: String, owner: Player, registerWorldName: String?): Boolean {
         if (DataFiles.templateSetting.getKeys(false).contains(sourceWorldName)) {
 
@@ -140,9 +149,6 @@ class MyWorld(val uuid: String) {
             println("$sourceWorldName.origin_location")
             val sourceWorldOrigin = DataFiles.templateSetting.getString("$sourceWorldName.origin_location")!!
 
-            // border
-            val borderSize = DataFiles.config.getInt("default_border_size")
-
             // register
             DataFiles.worldData.createSection(uuid)
             DataFiles.worldData.set("$uuid.world_name", worldName)
@@ -150,15 +156,29 @@ class MyWorld(val uuid: String) {
             DataFiles.worldData.set("$uuid.last_updated", LocalDate.now().toString())
             DataFiles.worldData.set("$uuid.expire_in", expireIn)
             DataFiles.worldData.set("$uuid.owner", owner.uniqueId.toString())
-            DataFiles.worldData.set("$uuid.players", listOf(owner.uniqueId.toString()))
+            DataFiles.worldData.set("$uuid.member", listOf(owner.uniqueId.toString()))
 
             DataFiles.worldData.set("$uuid.spawn_pos_guest", sourceWorldOrigin)
             DataFiles.worldData.set("$uuid.spawn_pos_member", sourceWorldOrigin)
             DataFiles.worldData.set("$uuid.border_center_pos", sourceWorldOrigin)
 
-            DataFiles.worldData.set("$uuid.border_size", borderSize)
+            DataFiles.worldData.set("$uuid.border_extension", 0)
 
             DataFiles.save()
+
+            // ワールドに関する処理: クローン後なので遅延
+            Bukkit.getScheduler().runTaskLater(
+                instance,
+                Runnable {
+                    mvWorld!!.apply {
+                        alias = worldName
+                    }
+                    vanillaWorld!!.apply {
+                        worldBorder.size = borderSize!!
+                    }
+                },
+                50L
+            )
 
             println(
                 "MWManager >> Registered world with UUID: $uuid, ExpireDate: ${
@@ -255,8 +275,6 @@ class MyWorld(val uuid: String) {
 
     fun expand(method: ExpandMethod): Boolean {
         if (isRegistered) {
-            val borderSize = vanillaWorld!!.worldBorder.size
-
             // メモ: North(-Z) West(-X) South(+Z) East(+X)
             val borderCenterPosX = dataSection!!.getString("border_center_pos")!!.split(",")[0].toInt()
             val borderCenterPosY = dataSection!!.getString("border_center_pos")!!.split(",")[1].toInt()
@@ -272,43 +290,44 @@ class MyWorld(val uuid: String) {
 
                 LEFT_UP -> Location(
                     vanillaWorld,
-                    borderCenterPosX - borderSize + 0.5,
+                    borderCenterPosX - borderSize!! + 0.5,
                     borderCenterPosY.toDouble(),
-                    borderCenterPosZ - borderSize + 0.5
+                    borderCenterPosZ - borderSize!! + 0.5
                 )
 
                 LEFT_DOWN -> Location(
                     vanillaWorld,
-                    borderCenterPosX - borderSize + 0.5,
+                    borderCenterPosX - borderSize!! + 0.5,
                     borderCenterPosY.toDouble(),
-                    borderCenterPosZ + borderSize + 0.5
+                    borderCenterPosZ + borderSize!! + 0.5
                 )
 
                 RIGHT_UP -> Location(
                     vanillaWorld,
-                    borderCenterPosX + borderSize + 0.5,
+                    borderCenterPosX + borderSize!! + 0.5,
                     borderCenterPosY.toDouble(),
-                    borderCenterPosZ + borderSize + 0.5
+                    borderCenterPosZ + borderSize!! + 0.5
                 )
 
                 RIGHT_DOWN -> Location(
                     vanillaWorld,
-                    borderCenterPosX + borderSize + 0.5,
+                    borderCenterPosX + borderSize!! + 0.5,
                     borderCenterPosY.toDouble(),
-                    borderCenterPosZ - borderSize + 0.5
+                    borderCenterPosZ - borderSize!! + 0.5
                 )
             }
-
-            // ワールドデータの変更
-            vanillaWorld!!.worldBorder.center = borderCenterLocation
-            vanillaWorld!!.worldBorder.size += borderSize
 
             // データファイルへの書き込み
             DataFiles.worldData.set(
                 "$uuid.border_center_pos",
                 "${borderCenterLocation.blockX + 0.5}, ${borderCenterLocation.blockY}, ${borderCenterLocation.blockZ + 0.5}"
             )
+            DataFiles.worldData.set("$uuid.border_extension", DataFiles.worldData.getInt("$uuid.border_extension") + 1)
             DataFiles.save()
+
+            // ワールドデータの変更
+            vanillaWorld!!.worldBorder.center = borderCenterLocation
+            vanillaWorld!!.worldBorder.size = borderSize!!
 
             return true
         } else return false

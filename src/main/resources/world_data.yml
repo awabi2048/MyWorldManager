@@ -13,7 +13,7 @@ world_uuid:
 
   # ボーダーの中心座標・一辺の長さ
   border_center_pos: "(20, 30, 20)"
-  border_size: 80
+  border_extension: 0
 
   # ゲスト・メンバーのワールドスポーン
   spawn_pos_guest: "(20, 30, 20)"
@@ -32,5 +32,5 @@ world_uuid:
     - "player_uuid_2"
     - "player_uuid_3"
 
-  flags:
-    - NO_WARNING_TEXT
+  world_flag:
+    - NO_WARNING
