@@ -5,10 +5,12 @@ import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataType
 import java.io.File
 import java.util.*
 
@@ -78,5 +80,12 @@ object Lib {
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun getItemID(item: ItemStack?): String? {
+        return item?.itemMeta?.persistentDataContainer?.get(
+            NamespacedKey(instance, "item_id"),
+            PersistentDataType.STRING
+        )
     }
 }

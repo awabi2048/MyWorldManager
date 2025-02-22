@@ -6,4 +6,5 @@ enum class Option {
     DEACTIVATE,
     ACTIVATE,
     UPDATE,
+    START_CREATION_SEQUENCE,
 }

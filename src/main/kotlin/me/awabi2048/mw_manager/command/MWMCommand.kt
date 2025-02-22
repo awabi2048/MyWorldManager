@@ -8,20 +8,21 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 
-object MWMCommand: CommandExecutor, TabCompleter {
+object MWMCommand : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (args.isEmpty() || args[0] !in listOf("create", "info", "deactivate", "activate", "update")) {
+        if (args.isEmpty() || args[0] !in Option.entries.map { it.toString().lowercase() }) {
             sender.notify("§c無効なコマンドです。", null)
             return true
         }
 
         val option = Option.valueOf(args[0].uppercase())
-        when(option) {
+        when (option) {
             CREATE -> SubCommand(sender, args).create()
             INFO -> TODO()
             DEACTIVATE -> TODO()
             ACTIVATE -> TODO()
             UPDATE -> SubCommand(sender, args).update()
+            START_CREATION_SEQUENCE -> TODO()
         }
 
         return true
@@ -31,9 +32,9 @@ object MWMCommand: CommandExecutor, TabCompleter {
         p0: CommandSender,
         p1: Command,
         p2: String,
-        p3: Array<out String>?
+        p3: Array<out String>?,
     ): List<String> {
-        if (p3.isNullOrEmpty()) return listOf("create", "info", "deactivate", "activate")
+        if (p3.isNullOrEmpty()) return Option.entries.map { it.toString().lowercase() }
 
         if (p3[0] == "create") {
 
@@ -43,8 +44,8 @@ object MWMCommand: CommandExecutor, TabCompleter {
                 if (p3[1].startsWith("puuid:")) return listOf()
             }
             if (p3.size == 3) {
-                if (p3[2].startsWith("world:")) return MyWorldManager.registeredWorld.map{it.name!!}
-                if (p3[2].startsWith("wuuid:")) return MyWorldManager.registeredWorld.map{it.uuid}
+                if (p3[2].startsWith("world:")) return MyWorldManager.registeredWorld.map { it.name!! }
+                if (p3[2].startsWith("wuuid:")) return MyWorldManager.registeredWorld.map { it.uuid }
             }
         }
 
