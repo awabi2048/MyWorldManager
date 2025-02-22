@@ -1,18 +1,19 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.Main.Companion.configData
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.my_world.TemporalCreationData
 import me.awabi2048.mw_manager.player_notify.notify
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
 class SubCommand(val sender: CommandSender, val args: Array<out String>) {
@@ -37,11 +38,6 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         if (!mvWorldManager.mvWorlds.any { it.name == sourceWorldName }) {
             sender.notify("§c指定されーたワールドが見つかりません。", null)
-            return
-        }
-
-        if (worldName in configData.getStringList("world_name_blacklist")) {
-            sender.notify("§cそのワールド名は利用できません。", null)
             return
         }
 
@@ -119,14 +115,27 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     }
 
-    fun startCreationSequence() {
+    fun startCreationSession() {
         if (sender is Player) {
-            val creationData = TemporalCreationData(sender, null, null, CreationLevel.WORLD_NAME)
+            if (creationDataSet.any {it.player == sender}) creationDataSet.removeIf {it.player == sender}
+
+            val creationData = CreationData(sender, null, null, CreationLevel.WORLD_NAME)
             creationDataSet += creationData
 
             // 最初 → ワールド名設定
             sender.sendMessage("$prefix §eワールド名§fを入力してください！")
             sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
+
+            // タイムアウト判定
+            object: BukkitRunnable() {
+                override fun run() {
+                    // まだ作成手続き中ならキャンセル（5分）
+                    if (creationDataSet.any {it.player == sender}) {
+                        creationDataSet.removeIf {it.player == sender}
+                        sender.sendMessage("§cセッションがタイムアウトしました。")
+                    } else cancel()
+                }
+            }.runTaskLater(instance, 300 * 20)
 
         } else return
     }

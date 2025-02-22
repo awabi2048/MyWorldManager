@@ -32,3 +32,5 @@ world_uuid:
     - "player_uuid_2"
     - "player_uuid_3"
 
+  flags:
+    - NO_WARNING_TEXT

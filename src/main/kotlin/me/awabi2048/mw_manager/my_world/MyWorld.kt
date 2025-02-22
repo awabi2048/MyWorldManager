@@ -3,13 +3,11 @@ package me.awabi2048.mw_manager.my_world
 import com.onarandombox.MultiverseCore.api.MultiverseWorld
 import com.onarandombox.MultiverseCore.utils.FileUtils
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.my_world.ExpandMethod.*
-import me.awabi2048.mw_manager.Main.Companion.configData
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.registeredWorldData
 import me.awabi2048.mw_manager.config.DataFiles
-import me.awabi2048.mw_manager.my_world.MemberRole.*
+import me.awabi2048.mw_manager.my_world.ExpandMethod.*
+import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
 import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
@@ -23,7 +21,7 @@ import java.time.LocalDate
 class MyWorld(val uuid: String) {
     val isRegistered: Boolean
         get() {
-            return registeredWorldData.getKeys(false).contains(uuid)
+            return DataFiles.worldData.getKeys(false).contains(uuid)
         }
 
     /**
@@ -47,7 +45,7 @@ class MyWorld(val uuid: String) {
      */
     val name: String?
         get() {
-            return registeredWorldData.getString("$uuid.world_name")
+            return DataFiles.worldData.getString("$uuid.world_name")
         }
 
     /**
@@ -55,7 +53,7 @@ class MyWorld(val uuid: String) {
      */
     val owner: Player?
         get() {
-            val ownerUUID = registeredWorldData.getString("$uuid.owner") ?: return null
+            val ownerUUID = DataFiles.worldData.getString("$uuid.owner") ?: return null
             return Bukkit.getPlayer(ownerUUID)
         }
 
@@ -75,20 +73,20 @@ class MyWorld(val uuid: String) {
 
     val sourceWorldName: String?
         get() {
-            return registeredWorldData.getString("$uuid.source_world")
+            return DataFiles.worldData.getString("$uuid.source_world")
         }
 
     val lastUpdated: LocalDate?
         get() {
-            val dateString = registeredWorldData.getString("$uuid.last_updated") ?: return null
+            val dateString = DataFiles.worldData.getString("$uuid.last_updated") ?: return null
             return LocalDate.parse(dateString)
         }
 
     val expireDate: LocalDate?
         get() {
-            val lastUpdatedString = registeredWorldData.getString("$uuid.last_updated") ?: return null
+            val lastUpdatedString = DataFiles.worldData.getString("$uuid.last_updated") ?: return null
             val lastUpdatedDate = LocalDate.parse(lastUpdatedString)
-            val expireIn = registeredWorldData.getInt("$uuid.expire_in")
+            val expireIn = DataFiles.worldData.getInt("$uuid.expire_in")
             val expireDate = lastUpdatedDate.plusDays(expireIn.toLong())
 
             return expireDate
@@ -101,8 +99,8 @@ class MyWorld(val uuid: String) {
 
     val publishLevel: PublishLevel?
         get() {
-            return if (registeredWorldData.getString("$uuid.publish_level") in PublishLevel.entries.map { it.toString() }) {
-                PublishLevel.valueOf(registeredWorldData.getString("$uuid.publish_level")!!)
+            return if (DataFiles.worldData.getString("$uuid.publish_level") in PublishLevel.entries.map { it.toString() }) {
+                PublishLevel.valueOf(DataFiles.worldData.getString("$uuid.publish_level")!!)
             } else null
         }
 
@@ -128,38 +126,39 @@ class MyWorld(val uuid: String) {
         }
 
     fun initiate(sourceWorldName: String, owner: Player, registerWorldName: String?): Boolean {
-        if (!mvWorldManager.mvWorlds.any { it.name == sourceWorldName }) {
+        if (DataFiles.templateSetting.getKeys(false).contains(sourceWorldName)) {
 
             // clone world
             mvWorldManager.cloneWorld(sourceWorldName, "my_world.$uuid")
 
-            val expireIn = configData.getInt("default_expire_days")
+            val expireIn = DataFiles.config.getInt("default_expire_days")
 
             //
             val worldName = registerWorldName ?: "my_world.${owner.displayName}"
 
             // template
+            println("$sourceWorldName.origin_location")
             val sourceWorldOrigin = DataFiles.templateSetting.getString("$sourceWorldName.origin_location")!!
 
             // border
             val borderSize = DataFiles.config.getInt("default_border_size")
 
             // register
-            registeredWorldData.createSection(uuid)
-            registeredWorldData.set("$uuid.world_name", worldName)
-            registeredWorldData.set("$uuid.source_world", sourceWorldName)
-            registeredWorldData.set("$uuid.last_updated", LocalDate.now().toString())
-            registeredWorldData.set("$uuid.expire_in", expireIn)
-            registeredWorldData.set("$uuid.owner", owner.uniqueId.toString())
-            registeredWorldData.set("$uuid.players", listOf(owner.uniqueId.toString()))
+            DataFiles.worldData.createSection(uuid)
+            DataFiles.worldData.set("$uuid.world_name", worldName)
+            DataFiles.worldData.set("$uuid.source_world", sourceWorldName)
+            DataFiles.worldData.set("$uuid.last_updated", LocalDate.now().toString())
+            DataFiles.worldData.set("$uuid.expire_in", expireIn)
+            DataFiles.worldData.set("$uuid.owner", owner.uniqueId.toString())
+            DataFiles.worldData.set("$uuid.players", listOf(owner.uniqueId.toString()))
 
-            registeredWorldData.set("$uuid.spawn_pos_guest", sourceWorldOrigin)
-            registeredWorldData.set("$uuid.spawn_pos_member", sourceWorldOrigin)
-            registeredWorldData.set("$uuid.border_center_pos", sourceWorldOrigin)
+            DataFiles.worldData.set("$uuid.spawn_pos_guest", sourceWorldOrigin)
+            DataFiles.worldData.set("$uuid.spawn_pos_member", sourceWorldOrigin)
+            DataFiles.worldData.set("$uuid.border_center_pos", sourceWorldOrigin)
 
-            registeredWorldData.set("$uuid.border_size", borderSize)
+            DataFiles.worldData.set("$uuid.border_size", borderSize)
 
-            Lib.YamlUtil.save("world_data.yml", registeredWorldData)
+            DataFiles.save()
 
             println(
                 "MWManager >> Registered world with UUID: $uuid, ExpireDate: ${
@@ -206,14 +205,14 @@ class MyWorld(val uuid: String) {
     }
 
     fun update(): Boolean {
-        if (registeredWorldData.getKeys(false).contains(uuid))
+        if (DataFiles.worldData.getKeys(false).contains(uuid))
 
-            registeredWorldData.set(
+            DataFiles.worldData.set(
                 "$uuid.last_updated",
                 LocalDate.now().toString()
             )
 
-        Lib.YamlUtil.save("world_data.yml", registeredWorldData)
+        Lib.YamlUtil.save("world_data.yml", DataFiles.worldData)
         return true
     }
 

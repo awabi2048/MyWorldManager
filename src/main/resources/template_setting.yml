@@ -1,12 +1,25 @@
-world_name:
+#world_name:
+#  # 表示名
+#  name: "テンプレートワールド"
+#
+#  # 説明
+#  description: "これはテンプレートです"
+#
+#  # アイコン
+#  icon: GLASS
+#
+#  # スポーン座標（初期スポーン位置）
+#  origin_location: "(0, 0, 0)"
+
+template_1:
   # 表示名
-  name: "テンプレートワールド"
+  name: "テンプレートワールド1"
 
   # 説明
   description: "これはテンプレートです"
 
   # アイコン
-  icon: GLASS
+  icon: GRASS_BLOCK
 
   # スポーン座標（初期スポーン位置）
-  origin_location: "(0, 0, 0)"
+  origin_location: "(59, 111, -84)"

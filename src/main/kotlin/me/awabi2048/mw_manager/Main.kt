@@ -6,31 +6,30 @@ import me.awabi2048.mw_manager.command.InviteCommand
 import me.awabi2048.mw_manager.command.MWMCommand
 import me.awabi2048.mw_manager.command.PointCommand
 import me.awabi2048.mw_manager.command.VisitCommand
+import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.listener.EventListener
-import me.awabi2048.mw_manager.listener.OnWorldCreateListener
-import me.awabi2048.mw_manager.my_world.TemporalCreationData
+import me.awabi2048.mw_manager.listener.WorldCreationSessionListener
+import me.awabi2048.mw_manager.listener.WorldPortalListener
+import me.awabi2048.mw_manager.my_world.CreationData
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
-import java.awt.Point
 
 class Main : JavaPlugin() {
     companion object {
         val prefix = "§aMWManager §7»"
 
-        lateinit var registeredWorldData: FileConfiguration
-        lateinit var configData: FileConfiguration
-
         lateinit var instance: JavaPlugin
         lateinit var mvWorldManager: MVWorldManager
 
-        lateinit var creationDataSet: MutableSet<TemporalCreationData>
+        lateinit var creationDataSet: MutableSet<CreationData>
     }
 
     override fun onEnable() {
         instance = this
 
-        registeredWorldData = Lib.YamlUtil.load("world_data.yml")
-        configData = config
+        DataFiles.loadAll()
+        DataFiles.copy()
+
         mvWorldManager = (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager
 
         creationDataSet = mutableSetOf()
@@ -50,7 +49,8 @@ class Main : JavaPlugin() {
         saveResource("template_setting.yml", false)
 
         server.pluginManager.registerEvents(EventListener, instance)
-        server.pluginManager.registerEvents(OnWorldCreateListener, instance)
+        server.pluginManager.registerEvents(WorldCreationSessionListener, instance)
+        server.pluginManager.registerEvents(WorldPortalListener, instance)
 
     }
 

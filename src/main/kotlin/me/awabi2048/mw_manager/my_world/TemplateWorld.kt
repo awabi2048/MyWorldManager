@@ -3,12 +3,12 @@ package me.awabi2048.mw_manager.my_world
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.config.DataFiles
+import me.awabi2048.mw_manager.ui.TemplateSelectUI
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
-import java.time.LocalDateTime
 
 class TemplateWorld(val worldName: String) {
     val world: World?
@@ -16,26 +16,52 @@ class TemplateWorld(val worldName: String) {
             return Bukkit.getWorld(worldName)
         }
 
-    val origin: Location
+    val originLocation: Location
         get() {
-            val coordinate = Lib.stringToBlockLocation(DataFiles.templateSetting.getString("$worldName.origin")!!)!!
+            val coordinate =
+                Lib.stringToBlockLocation(DataFiles.templateSetting.getString("$worldName.origin_location")!!)!!
             return Location(world, coordinate[0] + 0.5, coordinate[1].toDouble(), coordinate[2] + 0.5)
         }
 
     fun preview(player: Player) {
-        val originalLocation = player.location
-        player.teleport(origin)
-        val endTime = LocalDateTime.now().plusSeconds(3)
+        println(originLocation)
 
-        object: BukkitRunnable() {
+        val returnLocation = player.location
+        player.teleport(
+            originLocation.apply {
+                add(0.0, 5.0, 0.0)
+                pitch = 30f
+            }
+        )
+
+        // 終了後に元の位置に
+        Bukkit.getScheduler().runTaskLater(
+            instance,
+            Runnable {
+                player.teleport(returnLocation)
+            },
+            10 * 20L
+        )
+
+        // メニュー再度開く
+        Bukkit.getScheduler().runTaskLater(
+            instance,
+            Runnable {
+                TemplateSelectUI(player).open()
+            },
+            10 * 20L + 10L
+        )
+
+        // ぐるっと一周
+        object : BukkitRunnable() {
             override fun run() {
                 val location = player.location
-                location.yaw += 6
+                location.yaw += 2f
                 player.teleport(location)
 
-                if (LocalDateTime.now() == endTime) cancel()
+                if (player.world != world) cancel()
             }
 
-        }.runTaskTimer(instance, 20, 1)
+        }.runTaskTimer(instance, 0, 1)
     }
 }

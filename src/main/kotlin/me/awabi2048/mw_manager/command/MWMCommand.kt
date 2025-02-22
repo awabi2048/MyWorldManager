@@ -16,13 +16,15 @@ object MWMCommand : CommandExecutor, TabCompleter {
         }
 
         val option = Option.valueOf(args[0].uppercase())
+        val subcommandExecutor = SubCommand(sender, args)
+
         when (option) {
-            CREATE -> SubCommand(sender, args).create()
+            CREATE -> subcommandExecutor.create()
             INFO -> TODO()
             DEACTIVATE -> TODO()
             ACTIVATE -> TODO()
-            UPDATE -> SubCommand(sender, args).update()
-            START_CREATION_SEQUENCE -> TODO()
+            UPDATE -> subcommandExecutor.update()
+            START_CREATION_SESSION -> subcommandExecutor.startCreationSession()
         }
 
         return true

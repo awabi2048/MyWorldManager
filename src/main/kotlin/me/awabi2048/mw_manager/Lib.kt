@@ -76,7 +76,7 @@ object Lib {
 
     fun stringToBlockLocation(string: String): List<Int>? {
         return try {
-            string.filterNot { it == ' ' }.split(",").map { it.toInt() }
+            string.replace(" ", "").replace("(", "").replace(")", "").split(",").map { it.toInt() }
         } catch (e: Exception) {
             null
         }
