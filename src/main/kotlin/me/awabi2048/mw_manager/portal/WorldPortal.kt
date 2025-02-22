@@ -46,25 +46,15 @@ class WorldPortal(private val uuid: String?) {
     }
 
     fun place(location: Location) {
-        if (location.block.type == Material.AIR) {
-            //
-            location.block.type = Material.STRIPPED_CHERRY_WOOD
+        //
+        val portalEntity = location.world.spawnEntity(location, EntityType.INTERACTION) as Interaction
+        portalEntity.interactionHeight = 3.0f
+        portalEntity.addScoreboardTag("mwm.world_portal_interaction")
+        portalEntity.addScoreboardTag("mwm.portal_uuid.$uuid")
 
-            //
-            val portalLocation = location.apply {
-                x += 0.5
-                y += 1
-                z += 0.5
-            }
-            val portalEntity = portalLocation.world.spawnEntity(portalLocation, EntityType.INTERACTION) as Interaction
-            portalEntity.interactionHeight = 3.0f
-            portalEntity.addScoreboardTag("mwm.world_portal_interaction")
-            portalEntity.addScoreboardTag("mwm.portal_uuid.$uuid")
+        location.world.players.filter { it.location.distance(location) <= 5.0 }
+            .forEach { it.playSound(it, Sound.BLOCK_END_PORTAL_FRAME_FILL, 1.0f, 1.0f) }
 
-            location.world.players.filter { it.location.distance(location) <= 5.0 }
-                .forEach { it.playSound(it, Sound.BLOCK_END_PORTAL_FRAME_FILL, 1.0f, 1.0f) }
-
-            println("PLACED PORTAL @ $location")
-        }
+        println("PLACED PORTAL @ $location")
     }
 }

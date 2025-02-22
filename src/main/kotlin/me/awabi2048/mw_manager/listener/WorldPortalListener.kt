@@ -36,7 +36,7 @@ object WorldPortalListener : Listener {
                         persistentDataContainer.set(
                             NamespacedKey(instance, "portal_linked_world"),
                             PersistentDataType.STRING,
-                            ""
+                            currentWorld.name.substringAfter("my_world.")
                         )
                     }
                 } else {
@@ -46,16 +46,23 @@ object WorldPortalListener : Listener {
         }
     }
 
+    @EventHandler
     fun onPortalPlace(event: BlockPlaceEvent) {
         //
         if (Lib.getItemID(event.player.equipment.itemInMainHand) == "WORLD_PORTAL") {
-            val location = event.blockPlaced.location.toBlockLocation()
-            val portal = WorldPortal(null)
-            portal.place(event.blockPlaced.location)
-            event.isCancelled = true
+            val location = event.blockPlaced.location.apply {
+                x += 0.5
+                y += 0.5
+                z += 0.5
+            }
+
+            val uuid = event.player.equipment.itemInMainHand.itemMeta.persistentDataContainer.get(NamespacedKey(instance, "portal_linked_world"), PersistentDataType.STRING)
+            val portal = WorldPortal(uuid)
+            portal.place(location)
         }
     }
 
+    @EventHandler
     fun onPlayerEnterPortal(event: PlayerMoveEvent) {
         // プレイヤーがポータルの判定に掠ってたら判定
         if (event.player.world.entities.filter { it.scoreboardTags.contains("mwm.world_portal_interaction") }
@@ -69,6 +76,7 @@ object WorldPortalListener : Listener {
         }
     }
 
+    @EventHandler
     fun onPortalMenuOpen(event: PlayerInteractEntityEvent) {
 
     }
