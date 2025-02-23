@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.player_notify.notify
+import me.awabi2048.mw_manager.player_extension.notify
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -39,6 +39,9 @@ object InviteCommand: CommandExecutor, TabCompleter {
             return true
         }
 
+        // 招待送信
+        world.invitePlayer(p0, player)
+
         return true
     }
 
@@ -47,7 +50,10 @@ object InviteCommand: CommandExecutor, TabCompleter {
         p1: Command,
         p2: String,
         p3: Array<out String>?,
-    ): MutableList<String>? {
-        TODO("Not yet implemented")
+    ): MutableList<String> {
+        when (p3?.size) {
+            1 -> return Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
+            else -> return mutableListOf()
+        }
     }
 }

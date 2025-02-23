@@ -4,15 +4,20 @@ import com.onarandombox.MultiverseCore.api.MultiverseWorld
 import com.onarandombox.MultiverseCore.utils.FileUtils
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import java.io.File
 import java.time.LocalDate
+import java.util.*
 
 /**
  * 存在のいかんにかかわらずインスタンス化できます。
@@ -127,7 +132,7 @@ class MyWorld(val uuid: String) {
 
     val borderSize: Double?
         get() {
-            if (isRegistered){
+            if (isRegistered) {
                 val extension = dataSection!!.getInt("border_extension")
                 val baseUnit = DataFiles.config.getInt("border_size_unit")
                 return ((extension + 1) * baseUnit).toDouble()
@@ -341,6 +346,19 @@ class MyWorld(val uuid: String) {
 //        }
 
         return true
+    }
+
+    fun invitePlayer(inviter: Player, target: Player) {
+        // 招待コードを生成、登録
+        val invitationCode = UUID.randomUUID().toString()
+        invitationCodeMap[invitationCode] = uuid
+
+        val text = Component.text("§7«§eクリックしてワープ§7»")
+            .hoverEvent(HoverEvent.showText(Component.text("")))
+            .clickEvent(ClickEvent.runCommand("/mwm_invite_accept $invitationCode"))
+
+        target.sendMessage("§b${inviter}さん§7がワールドに招待しました！ $text")
+        target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 1.0f)
     }
 }
 

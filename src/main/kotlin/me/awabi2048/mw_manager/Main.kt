@@ -2,10 +2,7 @@ package me.awabi2048.mw_manager
 
 import com.onarandombox.MultiverseCore.MultiverseCore
 import com.onarandombox.MultiverseCore.api.MVWorldManager
-import me.awabi2048.mw_manager.command.InviteCommand
-import me.awabi2048.mw_manager.command.MWMCommand
-import me.awabi2048.mw_manager.command.PointCommand
-import me.awabi2048.mw_manager.command.VisitCommand
+import me.awabi2048.mw_manager.command.*
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.listener.EventListener
 import me.awabi2048.mw_manager.listener.WorldCreationSessionListener
@@ -22,6 +19,8 @@ class Main : JavaPlugin() {
         lateinit var mvWorldManager: MVWorldManager
 
         lateinit var creationDataSet: MutableSet<CreationData>
+
+        var invitationCodeMap = mutableMapOf<String, String>()
     }
 
     override fun onEnable() {
@@ -43,6 +42,7 @@ class Main : JavaPlugin() {
         getCommand("visit")?.setExecutor(VisitCommand)
 
         getCommand("worldpoint")?.setExecutor(PointCommand)
+        getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
 
         saveDefaultConfig()
         saveResource("world_data.yml", false)

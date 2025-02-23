@@ -38,3 +38,6 @@ commands:
 
   worldpoint:
     description: ""
+
+  mwm_invite_accept:
+    description: ""
