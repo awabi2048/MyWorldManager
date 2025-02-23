@@ -5,6 +5,7 @@ import com.onarandombox.MultiverseCore.api.MVWorldManager
 import me.awabi2048.mw_manager.command.*
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.listener.EventListener
+import me.awabi2048.mw_manager.listener.VoteListener
 import me.awabi2048.mw_manager.listener.WorldCreationSessionListener
 import me.awabi2048.mw_manager.listener.WorldPortalListener
 import me.awabi2048.mw_manager.my_world.CreationData
@@ -53,6 +54,7 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(EventListener, instance)
         server.pluginManager.registerEvents(WorldCreationSessionListener, instance)
         server.pluginManager.registerEvents(WorldPortalListener, instance)
+        server.pluginManager.registerEvents(VoteListener, instance)
 
     }
 
