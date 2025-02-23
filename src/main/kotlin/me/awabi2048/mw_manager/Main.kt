@@ -9,7 +9,6 @@ import me.awabi2048.mw_manager.listener.VoteListener
 import me.awabi2048.mw_manager.listener.WorldCreationSessionListener
 import me.awabi2048.mw_manager.listener.WorldPortalListener
 import me.awabi2048.mw_manager.my_world.CreationData
-import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
@@ -45,7 +44,8 @@ class Main : JavaPlugin() {
         getCommand("worldpoint")?.setExecutor(PointCommand)
         getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
 
-        getCommand("worldmenu")?.setExecutor(OpenWorldMenuCommand)
+        getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
+        getCommand("warp")?.setExecutor(WarpCommand)
 
         saveDefaultConfig()
         saveResource("world_data.yml", false)

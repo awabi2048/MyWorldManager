@@ -7,7 +7,7 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-object OpenWorldMenuCommand: CommandExecutor {
+object OpenWorldUICommand: CommandExecutor {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (p0 !is Player) {
             p0.sendMessage("MVM >> This command is only available on player execution.")
