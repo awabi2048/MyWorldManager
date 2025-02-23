@@ -3,7 +3,7 @@ package me.awabi2048.mw_manager.command
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.PublishLevel
-import me.awabi2048.mw_manager.player_extension.notify
+import me.awabi2048.mw_manager.player_expansion.notify
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor

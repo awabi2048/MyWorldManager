@@ -12,6 +12,8 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.io.File
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 object Lib {
@@ -87,5 +89,10 @@ object Lib {
             NamespacedKey(instance, "item_id"),
             PersistentDataType.STRING
         )
+    }
+
+    fun formatDate(localDate: LocalDate): String {
+        val formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日(E)", Locale.JAPANESE)
+        return localDate.format(formatter).toString()
     }
 }

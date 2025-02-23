@@ -1,4 +1,4 @@
-package me.awabi2048.mw_manager.player_extension
+package me.awabi2048.mw_manager.player_expansion
 
 import me.awabi2048.mw_manager.Main.Companion.prefix
 import net.kyori.adventure.sound.Sound

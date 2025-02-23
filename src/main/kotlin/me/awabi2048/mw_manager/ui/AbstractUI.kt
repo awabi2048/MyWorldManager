@@ -9,6 +9,11 @@ import org.bukkit.inventory.Inventory
 abstract class AbstractUI(owner: Player) {
     val ui: Inventory by lazy { construct() }
 
+    val bar: String
+        get() {
+             return "§7" + "━".repeat(30)
+        }
+
     abstract fun open()
 
     abstract fun construct(): Inventory

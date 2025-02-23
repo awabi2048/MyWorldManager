@@ -1,12 +1,9 @@
 default_expire_days: 90
-world_name_blacklist:
+string_blacklist:
   - resource
 
-default_border_size: 100
-border_size_limit: 400
-
 border_size_unit: 100
-border_extension_max: 6
+border_expansion_max: 6
 
 # プレイヤーデータ
 default_unlocked_warp_slot: 3

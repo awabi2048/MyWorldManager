@@ -6,7 +6,7 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.config.Config
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
@@ -19,6 +19,7 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.time.LocalDate
 import java.util.*
+import javax.xml.crypto.Data
 
 /**
  * 存在のいかんにかかわらずインスタンス化できます。
@@ -49,9 +50,30 @@ class MyWorld(val uuid: String) {
     /**
      * @return ワールドの登録名。保存名とは異なる。
      */
-    val name: String?
+    var name: String?
         get() {
-            return DataFiles.worldData.getString("$uuid.world_name")
+            return if (isRegistered) {
+                dataSection?.getString("name")
+            } else null
+        }
+        set(value) {
+            if (value != null && isRegistered && Config.stringBlacklist.any{ value.contains(it)}) {
+                DataFiles.worldData.set("$uuid.name", value)
+                DataFiles.save()
+            }
+        }
+
+    var description: String?
+        get() {
+            return if (isRegistered) {
+                dataSection?.getString("description")
+            } else null
+        }
+        set(value) {
+            if (value != null && isRegistered && Config.stringBlacklist.any{ value.contains(it)}) {
+                DataFiles.worldData.set("$uuid.description", value)
+                DataFiles.save()
+            }
         }
 
     /**
@@ -61,6 +83,13 @@ class MyWorld(val uuid: String) {
         get() {
             val ownerUUID = DataFiles.worldData.getString("$uuid.owner") ?: return null
             return Bukkit.getPlayer(ownerUUID)
+        }
+
+    private val dataSection: ConfigurationSection?
+        get() {
+            return if (isRegistered) {
+                DataFiles.worldData.getConfigurationSection(uuid)
+            } else null
         }
 
     val members: Set<OfflinePlayer>?
@@ -103,11 +132,16 @@ class MyWorld(val uuid: String) {
             return expireDate?.isBefore(LocalDate.now())
         }
 
-    val publishLevel: PublishLevel?
+    var publishLevel: PublishLevel?
         get() {
             return if (DataFiles.worldData.getString("$uuid.publish_level") in PublishLevel.entries.map { it.toString() }) {
                 PublishLevel.valueOf(DataFiles.worldData.getString("$uuid.publish_level")!!)
             } else null
+        }
+        set(value) {
+            if (isRegistered && value != null) {
+                DataFiles.worldData.set("$uuid.publish_level", value.toString())
+            }
         }
 
     val fixedData: List<String>
@@ -124,20 +158,42 @@ class MyWorld(val uuid: String) {
             )
         }
 
-    val dataSection: ConfigurationSection?
+    var expansionLevel: Int?
         get() {
             return if (isRegistered) {
-                DataFiles.worldData.getConfigurationSection(uuid)
+                dataSection!!.getInt("border_expansion_level")
             } else null
+        }
+        set(value) {
+            DataFiles.worldData.set("$uuid.border_expansion_level", value)
+        }
+
+    val expansionCost: Int?
+        get() {
+            return expansionLevel?.times(10)
         }
 
     val borderSize: Double?
         get() {
             if (isRegistered) {
-                val extension = dataSection!!.getInt("border_extension")
+                val expansion = dataSection!!.getInt("border_expansion_level")
                 val baseUnit = DataFiles.config.getInt("border_size_unit")
-                return ((extension + 1) * baseUnit).toDouble()
+                return ((expansion + 1) * baseUnit).toDouble()
             } else return null
+        }
+
+    var iconMaterial: Material?
+        get() {
+            if (isRegistered) {
+                val materialString = dataSection!!.getString("icon")!!
+                return Material.valueOf(materialString)
+            } else return null
+        }
+        set(value) {
+            if (isRegistered && Material.entries.contains(value)) {
+                DataFiles.worldData.set("$uuid.icon", value)
+                DataFiles.save()
+            }
         }
 
     fun initiate(sourceWorldName: String, owner: Player, registerWorldName: String?): Boolean {
@@ -156,19 +212,20 @@ class MyWorld(val uuid: String) {
             val sourceWorldOrigin = DataFiles.templateSetting.getString("$sourceWorldName.origin_location")!!
 
             // register
-            DataFiles.worldData.createSection(uuid)
-            DataFiles.worldData.set("$uuid.world_name", worldName)
-            DataFiles.worldData.set("$uuid.source_world", sourceWorldName)
-            DataFiles.worldData.set("$uuid.last_updated", LocalDate.now().toString())
-            DataFiles.worldData.set("$uuid.expire_in", expireIn)
-            DataFiles.worldData.set("$uuid.owner", owner.uniqueId.toString())
-            DataFiles.worldData.set("$uuid.member", listOf(owner.uniqueId.toString()))
+            val map = mapOf(
+                "name" to worldName,
+                "source_world" to sourceWorldName,
+                "last_updated" to LocalDate.now().toString(),
+                "expire_in" to expireIn,
+                "owner" to owner.uniqueId.toString(),
+                "member" to listOf(owner.uniqueId.toString()),
+                "spawn_pos_guest" to sourceWorldOrigin,
+                "spawn_pos_member" to sourceWorldOrigin,
+                "border_center_pos" to sourceWorldOrigin,
+                "border_expansion_level" to 0,
+            )
 
-            DataFiles.worldData.set("$uuid.spawn_pos_guest", sourceWorldOrigin)
-            DataFiles.worldData.set("$uuid.spawn_pos_member", sourceWorldOrigin)
-            DataFiles.worldData.set("$uuid.border_center_pos", sourceWorldOrigin)
-
-            DataFiles.worldData.set("$uuid.border_extension", 0)
+            DataFiles.worldData.createSection(uuid, map)
 
             DataFiles.save()
 
@@ -335,7 +392,7 @@ class MyWorld(val uuid: String) {
                 "$uuid.border_center_pos",
                 "${borderCenterLocation.blockX + 0.5}, ${borderCenterLocation.blockY}, ${borderCenterLocation.blockZ + 0.5}"
             )
-            DataFiles.worldData.set("$uuid.border_extension", DataFiles.worldData.getInt("$uuid.border_extension") + 1)
+            DataFiles.worldData.set("$uuid.border_expansion_level", DataFiles.worldData.getInt("$uuid.border_expansion_level") + 1)
             DataFiles.save()
 
             // ワールドデータの変更

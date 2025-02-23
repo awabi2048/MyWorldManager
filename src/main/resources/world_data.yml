@@ -1,6 +1,6 @@
 world_uuid:
   # ワールド名（保存名とは別）
-  world_name: ""
+  name: ""
 
   # クローン元のワールド名（保存名）
   source_world: ""
@@ -13,7 +13,7 @@ world_uuid:
 
   # ボーダーの中心座標・一辺の長さ
   border_center_pos: "(20, 30, 20)"
-  border_extension: 0
+  border_expansion_level: 0
 
   # ゲスト・メンバーのワールドスポーン
   spawn_pos_guest: "(20, 30, 20)"

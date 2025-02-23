@@ -23,6 +23,9 @@ permissions:
   mw_manager.command.worldpoint:
     description: "/worldpoint"
 
+  mw_manager.command.worldmenu:
+    description: "/worldmenu"
+
 commands:
   myworldmanager:
     description: ""
@@ -34,6 +37,9 @@ commands:
     description: ""
 
   visit:
+    description: ""
+
+  worldmenu:
     description: ""
 
   worldpoint:

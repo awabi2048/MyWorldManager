@@ -44,6 +44,8 @@ class Main : JavaPlugin() {
         getCommand("worldpoint")?.setExecutor(PointCommand)
         getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
 
+        getCommand("worldmenu")?.setExecutor(OpenWorldMenuCommand)
+
         saveDefaultConfig()
         saveResource("world_data.yml", false)
         saveResource("template_setting.yml", false)

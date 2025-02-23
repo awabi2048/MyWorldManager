@@ -9,7 +9,7 @@ import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.player_extension.notify
+import me.awabi2048.mw_manager.player_expansion.notify
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
