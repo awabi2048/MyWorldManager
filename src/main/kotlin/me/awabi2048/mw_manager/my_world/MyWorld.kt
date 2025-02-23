@@ -6,6 +6,7 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
+import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
@@ -272,6 +273,13 @@ class MyWorld(val uuid: String) {
             )
             player.teleport(warpLocation)
             player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
+
+            player.sendMessage("§8【§a${name}§8】§7にワープしました。")
+
+            members?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
+                it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
+                it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+            }
 
             return true
 

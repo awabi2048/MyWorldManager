@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.PublishLevel
 import me.awabi2048.mw_manager.player_extension.notify
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -21,26 +23,43 @@ object InviteCommand: CommandExecutor, TabCompleter {
             return true
         }
 
-        if (p3.size !in 1..2) {
-            p0.notify("§c無効な引数です。", null)
+        var targetWorld: MyWorld? = null
+        var targetPlayer: CommandSender? = null
+
+        if (p3.size == 1) {
+            val worldUUID = p0.world.name.substringAfter("my_world.")
+            val world = MyWorld(worldUUID)
+
+            // 自分のワールドだけ
+            if (world.members?.contains(p0) == false) {
+                p0.notify("§c自分以外のワールドには招待できません。", null)
+                return true
+            }
+
+            //
+            targetWorld = world
+            targetPlayer = Bukkit.getPlayer(p3[0])
+        } else if (p3.size == 2) {
+            targetPlayer = Bukkit.getPlayer(p3[0])
+            targetWorld = Lib.translateWorldSpecifier(p3[1])
+
+        } else {
+            p0.notify("§c無効なコマンドです。", null)
             return true
         }
 
-        val player = Bukkit.getPlayer(p3[0])
-        val world = Lib.translateWorldSpecifier(p3[1]?: "")
-
-        if (player == null) {
+        if (targetPlayer == null) {
             p0.notify("§c指定されたプレイヤーが見つかりませんでした。", null)
             return true
         }
 
-        if (world == null) {
+        if (targetWorld == null) {
             p0.notify("§c指定されたワールドが見つかりませんでした。", null)
             return true
         }
 
         // 招待送信
-        world.invitePlayer(p0, player)
+        targetWorld.invitePlayer(p0, targetPlayer)
 
         return true
     }
