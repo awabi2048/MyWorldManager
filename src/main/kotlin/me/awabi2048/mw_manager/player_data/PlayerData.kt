@@ -21,7 +21,7 @@ data class PlayerData(private val player: Player) {
     }
 
     init {
-        if (DataFiles.playerData.contains(uuid)) initialize()
+        if (!DataFiles.playerData.contains(uuid)) initialize()
     }
 
     private val section: ConfigurationSection

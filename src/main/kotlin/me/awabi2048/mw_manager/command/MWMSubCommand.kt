@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.MyWorld
@@ -17,6 +18,11 @@ import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
 class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
+    fun reload() {
+        DataFiles.loadAll()
+        sender.sendMessage("$prefix §aデータファイルをリロードしました。")
+    }
+
     fun create() {
         if (args.size !in 3..4) {
             sender.notify("§c無効なコマンドです。", null)

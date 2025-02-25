@@ -7,4 +7,5 @@ enum class Option {
     ACTIVATE,
     UPDATE,
     START_CREATION_SESSION,
+    RELOAD,
 }

@@ -8,6 +8,7 @@ enum class PlayerNotification {
     BLACKLISTED_STRING,
     NOT_ENOUGH_WORLD_POINT,
     WORLD_EXPANSION_SUCCEEDED,
+    WARP_SHORTCUT_SET_FAILED,
     INVALID_COMMAND;
 
     fun send(player: Player) {
@@ -19,6 +20,7 @@ enum class PlayerNotification {
                 INVALID_PLAYER_GIVEN -> "§cそのプレイヤーは存在しないか、オフラインです。"
                 NOT_ENOUGH_WORLD_POINT -> "§cワールドポイントが不足しています。"
                 WORLD_EXPANSION_SUCCEEDED -> "§aワールドが拡張されました！"
+                WARP_SHORTCUT_SET_FAILED -> "§cショートカットの作成に失敗しました。このワールドが公開ワールドでないか、設定できないワールドです。"
             }
         )
     }

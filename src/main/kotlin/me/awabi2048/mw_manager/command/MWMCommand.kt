@@ -25,6 +25,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
             ACTIVATE -> TODO()
             UPDATE -> subcommandExecutor.update()
             START_CREATION_SESSION -> subcommandExecutor.startCreationSession()
+            RELOAD -> subcommandExecutor.reload()
         }
 
         return true

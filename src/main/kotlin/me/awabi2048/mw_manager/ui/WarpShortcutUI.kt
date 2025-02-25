@@ -2,15 +2,63 @@ package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.config.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.player_data.PlayerData
+import me.awabi2048.mw_manager.player_notification.PlayerNotification
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class WarpShortcutUI(private val owner: Player) : AbstractUI(owner) {
+class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
+    override fun onClick(event: InventoryClickEvent) {
+        event.isCancelled = true
+        if (event.slot !in 10..16 && event.slot !in 19..25) return
 
+        val itemName = event.currentItem!!.itemMeta!!.itemName
+        if (itemName == "§cロック中") return
+
+        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+
+        if (event.isLeftClick && !event.isShiftClick) {// 新規登録
+            if (itemName == "§b未登録") {
+                val world = MyWorldManager.registeredMyWorld.find{it.vanillaWorld == owner.world}
+                if (world == null) {
+                    PlayerNotification.WARP_SHORTCUT_SET_FAILED.send(owner)
+                    owner.closeInventory()
+                    return
+                }
+
+                val uuid = world.uuid
+                val playerData = PlayerData(owner)
+                playerData.warpShortcuts += uuid
+
+                owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f)
+                owner.closeInventory()
+
+            } else { // 登録済み: ワープ
+
+                val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
+                val targetWorld = MyWorld(uuid)
+
+                targetWorld.warpPlayer(owner)
+            }
+            // 右クリック → 削除
+        } else if (event.isRightClick && !event.isShiftClick) {
+            if (itemName != "§b未登録") {
+
+                val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
+                val playerData = PlayerData(owner)
+                playerData.warpShortcuts -= uuid
+
+                owner.closeInventory()
+                owner.playSound(owner, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.0f)
+
+            }
+        }
+    }
 
     override fun open() {
         //
@@ -38,6 +86,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractUI(owner) {
                     "§f§l| §7オーナー §a$owner",
                     "§e左クリック§7: このワールドにワープ",
                     "§e右クリック§7: スロットの登録を削除",
+                    bar,
+                    "§0UUID:$uuid",
                     bar,
                 )
             }
