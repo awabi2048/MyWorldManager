@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 
 // /worldpoint %player% add|subtract|set|get %value%?
-object PointCommand : CommandExecutor, TabCompleter {
+object WorldPointCommand : CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (p3?.size !in 2..3) {
             p0.sendMessage("$prefix §c無効なコマンドです。")

@@ -1,10 +1,12 @@
 package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.TemplateWorld
 import me.awabi2048.mw_manager.ui.TemplateSelectUI
+import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -31,7 +33,7 @@ object WorldCreationSessionListener : Listener {
             creationDataSet.find { it.player == event.player }!!.worldName = registerWorldName
             creationDataSet.find { it.player == event.player }!!.creationLevel = CreationLevel.CLONE_SOURCE
 
-            event.player.sendMessage("§aワールドの名前を${event.message}に設定しました！")
+            event.player.sendMessage("§7ワールドの名前を§a${event.message}§7に設定しました！")
             event.isCancelled = true
 
             // ソース選択メニュー
@@ -52,11 +54,11 @@ object WorldCreationSessionListener : Listener {
             val templateName = (event.currentItem?.itemMeta?.lore?.get(1)?: return).drop(2)
             val templateWorld = TemplateWorld(templateName)
 
-            // プレビュー
+            // プレビュー開始
             if (event.isLeftClick && !event.isShiftClick) {
-                //
+                // TODO: プレビュー時に読み込みが挟まないようにしたい
                 templateWorld.preview(player)
-                player.sendMessage("§e${templateWorld.worldName}§7をプレビュー中...")
+                player.sendMessage("§e「${templateWorld.name}」§7をプレビュー中...")
                 player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             }
 

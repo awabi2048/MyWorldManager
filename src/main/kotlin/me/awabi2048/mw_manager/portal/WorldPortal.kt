@@ -2,13 +2,10 @@ package me.awabi2048.mw_manager.portal
 
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Location
-import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Interaction
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
-import java.util.UUID
 
 /**
  * ワールドポータル用のインスタンスです。
@@ -20,7 +17,7 @@ class WorldPortal(private val uuid: String?) {
      */
     val isAvailable: Boolean
         get() {
-            return MyWorldManager.registeredWorld.any { it.uuid == uuid }
+            return MyWorldManager.registeredMyWorld.any { it.uuid == uuid }
         }
 
     /**
@@ -29,7 +26,7 @@ class WorldPortal(private val uuid: String?) {
      */
     fun sendPlayer(player: Player) {
         if (isAvailable) {
-            val targetWorld = MyWorldManager.registeredWorld.find { it.uuid == uuid }!!
+            val targetWorld = MyWorldManager.registeredMyWorld.find { it.uuid == uuid }!!
             targetWorld.warpPlayer(player)
 
             player.getNearbyEntities(5.0, 5.0, 5.0).filterIsInstance<Player>()

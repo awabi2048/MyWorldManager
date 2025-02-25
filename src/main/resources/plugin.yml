@@ -2,6 +2,8 @@ name: MyWorldManager
 version: '1.0-SNAPSHOT'
 main: me.awabi2048.mw_manager.Main
 api-version: '1.21'
+softdepend:
+  - Multiverse-Core
 
 permissions:
   mw_manager.admin:
@@ -52,4 +54,7 @@ commands:
     description: ""
 
   mwm_invite_accept:
+    description: ""
+
+  mwm_recruit_accept:
     description: ""

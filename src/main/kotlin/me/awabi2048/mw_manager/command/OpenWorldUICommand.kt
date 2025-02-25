@@ -1,41 +1,29 @@
 package me.awabi2048.mw_manager.command
 
+import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.ui.WorldManagementUI
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-object OpenWorldUICommand: CommandExecutor {
+object OpenWorldUICommand : CommandExecutor {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (p0 !is Player) {
             p0.sendMessage("MVM >> This command is only available on player execution.")
             return true
         }
 
-        val worldUUID: String?
-
-        when(p3?.size) {
-            0 -> {
-                if (!p0.world.name.startsWith("my_world.")) {
-                    p0.sendMessage("§c無効なコマンドです。")
-                    return true
-                }
-
-                worldUUID = p0.world.name.substringAfter("my_world.")
-            }
-            1 -> worldUUID = p3[0]
-            else -> {
-                p0.sendMessage("§c無効なコマンドです。")
-                return true
-            }
+        if (!p3.isNullOrEmpty()) {
+            p0.sendMessage("§c無効なコマンドです。")
+            return true
         }
 
-        val world = MyWorld(worldUUID)
-
-        if (!world.isRegistered) {
-            p0.sendMessage("§c当該のワールドは見つかりませんでした。。")
+        val world = MyWorldManager.registeredMyWorld.find { it.vanillaWorld == p0.world }
+        if (world == null) {
+            p0.sendMessage("§cこのワールドでは使用できないコマンドです。")
             return true
         }
 

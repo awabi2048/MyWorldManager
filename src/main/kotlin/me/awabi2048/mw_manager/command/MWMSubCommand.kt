@@ -16,7 +16,7 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
-class SubCommand(val sender: CommandSender, val args: Array<out String>) {
+class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     fun create() {
         if (args.size !in 3..4) {
             sender.notify("§c無効なコマンドです。", null)
@@ -82,7 +82,7 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
                 return
             }
 
-            val worlds = MyWorldManager.registeredWorld.filter { it.owner == specifiedPlayer }
+            val worlds = MyWorldManager.registeredMyWorld.filter { it.owner == specifiedPlayer }
 
             worlds.forEach {
 
@@ -123,7 +123,7 @@ class SubCommand(val sender: CommandSender, val args: Array<out String>) {
             creationDataSet += creationData
 
             // 最初 → ワールド名設定
-            sender.sendMessage("$prefix §eワールド名§fを入力してください！")
+            sender.sendMessage("$prefix §eワールド名§7を入力してください！")
             sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
 
             // タイムアウト判定

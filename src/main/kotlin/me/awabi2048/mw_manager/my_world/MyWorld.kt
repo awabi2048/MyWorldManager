@@ -6,6 +6,7 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
+import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
 import me.awabi2048.mw_manager.config.Config
 import me.awabi2048.mw_manager.config.DataFiles
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
@@ -19,7 +20,6 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.time.LocalDate
 import java.util.*
-import javax.xml.crypto.Data
 
 /**
  * 存在のいかんにかかわらずインスタンス化できます。
@@ -57,7 +57,7 @@ class MyWorld(val uuid: String) {
             } else null
         }
         set(value) {
-            if (value != null && isRegistered && Config.stringBlacklist.any{ value.contains(it)}) {
+            if (value != null && isRegistered && Config.stringBlacklist.any { value.contains(it) }) {
                 DataFiles.worldData.set("$uuid.name", value)
                 DataFiles.save()
             }
@@ -70,7 +70,7 @@ class MyWorld(val uuid: String) {
             } else null
         }
         set(value) {
-            if (value != null && isRegistered && Config.stringBlacklist.any{ value.contains(it)}) {
+            if (value != null && isRegistered && Config.stringBlacklist.any { value.contains(it) }) {
                 DataFiles.worldData.set("$uuid.description", value)
                 DataFiles.save()
             }
@@ -95,7 +95,7 @@ class MyWorld(val uuid: String) {
     val members: Set<OfflinePlayer>?
         get() {
             return if (isRegistered) {
-                dataSection!!.getStringList("member").map { Bukkit.getOfflinePlayer(it) }.toSet()
+                dataSection!!.getStringList("member").map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
             } else null
         }
 
@@ -189,6 +189,7 @@ class MyWorld(val uuid: String) {
                 return Material.valueOf(materialString)
             } else return null
         }
+
         set(value) {
             if (isRegistered && Material.entries.contains(value)) {
                 DataFiles.worldData.set("$uuid.icon", value)
@@ -196,11 +197,51 @@ class MyWorld(val uuid: String) {
             }
         }
 
-    fun initiate(sourceWorldName: String, owner: Player, registerWorldName: String?): Boolean {
-        if (DataFiles.templateSetting.getKeys(false).contains(sourceWorldName)) {
+    var memberSpawnLocation: Location?
+        get() {
+            val stringPos = dataSection?.getString("spawn_pos_member")?: return null
+            val pos = Lib.stringToBlockLocation(stringPos)?: return null
+            return Location(vanillaWorld, pos[0] + 0.5, pos[1].toDouble(), pos[2] + 0.5)
+        }
+        set(value) {
+            if (value != null) {
+                val stringPos = Lib.locationToString(value)
+                DataFiles.worldData.set("$uuid.spawn_pos_member", stringPos)
+                DataFiles.save()
+            }
+        }
+
+    var guestSpawnLocation: Location?
+        get() {
+            val stringPos = dataSection?.getString("spawn_pos_guest")?: return null
+            val pos = Lib.stringToBlockLocation(stringPos)?: return null
+            return Location(vanillaWorld, pos[0] + 0.5, pos[1].toDouble(), pos[2] + 0.5)
+        }
+        set(value) {
+            if (value != null) {
+                val stringPos = Lib.locationToString(value)
+                DataFiles.worldData.set("$uuid.spawn_pos_guest", stringPos)
+                DataFiles.save()
+            }
+        }
+
+    fun initiate(templateWorldName: String, owner: Player, registerWorldName: String?): Boolean {
+        if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
 
             // clone world
-            mvWorldManager.cloneWorld(sourceWorldName, "my_world.$uuid")
+            mvWorldManager.cloneWorld(templateWorldName, "my_world.$uuid")
+
+            // 負荷軽減のため、非同期でワールドデータのみをコピーする
+            Bukkit.getScheduler().runTaskAsynchronously(
+                instance,
+                Runnable {
+                    val templateWorldFile = File(Bukkit.getWorldContainer().parent, "template_worlds/$templateWorldName")
+                    val targetFolder = File(Bukkit.getWorldContainer(), "$registerWorldName")
+                    templateWorldFile.copyRecursively(targetFolder)
+                })
+
+            // 普通にロード
+            mvWorldManager.addWorld(registerWorldName, World.Environment.CUSTOM, null, WorldType.NORMAL, false, null)
 
             val expireIn = DataFiles.config.getInt("default_expire_days")
 
@@ -208,17 +249,19 @@ class MyWorld(val uuid: String) {
             val worldName = registerWorldName ?: "my_world.${owner.displayName}"
 
             // template
-            println("$sourceWorldName.origin_location")
-            val sourceWorldOrigin = DataFiles.templateSetting.getString("$sourceWorldName.origin_location")!!
+            val sourceWorldOrigin = DataFiles.templateSetting.getString("$templateWorldName.origin_location")!!
 
             // register
             val map = mapOf(
                 "name" to worldName,
-                "source_world" to sourceWorldName,
+                "description" to "${owner.displayName()}のワールド",
+                "icon" to Material.GRASS_BLOCK.toString(),
+                "source_world" to templateWorldName,
                 "last_updated" to LocalDate.now().toString(),
                 "expire_in" to expireIn,
                 "owner" to owner.uniqueId.toString(),
                 "member" to listOf(owner.uniqueId.toString()),
+                "publish_level" to PublishLevel.PRIVATE.toString(),
                 "spawn_pos_guest" to sourceWorldOrigin,
                 "spawn_pos_member" to sourceWorldOrigin,
                 "border_center_pos" to sourceWorldOrigin,
@@ -226,7 +269,6 @@ class MyWorld(val uuid: String) {
             )
 
             DataFiles.worldData.createSection(uuid, map)
-
             DataFiles.save()
 
             // ワールドに関する処理: クローン後なので遅延
@@ -256,7 +298,7 @@ class MyWorld(val uuid: String) {
     fun deactivate(): Boolean {
         if (mvWorld == null) return false
         mvWorldManager.removePlayersFromWorld("my_world.$uuid")
-        println(instance.dataFolder.parentFile.parentFile.path)
+//        println(instance.dataFolder.parentFile.parentFile.path)
         if (mvWorld == null) return false
         val worldFile = File(instance.dataFolder.parentFile.parentFile.path + File.separator + "my_world.$uuid")
         val storageFile = File(instance.dataFolder.path + File.separator + "inactive_worlds")
@@ -272,7 +314,7 @@ class MyWorld(val uuid: String) {
 
     fun activate(): Boolean {
         if (mvWorld == null) return false
-        println(instance.dataFolder.parentFile.parentFile.path)
+//        println(instance.dataFolder.parentFile.parentFile.path)
         if (mvWorld == null) return false
         val worldFolder = File(instance.dataFolder.parentFile.parentFile.path + File.separator)
         val worldFile =
@@ -392,7 +434,10 @@ class MyWorld(val uuid: String) {
                 "$uuid.border_center_pos",
                 "${borderCenterLocation.blockX + 0.5}, ${borderCenterLocation.blockY}, ${borderCenterLocation.blockZ + 0.5}"
             )
-            DataFiles.worldData.set("$uuid.border_expansion_level", DataFiles.worldData.getInt("$uuid.border_expansion_level") + 1)
+            DataFiles.worldData.set(
+                "$uuid.border_expansion_level",
+                DataFiles.worldData.getInt("$uuid.border_expansion_level") + 1
+            )
             DataFiles.save()
 
             // ワールドデータの変更
@@ -424,6 +469,19 @@ class MyWorld(val uuid: String) {
 
         target.sendMessage("§b${inviter}さん§7がワールドに招待しました！ $text")
         target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 1.0f)
+    }
+
+    fun recruitPlayer(inviter: Player, target: Player) {
+        // 招待コードを生成、登録
+        val recruitmentCode = UUID.randomUUID().toString()
+        recruitmentCodeMap[recruitmentCode] = uuid
+
+        val text = Component.text("§7«§eクリックして承認§7»")
+            .hoverEvent(HoverEvent.showText(Component.text("")))
+            .clickEvent(ClickEvent.runCommand("/mwm_recruit_accept $recruitmentCode"))
+
+        target.sendMessage("§b${inviter}さん§7がワールドのメンバーに招待しました！ $text")
+        target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
     }
 }
 

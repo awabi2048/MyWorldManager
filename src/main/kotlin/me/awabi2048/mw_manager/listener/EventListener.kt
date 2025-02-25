@@ -8,8 +8,8 @@ import org.bukkit.event.player.PlayerLoginEvent
 object EventListener : Listener {
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
-        if (MyWorldManager.registeredWorld.any { it.owner == event.player }) {
-            MyWorldManager.registeredWorld.filter { it.owner == event.player }.forEach { it.update() }
+        if (MyWorldManager.registeredMyWorld.any { it.owner == event.player }) {
+            MyWorldManager.registeredMyWorld.filter { it.owner == event.player }.forEach { it.update() }
         }
     }
 }

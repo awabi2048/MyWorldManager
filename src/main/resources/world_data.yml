@@ -1,36 +1,36 @@
-world_uuid:
-  # ワールド名（保存名とは別）
-  name: ""
-
-  # クローン元のワールド名（保存名）
-  source_world: ""
-
-  # 最後に更新された日付（LocalDate）
-  last_updated: "2025-02-11"
-
-  # 最終更新からこの日数が経過したら期限切れ扱いになる
-  expire_in: 90
-
-  # ボーダーの中心座標・一辺の長さ
-  border_center_pos: "(20, 30, 20)"
-  border_expansion_level: 0
-
-  # ゲスト・メンバーのワールドスポーン
-  spawn_pos_guest: "(20, 30, 20)"
-  spawn_pos_member: "(20, 30, 20)"
-
-  # オーナーのUUID
-  owner: "owner_uuid"
-
-  # モデレーターのUUID
-  moderator:
-    - "moderator_uuid_1"
-
-  # すべてのメンバーのUUID（オーナー・モデレーターも含む）
-  member:
-    - "player_uuid_1"
-    - "player_uuid_2"
-    - "player_uuid_3"
-
-  world_flag:
-    - NO_WARNING
+#world_uuid:
+##  # ワールド名（保存名とは別）
+##  name: ""
+##
+##  # クローン元のワールド名（保存名）
+##  source_world: ""
+##
+##  # 最後に更新された日付（LocalDate）
+##  last_updated: "2025-02-11"
+##
+##  # 最終更新からこの日数が経過したら期限切れ扱いになる
+##  expire_in: 90
+##
+##  # ボーダーの中心座標・一辺の長さ
+##  border_center_pos: "(20, 30, 20)"
+##  border_expansion_level: 0
+##
+##  # ゲスト・メンバーのワールドスポーン
+##  spawn_pos_guest: "(20, 30, 20)"
+##  spawn_pos_member: "(20, 30, 20)"
+##
+##  # オーナーのUUID
+##  owner: "owner_uuid"
+##
+##  # モデレーターのUUID
+##  moderator:
+##    - "moderator_uuid_1"
+##
+##  # すべてのメンバーのUUID（オーナー・モデレーターも含む）
+##  member:
+##    - "player_uuid_1"
+##    - "player_uuid_2"
+##    - "player_uuid_3"
+##
+##  world_flag:
+##    - NO_WARNING

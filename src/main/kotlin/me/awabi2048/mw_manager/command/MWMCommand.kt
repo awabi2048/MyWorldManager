@@ -16,7 +16,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
         }
 
         val option = Option.valueOf(args[0].uppercase())
-        val subcommandExecutor = SubCommand(sender, args)
+        val subcommandExecutor = MWMSubCommand(sender, args)
 
         when (option) {
             CREATE -> subcommandExecutor.create()
@@ -46,8 +46,8 @@ object MWMCommand : CommandExecutor, TabCompleter {
                 if (p3[1].startsWith("puuid:")) return listOf()
             }
             if (p3.size == 3) {
-                if (p3[2].startsWith("world:")) return MyWorldManager.registeredWorld.map { it.name!! }
-                if (p3[2].startsWith("wuuid:")) return MyWorldManager.registeredWorld.map { it.uuid }
+                if (p3[2].startsWith("world:")) return MyWorldManager.registeredMyWorld.map { it.name!! }
+                if (p3[2].startsWith("wuuid:")) return MyWorldManager.registeredMyWorld.map { it.uuid }
             }
         }
 

@@ -9,6 +9,9 @@ import me.awabi2048.mw_manager.listener.VoteListener
 import me.awabi2048.mw_manager.listener.WorldCreationSessionListener
 import me.awabi2048.mw_manager.listener.WorldPortalListener
 import me.awabi2048.mw_manager.my_world.CreationData
+import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
@@ -19,8 +22,10 @@ class Main : JavaPlugin() {
         lateinit var mvWorldManager: MVWorldManager
 
         lateinit var creationDataSet: MutableSet<CreationData>
+        var worldSettingState: MutableMap<Player, PlayerWorldSettingState> = mutableMapOf()
 
         var invitationCodeMap = mutableMapOf<String, String>()
+        var recruitmentCodeMap = mutableMapOf<String, String>()
     }
 
     override fun onEnable() {
@@ -34,18 +39,7 @@ class Main : JavaPlugin() {
         creationDataSet = mutableSetOf()
 
         // command
-        getCommand("myworldmanager")?.setExecutor(MWMCommand)
-        getCommand("mwmanager")?.setExecutor(MWMCommand)
-        getCommand("mwm")?.setExecutor(MWMCommand)
-
-        getCommand("invite")?.setExecutor(InviteCommand)
-        getCommand("visit")?.setExecutor(VisitCommand)
-
-        getCommand("worldpoint")?.setExecutor(PointCommand)
-        getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
-
-        getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
-        getCommand("warp")?.setExecutor(WarpCommand)
+        CommandManager.setExecutor()
 
         saveDefaultConfig()
         saveResource("world_data.yml", false)
@@ -55,6 +49,9 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(WorldCreationSessionListener, instance)
         server.pluginManager.registerEvents(WorldPortalListener, instance)
         server.pluginManager.registerEvents(VoteListener, instance)
+
+        // プレビュー用ワールドの準備
+        MyWorldManager.reloadPreviewWorld()
 
     }
 

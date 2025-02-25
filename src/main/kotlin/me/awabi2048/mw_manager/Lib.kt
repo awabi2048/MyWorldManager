@@ -1,9 +1,11 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.config.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.configuration.file.FileConfiguration
@@ -52,12 +54,12 @@ object Lib {
             val worldName = specifier.substringAfter("world:")
             val myWorld = MyWorld(worldName)
 
-            if (!MyWorldManager.registeredWorld.contains(myWorld)) return null
+            if (!MyWorldManager.registeredMyWorld.contains(myWorld)) return null
             return myWorld
 
         } else if (specifier.startsWith("wuuid:")) {
             val worldUUID = specifier.substringAfter("wuuid:")
-            val myWorld = MyWorldManager.registeredWorld.find { it.uuid == worldUUID }
+            val myWorld = MyWorldManager.registeredMyWorld.find { it.uuid == worldUUID }
 
             return myWorld
         } else return null
@@ -72,7 +74,11 @@ object Lib {
         return item
     }
 
-    fun blockLocationToString(x: Int, y: Int, z: Int): String {
+    fun locationToString(location: Location): String {
+        val x = location.blockX
+        val y = location.blockY
+        val z = location.blockZ
+
         return "($x, $y, $z)"
     }
 
@@ -94,5 +100,9 @@ object Lib {
     fun formatDate(localDate: LocalDate): String {
         val formatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日(E)", Locale.JAPANESE)
         return localDate.format(formatter).toString()
+    }
+
+    fun stringContainsBlacklisted(string: String): Boolean {
+        return Config.stringBlacklist.any {string.contains(it)}
     }
 }

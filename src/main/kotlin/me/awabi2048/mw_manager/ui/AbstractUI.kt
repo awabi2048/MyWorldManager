@@ -9,6 +9,7 @@ import org.bukkit.inventory.Inventory
 abstract class AbstractUI(owner: Player) {
     val ui: Inventory by lazy { construct() }
 
+    val index = "§f§l|"
     val bar: String
         get() {
              return "§7" + "━".repeat(30)

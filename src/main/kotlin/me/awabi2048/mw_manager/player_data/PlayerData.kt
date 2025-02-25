@@ -6,7 +6,7 @@ import org.bukkit.configuration.Configuration
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 
-data class PlayerData(val player: Player) {
+data class PlayerData(private val player: Player) {
     private val uuid = player.uniqueId.toString()
 
     private fun initialize() {
