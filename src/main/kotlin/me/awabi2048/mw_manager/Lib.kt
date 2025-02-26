@@ -5,7 +5,6 @@ import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
 import org.bukkit.configuration.file.FileConfiguration
@@ -99,7 +98,7 @@ object Lib {
         return localDate.format(formatter).toString()
     }
 
-    fun stringContainsBlacklisted(string: String): Boolean {
+    fun checkIfContainsBlacklisted(string: String): Boolean {
         return Config.stringBlacklist.any {string.contains(it)}
     }
 

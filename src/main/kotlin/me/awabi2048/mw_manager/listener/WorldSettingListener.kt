@@ -8,7 +8,6 @@ import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
 import me.awabi2048.mw_manager.ui.WorldExpandUI
 import me.awabi2048.mw_manager.ui.WorldManagementUI
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -45,7 +44,7 @@ object WorldSettingListener : Listener {
 
             val text = event.message
 
-            if (Lib.stringContainsBlacklisted(text)) {
+            if (Lib.checkIfContainsBlacklisted(text)) {
                 PlayerNotification.BLACKLISTED_STRING.send(event.player)
                 return
             }

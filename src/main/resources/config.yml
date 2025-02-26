@@ -2,7 +2,7 @@ default_expire_days: 90
 string_blacklist:
   - resource
 
-border_size_unit: 100
+border_size_base: 10
 border_expansion_max: 6
 
 # プレイヤーデータ
@@ -13,3 +13,7 @@ player_warp_slot_max: 10
 player_world_slot_max: 3
 
 global_world_count_max: 40
+
+oage_ganbaru_message:
+  - よいしょ！
+

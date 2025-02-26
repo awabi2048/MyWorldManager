@@ -2,6 +2,9 @@ package me.awabi2048.mw_manager.data_file
 
 object Config {
     private val section = DataFiles.config
+    init {
+        println(section)
+    }
 
     var defaultExpireDays: Int
         get() {
@@ -12,12 +15,12 @@ object Config {
             DataFiles.save()
         }
 
-    var borderSizeUnit: Int
+    var borderSizeBase: Int
         get() {
-            return section.getInt("border_size_unit")
+            return section.getInt("border_size_base")
         }
         set(value) {
-            DataFiles.config.set("border_size_unit", value.coerceAtLeast(1))
+            DataFiles.config.set("border_size_base", value.coerceAtLeast(1))
             DataFiles.save()
         }
 
@@ -81,6 +84,15 @@ object Config {
         }
         set(value) {
             DataFiles.config.set("global_world_count_max", value.coerceAtLeast(1))
+            DataFiles.save()
+        }
+
+    var oageGanbaruMessage: List<String>
+        get() {
+            return section.getStringList("oage_ganbaru_message")
+        }
+        set(value) {
+            DataFiles.config.set("oage_ganbaru_message", value)
             DataFiles.save()
         }
 }

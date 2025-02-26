@@ -1,12 +1,14 @@
 package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.EmojiIcon
+import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.ExpandMethod
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.player_data.PlayerData
-import me.awabi2048.mw_manager.player_notification.PlayerNotification
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -22,7 +24,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
     }
 
     override fun onClick(event: InventoryClickEvent) {
-        if (event.slot !in listOf(11, 13, 15, 17)) return
+        if (event.slot !in listOf(10, 12, 14, 16)) return
 
         val expandMethod = when (event.slot) {
             10 -> ExpandMethod.LEFT_UP
@@ -32,24 +34,25 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
             else -> return
         }
 
-        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-
-        // コスト確認
-        val cost = world.expandCost!!
+        // ポイント処理
         val playerData = PlayerData(owner)
-        val playerPoint = playerData.worldPoint
-        if (playerPoint < cost) {
-            PlayerNotification.NOT_ENOUGH_WORLD_POINT.send(owner)
-            owner.closeInventory()
 
-            return
-        }
+        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
+
+        owner.sendMessage("§6おあげちゃんがワールドを拡げています... §7「${Config.oageGanbaruMessage.random()}」")
 
         // 拡張を実行
-        world.expand(expandMethod)
+        Bukkit.getScheduler().runTaskLater(
+            instance,
+            Runnable {
+                world.expand(expandMethod)
+                playerData.worldPoint -= world.expandCost!!
 
-        PlayerNotification.WORLD_EXPANSION_SUCCEEDED.send(owner)
-        owner.sendMessage("§8【 §7${world.borderExpansionLevel!! - 1} §f▶ §e§l${world.borderExpansionLevel} §8】 §7(残り ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
+                owner.sendMessage("§dワールドが拡張されました！§7【§7${world.borderExpansionLevel!! - 1} §f▶ §e§l${world.borderExpansionLevel}§7】 §7(§f残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
+            },
+            40L
+        )
     }
 
     override fun open(firstOpen: Boolean) {
@@ -57,7 +60,10 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
     }
 
     override fun construct(): Inventory {
-        val ui = createTemplate(3, "§8§lExpand")!!
+        val ui = createTemplate(3, "§8§lWorld Expand")!!
+
+        // 中央
+
 
         // 左上
         val methodLeftUp = ItemStack(Material.CHEST)

@@ -96,7 +96,6 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
 
             if (canExpand) {
                 val expandUI = WorldExpandUI(owner, world)
-                PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
                 expandUI.open(false)
 
                 owner.playSound(owner, Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 2.0f)

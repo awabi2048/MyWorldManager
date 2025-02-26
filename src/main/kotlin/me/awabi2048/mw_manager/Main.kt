@@ -28,8 +28,8 @@ class Main : JavaPlugin() {
     override fun onEnable() {
         instance = this
 
-        DataFiles.loadAll()
         DataFiles.copy()
+        DataFiles.loadAll()
 
         mvWorldManager = (server.pluginManager.getPlugin("Multiverse-Core") as MultiverseCore).mvWorldManager
 
@@ -38,10 +38,6 @@ class Main : JavaPlugin() {
         // command
         CommandManager.setExecutor()
 
-        saveDefaultConfig()
-        saveResource("world_data.yml", false)
-        saveResource("template_setting.yml", false)
-
         // EventListenerバイオーム
         server.pluginManager.registerEvents(EventListener, instance)
         server.pluginManager.registerEvents(WorldCreationSessionListener, instance)
@@ -49,10 +45,6 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(VoteListener, instance)
         server.pluginManager.registerEvents(WorldSettingListener, instance)
         server.pluginManager.registerEvents(MiscInteractiveUIListener, instance)
-
-        // プレビュー用ワールドの準備
-        MyWorldManager.reloadPreviewWorld()
-
     }
 
     override fun onDisable() {

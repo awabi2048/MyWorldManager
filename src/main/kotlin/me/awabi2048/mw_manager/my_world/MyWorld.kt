@@ -20,6 +20,7 @@ import org.bukkit.entity.Player
 import java.io.File
 import java.time.LocalDate
 import java.util.*
+import kotlin.math.pow
 
 /**
  * 存在のいかんにかかわらずインスタンス化できます。
@@ -179,7 +180,7 @@ class MyWorld(val uuid: String) {
     private val borderSize: Double?
         get() {
             if (isRegistered) {
-                return ((borderExpansionLevel!! + 1) * Config.borderSizeUnit).toDouble()
+                return (Config.borderSizeBase * 2.0.pow(borderExpansionLevel!!.toDouble()))
             } else return null
         }
 
@@ -243,23 +244,8 @@ class MyWorld(val uuid: String) {
 
     fun initiate(templateWorldName: String, owner: Player, registerWorldName: String?): Boolean {
         if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
-
             // clone world
             mvWorldManager.cloneWorld(templateWorldName, "my_world.$uuid")
-
-            // 負荷軽減のため、非同期でワールドデータのみをコピーする
-            Bukkit.getScheduler().runTaskAsynchronously(
-                instance,
-                Runnable {
-                    val templateWorldFile =
-                        File(Bukkit.getWorldContainer().parent, "template_worlds/$templateWorldName")
-                    val targetFolder = File(Bukkit.getWorldContainer(), "my_world.$uuid")
-                    templateWorldFile.copyRecursively(targetFolder)
-                })
-
-            // MV・Bukkitでロード
-            mvWorldManager.addWorld(registerWorldName, World.Environment.NORMAL, null, WorldType.NORMAL, false, null)
-            Bukkit.createWorld(WorldCreator("my_world.$uuid"))
 
             val expireIn = Config.defaultExpireDays
 
@@ -387,11 +373,13 @@ class MyWorld(val uuid: String) {
             val centerPos = borderCenter!!
             val newBorderCenterLocation = when (method) {
                 CENTER -> centerPos
-                LEFT_UP -> centerPos.add(-borderSize!!, 0.0, -borderSize!!)
-                LEFT_DOWN -> centerPos.add(-borderSize!!, 0.0, borderSize!!)
-                RIGHT_UP -> centerPos.add(borderSize!!, 0.0, borderSize!!)
-                RIGHT_DOWN -> centerPos.add(+borderSize!!, 0.0, -borderSize!!)
-            }.add(0.5, 0.0, 0.5)
+                LEFT_UP -> centerPos.add(-borderSize!! / 2, 0.0, -borderSize!! / 2)
+                LEFT_DOWN -> centerPos.add(-borderSize!! / 2, 0.0, borderSize!! / 2)
+                RIGHT_UP -> centerPos.add(borderSize!! / 2, 0.0, borderSize!! / 2)
+                RIGHT_DOWN -> centerPos.add(+borderSize!! / 2, 0.0, -borderSize!! / 2)
+            }
+
+            println("size: $borderSize, before: $centerPos, after: $newBorderCenterLocation")
 
             // データファイルへの書き込み
             DataFiles.worldData.set(
@@ -406,8 +394,10 @@ class MyWorld(val uuid: String) {
             DataFiles.save()
 
             // ワールドデータの変更
-            vanillaWorld!!.worldBorder.center = newBorderCenterLocation
-            vanillaWorld!!.worldBorder.size = borderSize!!
+            vanillaWorld!!.worldBorder.apply {
+                setCenter(newBorderCenterLocation.x, newBorderCenterLocation.z)
+                setSize(borderSize!!, 0L)
+            }
 
             return true
         } else return false

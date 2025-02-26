@@ -24,7 +24,7 @@ class TemplateWorld(val worldId: String) {
 
     val previewWorld: World?
         get() {
-            return Bukkit.getWorld("preview.$worldId")
+            return Bukkit.getWorld(worldId)
         }
 
     val originLocation: Location
