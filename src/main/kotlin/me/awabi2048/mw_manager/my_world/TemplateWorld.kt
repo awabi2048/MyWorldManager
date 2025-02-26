@@ -22,14 +22,14 @@ class TemplateWorld(val worldId: String) {
 //            return Bukkit.getWorld(worldId)
 //        }
 
-    val previewWorld: World?
+    val cbWorld: World?
         get() {
             return Bukkit.getWorld(worldId)
         }
 
     val originLocation: Location
         get() {
-            return Lib.stringToBlockLocation(previewWorld!!, DataFiles.templateSetting.getString("$worldId.origin_location")!!)
+            return Lib.stringToBlockLocation(cbWorld!!, DataFiles.templateSetting.getString("$worldId.origin_location")!!)
         }
 
     val name: String?
@@ -78,7 +78,7 @@ class TemplateWorld(val worldId: String) {
                 location.yaw += 2f
                 player.teleport(location)
 
-                if (player.world != previewWorld) cancel()
+                if (player.world != cbWorld) cancel()
             }
 
         }.runTaskTimer(instance, 0, 1)

@@ -39,8 +39,9 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
 
         owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
         owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
+        owner.closeInventory()
 
-        owner.sendMessage("§6おあげちゃんがワールドを拡げています... §7「${Config.oageGanbaruMessage.random()}」")
+        owner.sendMessage("§7おあげちゃんがワールドを拡げてくれています... §6「${Config.oageGanbaruMessage.random()}」")
 
         // 拡張を実行
         Bukkit.getScheduler().runTaskLater(
@@ -49,7 +50,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
                 world.expand(expandMethod)
                 playerData.worldPoint -= world.expandCost!!
 
-                owner.sendMessage("§dワールドが拡張されました！§7【§7${world.borderExpansionLevel!! - 1} §f▶ §e§l${world.borderExpansionLevel}§7】 §7(§f残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
+                owner.sendMessage("§dワールドが拡張されました！§8【§7${world.borderExpansionLevel!! - 1}§8】§f▶§8【§e§l${world.borderExpansionLevel}§8】 §7(残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
             },
             40L
         )

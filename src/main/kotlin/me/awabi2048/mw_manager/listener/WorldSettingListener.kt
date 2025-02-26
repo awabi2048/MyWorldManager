@@ -50,7 +50,7 @@ object WorldSettingListener : Listener {
             }
 
             if (state == PlayerWorldSettingState.CHANGE_NAME && !Lib.checkIfAlphaNumeric(text)) {
-                event.player.sendMessage("§cワールド名には半角英数字のみ利用可能です。")
+                event.player.sendMessage("§cワールド名には半角英数字のみ利用可能です。再度入力してください。")
                 return
             }
 
@@ -135,6 +135,9 @@ object WorldSettingListener : Listener {
             player.playSound(player, Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f)
 
             worldSettingState.remove(player)
+            val ui = WorldManagementUI(player, myWorld)
+            ui.open(false)
+
             return
         }
 

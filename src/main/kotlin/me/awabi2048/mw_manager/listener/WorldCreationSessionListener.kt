@@ -12,6 +12,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerChatEvent
 
 object WorldCreationSessionListener : Listener {
@@ -29,7 +30,7 @@ object WorldCreationSessionListener : Listener {
                 return
             }
 
-            if (Lib.checkIfAlphaNumeric(registerWorldName)) {
+            if (!Lib.checkIfAlphaNumeric(registerWorldName)) {
                 event.player.sendMessage("§cワールド名には半角英数字のみ使用可能です。再度入力してください。")
                 return
             }
@@ -74,15 +75,23 @@ object WorldCreationSessionListener : Listener {
 
                 // 確認画面に移行（する予定）
                 val creationSession = creationDataSet.find { it.player == player }!!
+                creationDataSet.removeIf { it.player == player }
 
                 instance.logger.info("World registered. Player:${creationSession.player.displayName}, World Name: ${creationSession.worldName}, Used Template: ${creationSession.sourceWorldName}")
 
                 creationSession.register()
-                creationDataSet.removeIf { it.player == player }
             }
         }
 
         // 確認表示
 
+    }
+
+    @EventHandler
+    fun onInventoryClose (event: InventoryCloseEvent) {
+        if (event.view.title == "§8§lTemplate Selection" && creationDataSet.any {it.player == event.player}) {
+            creationDataSet.removeIf {it.player == event.player}
+            event.player.sendMessage("§cメニューを閉じたため、作成をキャンセルしました。")
+        }
     }
 }

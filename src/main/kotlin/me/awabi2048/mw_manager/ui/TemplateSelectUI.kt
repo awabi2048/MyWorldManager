@@ -16,7 +16,7 @@ class TemplateSelectUI(private val owner: Player) : AbstractUI(owner) {
     }
 
     override fun construct(): Inventory {
-        val menu = createTemplate(5, "§9§lTemplate Selection")!!
+        val menu = createTemplate(5, "§8§lTemplate Selection")!!
 
         val templateWorldList = DataFiles.templateSetting.getKeys(false)
 

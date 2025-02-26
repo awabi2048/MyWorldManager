@@ -139,6 +139,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
                     if (creationDataSet.any {it.player == sender}) {
                         creationDataSet.removeIf {it.player == sender}
                         sender.sendMessage("§cセッションがタイムアウトしました。")
+                        sender.closeInventory()
                     } else cancel()
                 }
             }.runTaskLater(instance, 300 * 20)

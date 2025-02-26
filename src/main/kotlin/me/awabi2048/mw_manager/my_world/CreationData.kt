@@ -17,9 +17,9 @@ data class CreationData(
             val uuid = UUID.randomUUID().toString()
             val myWorld = MyWorld(uuid)
 
-            player.closeInventory()
-            player.sendMessage("§aワールドの作成が完了しました！")
+            player.sendMessage("§eワールドを作成しています...")
             player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 1.5f)
+            player.closeInventory()
 
             Bukkit.getScheduler().runTaskLater(
                 instance,
@@ -29,6 +29,13 @@ data class CreationData(
                 10L
             )
 
+            Bukkit.getScheduler().runTaskLater(
+                instance,
+                Runnable {
+                    myWorld.warpPlayer(player)
+                },
+                60L
+            )
 
         } else return
     }

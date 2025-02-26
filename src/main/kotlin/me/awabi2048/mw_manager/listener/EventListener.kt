@@ -1,14 +1,11 @@
 package me.awabi2048.mw_manager.listener
 
-import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.World
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerLoginEvent
-import org.bukkit.event.world.WorldLoadEvent
-import org.bukkit.event.world.WorldUnloadEvent
 
 object EventListener : Listener {
     private fun updateTask(world: World) {
@@ -25,6 +22,10 @@ object EventListener : Listener {
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
         updateTask(event.player.world)
+
+        // テンプレートワールドの中にいたら追い出す
+        if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
+        }
     }
 
     @EventHandler

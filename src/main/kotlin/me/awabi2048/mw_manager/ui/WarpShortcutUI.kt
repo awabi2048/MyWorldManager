@@ -46,7 +46,9 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
                 playerData.warpShortcuts += uuid
 
-                owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f)
+                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】をワープショートカットに§a追加§7しました！")
+                owner.playSound(owner, Sound.BLOCK_SMITHING_TABLE_USE, 1.0f, 1.0f)
+
                 owner.closeInventory()
 
             } else { // 登録済み: ワープ
@@ -54,6 +56,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
                 val targetWorld = MyWorld(uuid)
 
+                owner.sendMessage("§7登録済みのショートカット先へワープします...")
                 targetWorld.warpPlayer(owner)
             }
             // 右クリック → 削除
@@ -65,8 +68,9 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 playerData.warpShortcuts -= uuid
 
                 owner.closeInventory()
-                owner.playSound(owner, Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.0f)
 
+                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】をワープショートカットから§c削除§7しました。")
+                owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
             }
         }
     }
@@ -74,7 +78,10 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
     override fun open(firstOpen: Boolean) {
         //
         owner.openInventory(ui)
-        if (firstOpen) owner.playSound(owner, Sound.ENTITY_ENDERMAN_AMBIENT, 1.0f, 1.0f)
+        if (firstOpen) {
+            owner.playSound(owner, Sound.ENTITY_ENDERMAN_AMBIENT, 1.0f, 1.0f)
+            owner.playSound(owner, Sound.ENTITY_ILLUSIONER_PREPARE_MIRROR, 1.0f, 1.2f)
+        }
     }
 
     override fun construct(): Inventory {
