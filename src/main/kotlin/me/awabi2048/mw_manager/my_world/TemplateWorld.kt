@@ -66,7 +66,7 @@ class TemplateWorld(val worldId: String) {
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
-                TemplateSelectUI(player).open()
+                TemplateSelectUI(player).open(false)
             },
             previewTimeSec * 20L + 10L
         )

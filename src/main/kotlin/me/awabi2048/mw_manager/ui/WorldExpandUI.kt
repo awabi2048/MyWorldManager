@@ -25,17 +25,17 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         if (event.slot !in listOf(11, 13, 15, 17)) return
 
         val expandMethod = when (event.slot) {
-            11 -> ExpandMethod.LEFT_UP
-            13 -> ExpandMethod.LEFT_DOWN
-            15 -> ExpandMethod.RIGHT_DOWN
-            17 -> ExpandMethod.RIGHT_UP
+            10 -> ExpandMethod.LEFT_UP
+            12 -> ExpandMethod.LEFT_DOWN
+            14 -> ExpandMethod.RIGHT_DOWN
+            16 -> ExpandMethod.RIGHT_UP
             else -> return
         }
 
         owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
         // コスト確認
-        val cost = world.expansionCost!!
+        val cost = world.expandCost!!
         val playerData = PlayerData(owner)
         val playerPoint = playerData.worldPoint
         if (playerPoint < cost) {
@@ -52,7 +52,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         owner.sendMessage("§8【 §7${world.borderExpansionLevel!! - 1} §f▶ §e§l${world.borderExpansionLevel} §8】 §7(残り ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
     }
 
-    override fun open() {
+    override fun open(firstOpen: Boolean) {
         owner.openInventory(ui)
     }
 

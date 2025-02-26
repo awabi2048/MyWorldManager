@@ -15,7 +15,7 @@ abstract class AbstractUI(owner: Player) {
              return "§7" + "━".repeat(30)
         }
 
-    abstract fun open()
+    abstract fun open(firstOpen: Boolean)
 
     abstract fun construct(): Inventory
 

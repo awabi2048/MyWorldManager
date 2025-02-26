@@ -33,7 +33,7 @@ object OpenWorldUICommand : CommandExecutor {
         }
 
         val menu = WorldManagementUI(p0, world)
-        menu.open()
+        menu.open(true)
 
         return true
     }

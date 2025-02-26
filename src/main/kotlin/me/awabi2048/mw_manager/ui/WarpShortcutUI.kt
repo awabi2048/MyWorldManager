@@ -26,7 +26,10 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
             if (itemName == "§b未登録") {
                 val world = MyWorldManager.registeredMyWorld.find{it.vanillaWorld == owner.world}
                 if (world == null) {
-                    PlayerNotification.WARP_SHORTCUT_SET_FAILED.send(owner)
+
+                    owner.sendMessage("§cこのワールドではワープを設定できません。")
+                    owner.playSound(owner, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
+
                     owner.closeInventory()
                     return
                 }
@@ -36,7 +39,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
                 // 登録済
                 if (uuid in playerData.warpShortcuts) {
-                    PlayerNotification.WARP_SHORTCUT_SET_FAILED.send(owner)
+                    owner.sendMessage("§c既にこのワールドを登録しています。")
+                    owner.playSound(owner, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
                     return
                 }
 
@@ -67,17 +71,15 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
         }
     }
 
-    override fun open() {
+    override fun open(firstOpen: Boolean) {
         //
         owner.openInventory(ui)
-        owner.playSound(owner, Sound.ENTITY_ENDERMAN_AMBIENT, 1.0f, 1.0f)
+        if (firstOpen) owner.playSound(owner, Sound.ENTITY_ENDERMAN_AMBIENT, 1.0f, 1.0f)
     }
 
     override fun construct(): Inventory {
         fun getOccupiedSlot(uuid: String): ItemStack {
             val world = MyWorld(uuid)
-
-            println("${world.name}, ${world.description}, ${world.iconMaterial}, ${world.owner}")
 
             val name = world.name!!
             val description = world.description!!
@@ -148,8 +150,6 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
             val column = index % 7
             return 10 + 9 * row + column
         }
-
-        println("shortcuts: ${playerData.warpShortcuts}")
 
         // set
         for (index in 0..13) menu.setItem(slotOf(index), unavailableIcon)

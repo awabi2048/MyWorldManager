@@ -4,6 +4,9 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -98,5 +101,13 @@ object Lib {
 
     fun stringContainsBlacklisted(string: String): Boolean {
         return Config.stringBlacklist.any {string.contains(it)}
+    }
+
+    fun checkIfAlphaNumeric(string: String): Boolean {
+        return string.matches("^[a-zA-z0-9]*$".toRegex())
+    }
+
+    fun resolveComponent(component: Component): String {
+        return PlainTextComponentSerializer.plainText().serialize(component)
     }
 }

@@ -8,13 +8,16 @@ import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
 import me.awabi2048.mw_manager.ui.WorldExpandUI
 import me.awabi2048.mw_manager.ui.WorldManagementUI
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
 import org.bukkit.Bukkit
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerChatEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -47,12 +50,19 @@ object WorldSettingListener : Listener {
                 return
             }
 
+            if (state == PlayerWorldSettingState.CHANGE_NAME && !Lib.checkIfAlphaNumeric(text)) {
+                event.player.sendMessage("§cワールド名には半角英数字のみ利用可能です。")
+                return
+            }
+
             if (state == PlayerWorldSettingState.CHANGE_NAME) {
                 world.name = text
+                event.player.sendMessage("§eワールドの名前が §6${text} §eに変更されました！")
             }
 
             if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
                 world.description = text
+                event.player.sendMessage("§eワールドの説明が §6${text} §eに変更されました！")
             }
 
         } else {
@@ -92,8 +102,14 @@ object WorldSettingListener : Listener {
         }
 
         when (state) {
-            PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS -> world.guestSpawnLocation = location
-            PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS -> world.memberSpawnLocation = location
+            PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS -> {
+                event.player.sendMessage("§7ゲストのワールドスポーン位置が (§b${location.blockX}§7, §b${location.blockY}§7, §b${location.blockZ}§7)に変更されました。")
+                world.guestSpawnLocation = location
+            }
+            PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS -> {
+                event.player.sendMessage("§7メンバーのワールドスポーン位置が (§b${location.blockX}§7, §b${location.blockY}§7, §b${location.blockZ}§7)に変更されました。")
+                world.memberSpawnLocation = location
+            }
             else -> return
         }
 
@@ -102,6 +118,27 @@ object WorldSettingListener : Listener {
 
     @EventHandler
     fun onPlayerClickInventory(event: InventoryClickEvent) {
+        // アイコン変更: 最後の条件はメニュー内のアイテムを選択できないようにするため
+        if (worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON && event.currentItem != null && !event.clickedInventory!!.any{it != null && it.itemMeta.itemName == "§aワールド表示の変更"}) {
+            event.isCancelled = true
+            val player = event.whoClicked as Player
+
+            val myWorld = MyWorldManager.registeredMyWorld.find {it.vanillaWorld == player.world}?: return
+            myWorld.iconMaterial = event.currentItem!!.type
+
+            // アイテム名を翻訳したいのでComponentを使用
+            val message = Component.text("§7ワールドのアイコンを")
+                .append(Component.translatable(event.currentItem!!.type.translationKey()).color(AQUA))
+                .append(Component.text("§7に変更しました。"))
+
+            player.sendMessage(message)
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            player.playSound(player, Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f)
+
+            worldSettingState.remove(player)
+            return
+        }
+
         // ワールド設定メニュー
         if (event.clickedInventory?.any { it != null && it.itemMeta?.itemName == "§aワールド表示の変更" } == true) {
 
@@ -112,9 +149,7 @@ object WorldSettingListener : Listener {
 
             val menu = WorldManagementUI(player, world)
             menu.onClick(event)
-
-            worldSettingState.remove(event.whoClicked)
-
+            return
         }
 
         // ワールド拡張メニュー
@@ -127,8 +162,15 @@ object WorldSettingListener : Listener {
 
             val menu = WorldExpandUI(player, world)
             menu.onClick(event)
+            return
+        }
+    }
 
-            worldSettingState.remove(event.whoClicked)
+    @EventHandler
+    fun onPlayerCloseInventory(event: InventoryCloseEvent) {
+        if (worldSettingState[event.player] == PlayerWorldSettingState.CHANGE_ICON) {
+            worldSettingState.remove(event.player)
+            event.player.sendMessage("§cインベントリを閉じたため、設定をキャンセルしました。")
         }
     }
 

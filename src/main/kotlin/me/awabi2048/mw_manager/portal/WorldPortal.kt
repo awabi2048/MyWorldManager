@@ -51,7 +51,5 @@ class WorldPortal(private val uuid: String?) {
 
         location.world.players.filter { it.location.distance(location) <= 5.0 }
             .forEach { it.playSound(it, Sound.BLOCK_END_PORTAL_FRAME_FILL, 1.0f, 1.0f) }
-
-        println("PLACED PORTAL @ $location")
     }
 }

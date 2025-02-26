@@ -56,8 +56,9 @@ class MyWorld(val uuid: String) {
                 dataSection?.getString("name")
             } else null
         }
+
         set(value) {
-            if (value != null && isRegistered && Config.stringBlacklist.any { value.contains(it) }) {
+            if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.name", value)
                 DataFiles.save()
             }
@@ -69,8 +70,9 @@ class MyWorld(val uuid: String) {
                 dataSection?.getString("description")
             } else null
         }
+
         set(value) {
-            if (value != null && isRegistered && Config.stringBlacklist.any { value.contains(it) }) {
+            if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.description", value)
                 DataFiles.save()
             }
@@ -141,6 +143,7 @@ class MyWorld(val uuid: String) {
         set(value) {
             if (isRegistered && value != null) {
                 DataFiles.worldData.set("$uuid.publish_level", value.toString())
+                DataFiles.save()
             }
         }
 
@@ -168,9 +171,9 @@ class MyWorld(val uuid: String) {
             DataFiles.worldData.set("$uuid.border_expansion_level", value)
         }
 
-    val expansionCost: Int?
+    val expandCost: Int?
         get() {
-            return borderExpansionLevel?.times(10)
+            return borderExpansionLevel?.plus(1)?.times(10)
         }
 
     private val borderSize: Double?
@@ -202,8 +205,8 @@ class MyWorld(val uuid: String) {
             } else return null
         }
         set(value) {
-            if (isRegistered && Material.entries.contains(value)) {
-                DataFiles.worldData.set("$uuid.icon", value)
+            if (value != null && isRegistered) {
+                DataFiles.worldData.set("$uuid.icon", value.name)
                 DataFiles.save()
             }
         }
@@ -212,7 +215,6 @@ class MyWorld(val uuid: String) {
         get() {
             if (isRegistered) {
                 val stringPos = dataSection?.getString("spawn_pos_member") ?: return null
-                println(stringPos)
                 return Lib.stringToBlockLocation(vanillaWorld!!, stringPos)
             } else return null
         }
@@ -287,27 +289,9 @@ class MyWorld(val uuid: String) {
             DataFiles.worldData.createSection(uuid, map)
             DataFiles.save()
 
-            // ワールドに関する処理: クローン後なので遅延
-            Bukkit.getScheduler().runTaskLater(
-                instance,
-                Runnable {
-                    mvWorld!!.apply {
-                        alias = worldName
-                    }
-                    vanillaWorld!!.apply {
-                        worldBorder.size = borderSize!!
-                    }
-
-                    println("SCHEDULED TASK")
-                },
-                50L
-            )
-
-            println(
-                "MWManager >> Registered world with UUID: $uuid, ExpireDate: ${
-                    LocalDate.now().plusDays(expireIn.toLong())
-                } (Expires in $expireIn days)"
-            )
+            instance.logger.info("Registered world. UUID: $uuid, Expire Date: ${
+                LocalDate.now().plusDays(expireIn.toLong())
+            } (Expires in $expireIn days)")
 
             return true
         } else return false
@@ -325,7 +309,7 @@ class MyWorld(val uuid: String) {
 //        FileUtils.deleteFolder(worldFile)
         mvWorldManager.deleteWorld("my_world.$uuid")
 
-        println("MWManager >> Deactivated world. UUID: $uuid")
+        instance.logger.info("World deactivated. UUID: $uuid")
 
         return true
     }
@@ -342,7 +326,7 @@ class MyWorld(val uuid: String) {
         FileUtils.deleteFolder(worldFile)
 //        mvWorldManager.deleteWorld("my_world.$uuid")
 
-        println("MWManager >> Activated world. UUID: $uuid")
+        instance.logger.info("World activated. UUID: $uuid")
 
         return true
     }

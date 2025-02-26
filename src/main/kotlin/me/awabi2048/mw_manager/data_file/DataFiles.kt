@@ -37,7 +37,7 @@ object DataFiles {
         filePath.forEach {
             if (!File(instance.dataFolder.path + File.separator + it).exists()) {
                 instance.saveResource(it, false)
-                println("MVM >> Copied \"$it\" to the data folder.")
+                instance.logger.info("Copied \"$it\" to the data folder.")
             }
         }
     }

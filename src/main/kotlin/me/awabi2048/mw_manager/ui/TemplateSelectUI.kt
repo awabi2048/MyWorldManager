@@ -2,14 +2,17 @@ package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.data_file.DataFiles
 import org.bukkit.Material
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
 class TemplateSelectUI(private val owner: Player) : AbstractUI(owner) {
-    override fun open() {
+    override fun open(firstOpen: Boolean) {
         val menu = construct()
         owner.openInventory(menu)
+
+        if (firstOpen) owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
     }
 
     override fun construct(): Inventory {

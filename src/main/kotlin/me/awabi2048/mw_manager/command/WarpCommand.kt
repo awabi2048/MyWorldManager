@@ -18,7 +18,7 @@ object WarpCommand: CommandExecutor {
         if (p3?.size == 0) {
 
             val menu = WarpShortcutUI(p0)
-            menu.open()
+            menu.open(true)
             return true
 
         } else if (p3?.size == 1) {

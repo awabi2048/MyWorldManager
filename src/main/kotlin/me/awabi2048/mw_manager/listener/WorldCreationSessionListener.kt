@@ -1,6 +1,7 @@
 package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.TemplateWorld
@@ -15,7 +16,7 @@ import org.bukkit.event.player.PlayerChatEvent
 object WorldCreationSessionListener : Listener {
     @EventHandler
     fun onChatInput(event: PlayerChatEvent) {
-        val creationData = creationDataSet.find { it.player == event.player }!!
+        val creationData = creationDataSet.find { it.player == event.player }?: return
 
         // ワールド名を入力
         if (creationData.creationLevel == CreationLevel.WORLD_NAME) {
@@ -36,7 +37,7 @@ object WorldCreationSessionListener : Listener {
 
             // ソース選択メニュー
             val templateSelectUI = TemplateSelectUI(event.player)
-            templateSelectUI.open()
+            templateSelectUI.open(true)
         }
     }
 
@@ -69,9 +70,10 @@ object WorldCreationSessionListener : Listener {
                 // 確認画面に移行（する予定）
                 val creationSession = creationDataSet.find { it.player == player }!!
 
-                println("register world: PLAYER: ${creationSession.player}, WORLD NAME: ${creationSession.worldName}, SOURCE: ${creationSession.sourceWorldName}")
+                instance.logger.info("World registered. Player:${creationSession.player.displayName}, World Name: ${creationSession.worldName}, Used Template: ${creationSession.sourceWorldName}")
 
                 creationSession.register()
+                creationDataSet.removeIf {it.player == player}
             }
         }
 
