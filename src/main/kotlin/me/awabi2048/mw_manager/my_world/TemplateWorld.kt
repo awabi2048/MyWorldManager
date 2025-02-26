@@ -2,7 +2,7 @@ package me.awabi2048.mw_manager.my_world
 
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.config.DataFiles
+import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.ui.TemplateSelectUI
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -29,9 +29,7 @@ class TemplateWorld(val worldId: String) {
 
     val originLocation: Location
         get() {
-            val coordinate =
-                Lib.stringToBlockLocation(DataFiles.templateSetting.getString("$worldId.origin_location")!!)!!
-            return Location(previewWorld, coordinate[0] + 0.5, coordinate[1].toDouble(), coordinate[2] + 0.5)
+            return Lib.stringToBlockLocation(previewWorld!!, DataFiles.templateSetting.getString("$worldId.origin_location")!!)
         }
 
     val name: String?

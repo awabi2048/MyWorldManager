@@ -1,6 +1,6 @@
 package me.awabi2048.mw_manager.ui
 
-import me.awabi2048.mw_manager.config.Config
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.player_data.PlayerData
@@ -33,6 +33,13 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
                 val uuid = world.uuid
                 val playerData = PlayerData(owner)
+
+                // 登録済
+                if (uuid in playerData.warpShortcuts) {
+                    PlayerNotification.WARP_SHORTCUT_SET_FAILED.send(owner)
+                    return
+                }
+
                 playerData.warpShortcuts += uuid
 
                 owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 1.0f)
@@ -69,6 +76,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
     override fun construct(): Inventory {
         fun getOccupiedSlot(uuid: String): ItemStack {
             val world = MyWorld(uuid)
+
+            println("${world.name}, ${world.description}, ${world.iconMaterial}, ${world.owner}")
 
             val name = world.name!!
             val description = world.description!!
@@ -124,7 +133,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
         val emptyIcon = ItemStack(Material.GLASS)
         emptyIcon.itemMeta = emptyIcon.itemMeta.apply {
-            setItemName("§b未設定")
+            setItemName("§b未登録")
             lore = listOf(
                 bar,
                 "§7« §a解放済 §7»",
@@ -140,6 +149,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
             return 10 + 9 * row + column
         }
 
+        println("shortcuts: ${playerData.warpShortcuts}")
+
         // set
         for (index in 0..13) menu.setItem(slotOf(index), unavailableIcon)
         for (index in 0..<Config.playerWarpSlotMax) menu.setItem(slotOf(index), lockedIcon)
@@ -149,6 +160,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 menu.setItem(slotOf(index), getOccupiedSlot(playerData.warpShortcuts[index]))
             }
         }
+
+
 
         return menu
     }

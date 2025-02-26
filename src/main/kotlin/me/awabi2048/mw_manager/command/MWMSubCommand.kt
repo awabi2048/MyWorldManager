@@ -5,7 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
-import me.awabi2048.mw_manager.config.DataFiles
+import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.CreationLevel
 import me.awabi2048.mw_manager.my_world.MyWorld

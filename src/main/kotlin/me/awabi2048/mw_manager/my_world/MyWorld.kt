@@ -7,8 +7,8 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
-import me.awabi2048.mw_manager.config.Config
-import me.awabi2048.mw_manager.config.DataFiles
+import me.awabi2048.mw_manager.data_file.Config
+import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
 import net.kyori.adventure.text.Component
@@ -82,7 +82,7 @@ class MyWorld(val uuid: String) {
     val owner: Player?
         get() {
             val ownerUUID = DataFiles.worldData.getString("$uuid.owner") ?: return null
-            return Bukkit.getPlayer(ownerUUID)
+            return Bukkit.getPlayer(UUID.fromString(ownerUUID))
         }
 
     private val dataSection: ConfigurationSection?
@@ -158,7 +158,7 @@ class MyWorld(val uuid: String) {
             )
         }
 
-    var expansionLevel: Int?
+    var borderExpansionLevel: Int?
         get() {
             return if (isRegistered) {
                 dataSection!!.getInt("border_expansion_level")
@@ -170,16 +170,28 @@ class MyWorld(val uuid: String) {
 
     val expansionCost: Int?
         get() {
-            return expansionLevel?.times(10)
+            return borderExpansionLevel?.times(10)
         }
 
-    val borderSize: Double?
+    private val borderSize: Double?
         get() {
             if (isRegistered) {
-                val expansion = dataSection!!.getInt("border_expansion_level")
-                val baseUnit = DataFiles.config.getInt("border_size_unit")
-                return ((expansion + 1) * baseUnit).toDouble()
+                return ((borderExpansionLevel!! + 1) * Config.borderSizeUnit).toDouble()
             } else return null
+        }
+
+    var borderCenter: Location?
+        get() {
+            if (isRegistered) {
+                val raw = dataSection?.getString("border_center_pos")!!
+                return Lib.stringToBlockLocation(vanillaWorld!!, raw)
+            } else return null
+        }
+        set(value) {
+            if (value != null) {
+                DataFiles.worldData.set("$uuid.border_center_pos", Lib.locationToString(value))
+                DataFiles.save()
+            }
         }
 
     var iconMaterial: Material?
@@ -189,7 +201,6 @@ class MyWorld(val uuid: String) {
                 return Material.valueOf(materialString)
             } else return null
         }
-
         set(value) {
             if (isRegistered && Material.entries.contains(value)) {
                 DataFiles.worldData.set("$uuid.icon", value)
@@ -199,9 +210,11 @@ class MyWorld(val uuid: String) {
 
     var memberSpawnLocation: Location?
         get() {
-            val stringPos = dataSection?.getString("spawn_pos_member")?: return null
-            val pos = Lib.stringToBlockLocation(stringPos)?: return null
-            return Location(vanillaWorld, pos[0] + 0.5, pos[1].toDouble(), pos[2] + 0.5)
+            if (isRegistered) {
+                val stringPos = dataSection?.getString("spawn_pos_member") ?: return null
+                println(stringPos)
+                return Lib.stringToBlockLocation(vanillaWorld!!, stringPos)
+            } else return null
         }
         set(value) {
             if (value != null) {
@@ -213,9 +226,10 @@ class MyWorld(val uuid: String) {
 
     var guestSpawnLocation: Location?
         get() {
-            val stringPos = dataSection?.getString("spawn_pos_guest")?: return null
-            val pos = Lib.stringToBlockLocation(stringPos)?: return null
-            return Location(vanillaWorld, pos[0] + 0.5, pos[1].toDouble(), pos[2] + 0.5)
+            if (isRegistered) {
+                val stringPos = dataSection?.getString("spawn_pos_guest") ?: return null
+                return Lib.stringToBlockLocation(vanillaWorld!!, stringPos)
+            } else return null
         }
         set(value) {
             if (value != null) {
@@ -235,26 +249,28 @@ class MyWorld(val uuid: String) {
             Bukkit.getScheduler().runTaskAsynchronously(
                 instance,
                 Runnable {
-                    val templateWorldFile = File(Bukkit.getWorldContainer().parent, "template_worlds/$templateWorldName")
-                    val targetFolder = File(Bukkit.getWorldContainer(), "$registerWorldName")
+                    val templateWorldFile =
+                        File(Bukkit.getWorldContainer().parent, "template_worlds/$templateWorldName")
+                    val targetFolder = File(Bukkit.getWorldContainer(), "my_world.$uuid")
                     templateWorldFile.copyRecursively(targetFolder)
                 })
 
-            // 普通にロード
-            mvWorldManager.addWorld(registerWorldName, World.Environment.CUSTOM, null, WorldType.NORMAL, false, null)
+            // MV・Bukkitでロード
+            mvWorldManager.addWorld(registerWorldName, World.Environment.NORMAL, null, WorldType.NORMAL, false, null)
+            Bukkit.createWorld(WorldCreator("my_world.$uuid"))
 
-            val expireIn = DataFiles.config.getInt("default_expire_days")
+            val expireIn = Config.defaultExpireDays
 
             //
             val worldName = registerWorldName ?: "my_world.${owner.displayName}"
 
             // template
-            val sourceWorldOrigin = DataFiles.templateSetting.getString("$templateWorldName.origin_location")!!
+            val sourceWorldOrigin = Lib.locationToString(TemplateWorld(templateWorldName).originLocation)
 
             // register
             val map = mapOf(
                 "name" to worldName,
-                "description" to "${owner.displayName()}のワールド",
+                "description" to "${owner.displayName}のワールド",
                 "icon" to Material.GRASS_BLOCK.toString(),
                 "source_world" to templateWorldName,
                 "last_updated" to LocalDate.now().toString(),
@@ -281,6 +297,8 @@ class MyWorld(val uuid: String) {
                     vanillaWorld!!.apply {
                         worldBorder.size = borderSize!!
                     }
+
+                    println("SCHEDULED TASK")
                 },
                 50L
             )
@@ -359,17 +377,11 @@ class MyWorld(val uuid: String) {
 
     fun warpPlayer(player: Player): Boolean {
         if (isRegistered) {
-            val warpCoordinate = when (player) {
-                in members!! -> Lib.stringToBlockLocation(dataSection!!.getString("spawn_pos_guest")!!)!!
-                else -> Lib.stringToBlockLocation(dataSection!!.getString("spawn_pos_member")!!)!!
+            val warpLocation = when (player) {
+                in members!! -> memberSpawnLocation!!
+                else -> guestSpawnLocation!!
             }
 
-            val warpLocation = Location(
-                vanillaWorld!!,
-                warpCoordinate[0] + 0.5,
-                warpCoordinate[1].toDouble(),
-                warpCoordinate[2] + 0.5,
-            )
             player.teleport(warpLocation)
             player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
 
@@ -388,72 +400,51 @@ class MyWorld(val uuid: String) {
     fun expand(method: ExpandMethod): Boolean {
         if (isRegistered) {
             // メモ: North(-Z) West(-X) South(+Z) East(+X)
-            val borderCenterPosX = dataSection!!.getString("border_center_pos")!!.split(",")[0].toInt()
-            val borderCenterPosY = dataSection!!.getString("border_center_pos")!!.split(",")[1].toInt()
-            val borderCenterPosZ = dataSection!!.getString("border_center_pos")!!.split(",")[2].toInt()
-
-            val borderCenterLocation = when (method) {
-                CENTER -> Location(
-                    vanillaWorld,
-                    borderCenterPosX + 0.5,
-                    borderCenterPosY.toDouble(),
-                    borderCenterPosZ + 0.5
-                )
-
-                LEFT_UP -> Location(
-                    vanillaWorld,
-                    borderCenterPosX - borderSize!! + 0.5,
-                    borderCenterPosY.toDouble(),
-                    borderCenterPosZ - borderSize!! + 0.5
-                )
-
-                LEFT_DOWN -> Location(
-                    vanillaWorld,
-                    borderCenterPosX - borderSize!! + 0.5,
-                    borderCenterPosY.toDouble(),
-                    borderCenterPosZ + borderSize!! + 0.5
-                )
-
-                RIGHT_UP -> Location(
-                    vanillaWorld,
-                    borderCenterPosX + borderSize!! + 0.5,
-                    borderCenterPosY.toDouble(),
-                    borderCenterPosZ + borderSize!! + 0.5
-                )
-
-                RIGHT_DOWN -> Location(
-                    vanillaWorld,
-                    borderCenterPosX + borderSize!! + 0.5,
-                    borderCenterPosY.toDouble(),
-                    borderCenterPosZ - borderSize!! + 0.5
-                )
-            }
+            val centerPos = borderCenter!!
+            val newBorderCenterLocation = when (method) {
+                CENTER -> centerPos
+                LEFT_UP -> centerPos.add(-borderSize!!, 0.0, -borderSize!!)
+                LEFT_DOWN -> centerPos.add(-borderSize!!, 0.0, borderSize!!)
+                RIGHT_UP -> centerPos.add(borderSize!!, 0.0, borderSize!!)
+                RIGHT_DOWN -> centerPos.add(+borderSize!!, 0.0, -borderSize!!)
+            }.add(0.5, 0.0, 0.5)
 
             // データファイルへの書き込み
             DataFiles.worldData.set(
                 "$uuid.border_center_pos",
-                "${borderCenterLocation.blockX + 0.5}, ${borderCenterLocation.blockY}, ${borderCenterLocation.blockZ + 0.5}"
+                Lib.locationToString(newBorderCenterLocation)
             )
+
             DataFiles.worldData.set(
                 "$uuid.border_expansion_level",
-                DataFiles.worldData.getInt("$uuid.border_expansion_level") + 1
+                borderExpansionLevel!! + 1
             )
             DataFiles.save()
 
             // ワールドデータの変更
-            vanillaWorld!!.worldBorder.center = borderCenterLocation
+            vanillaWorld!!.worldBorder.center = newBorderCenterLocation
             vanillaWorld!!.worldBorder.size = borderSize!!
 
             return true
         } else return false
     }
 
+    // ワールドロード時に実行
     fun sync(): Boolean {
-//        if (isRegistered) {
-//            // world border
-//            vanillaWorld!!.worldBorder.size = dataSection!!.getInt("border_size").toDouble()
-//            vanillaWorld!!.worldBorder. = dataSection!!.getInt("border_size").toDouble()
-//        }
+        if (isRegistered) {
+            // world border
+            vanillaWorld!!.worldBorder.center = borderCenter!!
+            vanillaWorld!!.worldBorder.size = borderSize!!
+
+            //
+            mvWorld!!.setAllowAnimalSpawn(false)
+            mvWorld!!.setAllowMonsterSpawn(false)
+
+            vanillaWorld!!.setGameRule(GameRule.KEEP_INVENTORY, true)
+            vanillaWorld!!.setGameRule(GameRule.DO_PATROL_SPAWNING, false)
+            vanillaWorld!!.setGameRule(GameRule.DO_TRADER_SPAWNING, false)
+            vanillaWorld!!.setGameRule(GameRule.MOB_GRIEFING, false)
+        }
 
         return true
     }

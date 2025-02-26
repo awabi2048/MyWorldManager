@@ -1,13 +1,12 @@
 package me.awabi2048.mw_manager.ui
 
-import me.awabi2048.mw_manager.EmojiIconPrefix
+import me.awabi2048.mw_manager.EmojiIcon
 import me.awabi2048.mw_manager.my_world.ExpandMethod
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.player_notification.PlayerNotification
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
-import net.kyori.adventure.text.format.NamedTextColor.GRAY
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
@@ -50,7 +49,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         world.expand(expandMethod)
 
         PlayerNotification.WORLD_EXPANSION_SUCCEEDED.send(owner)
-        owner.sendMessage("§8【 §7${world.expansionLevel!! - 1} §f▶ §e§l${world.expansionLevel} §8】 §7(残り ${EmojiIconPrefix.WORLD_POINT} §e${playerData.worldPoint}§7)")
+        owner.sendMessage("§8【 §7${world.borderExpansionLevel!! - 1} §f▶ §e§l${world.borderExpansionLevel} §8】 §7(残り ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
     }
 
     override fun open() {
@@ -67,7 +66,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("ワールドを左上(北西)方向に拡張します。").color(GRAY),
+                    Component.text("§7ワールドを左上(北西)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§7██"),
                     Component.text("§7█§b█"),
@@ -85,7 +84,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("ワールドを左下(南西)方向に拡張します。").color(GRAY),
+                    Component.text("§7ワールドを左下(南西)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§7█§b█"),
                     Component.text("§7██"),
@@ -103,7 +102,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("ワールドを右下(南東)方向に拡張します。").color(GRAY),
+                    Component.text("§7ワールドを右下(南東)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§b█§7█"),
                     Component.text("§7██"),
@@ -121,7 +120,7 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("ワールドを右上(北東)方向に拡張します。").color(GRAY),
+                    Component.text("§7ワールドを右上(北東)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§7██"),
                     Component.text("§b█§7█"),
@@ -133,10 +132,10 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         }
 
         // set
-        ui.setItem(9, methodLeftUp)
-        ui.setItem(11, methodLeftDown)
-        ui.setItem(13, methodRightDown)
-        ui.setItem(15, methodRightUp)
+        ui.setItem(10, methodLeftUp)
+        ui.setItem(12, methodLeftDown)
+        ui.setItem(14, methodRightDown)
+        ui.setItem(16, methodRightUp)
 
         return ui
     }

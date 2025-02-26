@@ -1,4 +1,4 @@
-package me.awabi2048.mw_manager.config
+package me.awabi2048.mw_manager.data_file
 
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
@@ -35,7 +35,7 @@ object DataFiles {
 
     fun copy() {
         filePath.forEach {
-            if (!File(instance.dataFolder.path + it).exists()) {
+            if (!File(instance.dataFolder.path + File.separator + it).exists()) {
                 instance.saveResource(it, false)
                 println("MVM >> Copied \"$it\" to the data folder.")
             }

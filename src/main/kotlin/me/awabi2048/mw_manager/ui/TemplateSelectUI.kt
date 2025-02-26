@@ -1,6 +1,6 @@
 package me.awabi2048.mw_manager.ui
 
-import me.awabi2048.mw_manager.config.DataFiles
+import me.awabi2048.mw_manager.data_file.DataFiles
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory

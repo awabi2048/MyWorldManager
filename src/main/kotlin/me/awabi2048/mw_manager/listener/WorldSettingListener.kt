@@ -29,6 +29,8 @@ object WorldSettingListener : Listener {
             )
         ) return
 
+        event.isCancelled = true
+
         val state = worldSettingState[event.player]!!
         val world = MyWorldManager.registeredMyWorld.find { it.vanillaWorld == event.player.world }
         if (world == null) {
@@ -37,6 +39,7 @@ object WorldSettingListener : Listener {
         }
 
         if (state == PlayerWorldSettingState.CHANGE_NAME || state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
+
             val text = event.message
 
             if (Lib.stringContainsBlacklisted(text)) {
@@ -51,6 +54,7 @@ object WorldSettingListener : Listener {
             if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
                 world.description = text
             }
+
         } else {
             val playerName = event.message
             val player = Bukkit.getPlayer(playerName)
@@ -62,16 +66,20 @@ object WorldSettingListener : Listener {
 
             world.recruitPlayer(event.player, player)
         }
+
+        worldSettingState.remove(event.player)
     }
 
     @EventHandler
     fun onPlayerClickBlock(event: PlayerInteractEvent) {
         if (event.action !in listOf(Action.RIGHT_CLICK_BLOCK, Action.LEFT_CLICK_BLOCK)) return
-        if (worldSettingState[event.player] in listOf(
+        if (worldSettingState[event.player] !in listOf(
                 PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS,
                 PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS
             )
         ) return
+
+        event.isCancelled = true
 
         val state = worldSettingState[event.player]!!
 
@@ -88,6 +96,8 @@ object WorldSettingListener : Listener {
             PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS -> world.memberSpawnLocation = location
             else -> return
         }
+
+        worldSettingState.remove(event.player)
     }
 
     @EventHandler
@@ -103,6 +113,8 @@ object WorldSettingListener : Listener {
             val menu = WorldManagementUI(player, world)
             menu.onClick(event)
 
+            worldSettingState.remove(event.whoClicked)
+
         }
 
         // ワールド拡張メニュー
@@ -115,6 +127,8 @@ object WorldSettingListener : Listener {
 
             val menu = WorldExpandUI(player, world)
             menu.onClick(event)
+
+            worldSettingState.remove(event.whoClicked)
         }
     }
 

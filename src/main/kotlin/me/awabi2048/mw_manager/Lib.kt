@@ -1,13 +1,10 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.config.Config
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import org.bukkit.Bukkit
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
+import org.bukkit.*
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -82,12 +79,9 @@ object Lib {
         return "($x, $y, $z)"
     }
 
-    fun stringToBlockLocation(string: String): List<Int>? {
-        return try {
-            string.replace(" ", "").replace("(", "").replace(")", "").split(",").map { it.toInt() }
-        } catch (e: Exception) {
-            null
-        }
+    fun stringToBlockLocation(world: World, string: String): Location {
+        val coordinate = string.replace(" ", "").replace("(", "").replace(")", "").split(",").map { it.toInt() }
+        return Location(world, coordinate[0] + 0.5, coordinate[1].toDouble(), coordinate[2] + 0.5)
     }
 
     fun getItemID(item: ItemStack?): String? {

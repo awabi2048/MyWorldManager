@@ -1,13 +1,14 @@
 package me.awabi2048.mw_manager.ui
 
-import me.awabi2048.mw_manager.EmojiIconPrefix
+import me.awabi2048.mw_manager.EmojiIcon
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.worldSettingState
-import me.awabi2048.mw_manager.config.Config
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
+import me.awabi2048.mw_manager.player_notification.PlayerNotification
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Sound
@@ -17,7 +18,6 @@ import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import kotlin.math.exp
 
 class WorldManagementUI(private val owner: Player, private val world: MyWorld) : AbstractInteractiveUI(owner) {
     init {
@@ -54,6 +54,7 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
             if (event.isLeftClick) worldSettingState[owner] = PlayerWorldSettingState.CHANGE_NAME
             if (event.isRightClick) worldSettingState[owner] = PlayerWorldSettingState.CHANGE_DESCRIPTION
 
+            PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
             owner.closeInventory()
         }
 
@@ -62,17 +63,20 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
             if (event.isLeftClick) worldSettingState[owner] = PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS
             if (event.isRightClick) worldSettingState[owner] = PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS
 
+            PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
             owner.closeInventory()
         }
 
         // メニュー閉じない　インベントリ内でクリックしたアイテムのMaterialをアイコンとして設定
         if (option == "change_icon") {
             worldSettingState[owner] = PlayerWorldSettingState.CHANGE_ICON
+            PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
         }
 
         // 専用メニュー開く
         if (option == "expand") {
             val expandUI = WorldExpandUI(owner, world)
+            PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
             expandUI.open()
         }
 
@@ -126,7 +130,7 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
             lore = listOf(
                 bar,
                 "$index §7${world.description}",
-                "$index §7拡張レベル §e§l${world.expansionLevel}§7/${Config.borderExpansionMax}",
+                "$index §7拡張レベル §e§l${world.borderExpansionLevel}§7/${Config.borderExpansionMax}",
                 bar,
                 "$index §7最終更新日時 §b${Lib.formatDate(world.lastUpdated!!)}",
                 "$index §8§n${Lib.formatDate(world.expireDate!!)} §8に期限切れ (§8§n${
@@ -182,9 +186,9 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
                 bar,
                 "§fクリックして§bワールドのボーダー§fを§a1段階§f拡張します。",
                 bar,
-                "$index §7現在の拡張レベル §e§l${world.expansionLevel}§7/${Config.borderExpansionMax}",
-                "$index §7コスト ${EmojiIconPrefix.WORLD_POINT} §e${world.expansionCost} §7(§7${world.expansionLevel} ➡ §e§l${
-                    world.expansionLevel?.plus(
+                "$index §7現在の拡張レベル §e§l${world.borderExpansionLevel}§7/${Config.borderExpansionMax}",
+                "$index §7コスト ${EmojiIcon.WORLD_POINT} §e${world.expansionCost} §7(§7${world.borderExpansionLevel} ➡ §e§l${
+                    world.borderExpansionLevel?.plus(
                         1
                     )
                 })",
@@ -227,13 +231,6 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
             lore = listOf(
                 bar,
                 "§fクリックしてほかのプレイヤーを§eメンバーに招待§fします。",
-                bar,
-                "$index §7現在の拡張レベル §e§l${world.expansionLevel}§7/${Config.borderExpansionMax}",
-                "$index §7コスト ${EmojiIconPrefix.WORLD_POINT} §e${world.expansionCost} §7(§7${world.expansionLevel} ➡ §e${
-                    world.expansionLevel?.plus(
-                        1
-                    )
-                })",
                 bar,
             ) + memberList + listOf(
                 bar

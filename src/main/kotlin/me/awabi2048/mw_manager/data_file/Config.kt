@@ -1,4 +1,4 @@
-package me.awabi2048.mw_manager.config
+package me.awabi2048.mw_manager.data_file
 
 object Config {
     private val section = DataFiles.config
