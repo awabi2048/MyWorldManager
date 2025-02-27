@@ -19,7 +19,9 @@ import java.util.*
 
 class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     fun reload() {
+        DataFiles.copy()
         DataFiles.loadAll()
+
         sender.sendMessage("$prefix §aデータファイルをリロードしました。")
     }
 

@@ -4,8 +4,6 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.*
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -49,19 +47,23 @@ object Lib {
     }
 
     fun translateWorldSpecifier(specifier: String): MyWorld? {
-        if (specifier.startsWith("world:")) {
-            val worldName = specifier.substringAfter("world:")
-            val myWorld = MyWorld(worldName)
-
-            if (!MyWorldManager.registeredMyWorld.contains(myWorld)) return null
-            return myWorld
-
-        } else if (specifier.startsWith("wuuid:")) {
-            val worldUUID = specifier.substringAfter("wuuid:")
+        if (specifier.startsWith("uuid:")) {
+            val worldUUID = specifier.substringAfter("uuid:")
             val myWorld = MyWorldManager.registeredMyWorld.find { it.uuid == worldUUID }
 
             return myWorld
-        } else return null
+        } else {
+            try {
+                val ownerName = specifier.substringBefore(":")
+                val worldName = specifier.substringAfter(":")
+
+                val myWorld = MyWorldManager.registeredMyWorld.find {it.owner?.name == ownerName && it.name == worldName}
+                return myWorld
+
+            } catch (e: Exception) {
+                return null
+            }
+        }
     }
 
     fun getVirtualItem(material: Material): ItemStack {
@@ -99,14 +101,35 @@ object Lib {
     }
 
     fun checkIfContainsBlacklisted(string: String): Boolean {
-        return Config.stringBlacklist.any {string.contains(it)}
+        return Config.stringBlacklist.any { string.contains(it) }
     }
 
-    fun checkIfAlphaNumeric(string: String): Boolean {
-        return string.matches("^[a-zA-z0-9]*$".toRegex())
-    }
+    fun checkWorldNameAvailable(name: String, owner: Player): Boolean {
+        // ブラックリスト判定
+        if (checkIfContainsBlacklisted(name)) {
+            owner.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
+            return false
+        }
 
-    fun resolveComponent(component: Component): String {
-        return PlainTextComponentSerializer.plainText().serialize(component)
+        // 文字種判定
+        if (!name.matches("^[a-zA-z0-9]*$".toRegex())) {
+            owner.sendMessage("§cワールド名には半角英数字のみ使用可能です。再度入力してください。")
+            return false
+        }
+
+        // 文字長
+        if (name.length in Config.availableWorldNameLength) {
+            owner.sendMessage("§cワールド名は§n${Config.availableWorldNameLength.min()}文字以上${Config.availableWorldNameLength.max()}文字以下§cである必要があります。再度入力してください。")
+            return false
+        }
+
+        // 重複: それぞれプレイヤーにつき同じ名前のワールドはひとつのみ所有できる
+        if (MyWorldManager.registeredMyWorld.filter {it.owner == owner}.any {it.name == name}) {
+            owner.sendMessage("§c既に同じ名前のワールドを作成しています。再度入力してください。")
+            return false
+        }
+
+        // 上記いずれにも引っ掛からなければ通ってヨシ
+        return true
     }
 }

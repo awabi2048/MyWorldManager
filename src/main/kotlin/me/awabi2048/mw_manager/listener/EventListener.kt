@@ -8,11 +8,22 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.server.ServerLoadEvent
+import org.bukkit.event.world.WorldLoadEvent
 
 object EventListener : Listener {
+    // MyWorldははじめロードしないようにする
+    @EventHandler
+    fun onServerLoad(event: WorldLoadEvent) {
+        MyWorldManager.unloadMyWorlds()
+    }
+
     private fun updateTask(world: World) {
         // データファイルのアップデート
         MyWorldManager.updateData()
+
+        // 無人ワールドのアンロード
+
 
         // ワールドの情報とファイル上のデータの同期
         if (world.name.startsWith("my_world.")) {

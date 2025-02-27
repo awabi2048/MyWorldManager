@@ -4,6 +4,7 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.CreationStage.*
+import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.my_world.TemplateWorld
 import me.awabi2048.mw_manager.ui.ConfirmationUI
 import org.bukkit.Sound
@@ -32,15 +33,8 @@ object WorldCreationSessionListener : Listener {
                 return
             }
 
-            // ブラックリスト判定
-            if (Lib.checkIfContainsBlacklisted(registerWorldName)) {
-                event.player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
-                return
-            }
-
-            // 文字種判定
-            if (!Lib.checkIfAlphaNumeric(registerWorldName)) {
-                event.player.sendMessage("§cワールド名には半角英数字のみ使用可能です。再度入力してください。")
+            // 各種判定
+            if (!Lib.checkWorldNameAvailable(registerWorldName, event.player)) {
                 return
             }
 
@@ -48,6 +42,7 @@ object WorldCreationSessionListener : Listener {
 
             // 確認メニュー開く
             val confirmationUI = ConfirmationUI(event.player, ConfirmationUI.UIData.OnCreationName(registerWorldName))
+            event.player.playSound(event.player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             confirmationUI.open(true)
         }
     }
@@ -76,6 +71,8 @@ object WorldCreationSessionListener : Listener {
             val templateId = (event.currentItem?.itemMeta?.lore?.get(1) ?: return).drop(2)
             val templateWorld = TemplateWorld(templateId)
 
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+
             // プレビュー開始
             if (event.isLeftClick && !event.isShiftClick) {
                 // TODO: プレビュー時に読み込みが挟まないようにしたい
@@ -99,8 +96,11 @@ object WorldCreationSessionListener : Listener {
     @EventHandler
     fun onInventoryClose (event: InventoryCloseEvent) {
         if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER) {
-            creationDataSet.removeIf {it.player == event.player}
-            event.player.sendMessage("§cメニューを閉じたため、作成をキャンセルしました。")
+            val player = event.player as Player
+
+            creationDataSet.removeIf {it.player == player}
+            player.sendMessage("§cメニューを閉じたため、作成をキャンセルしました。")
+            player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 0.5f)
         }
     }
 }

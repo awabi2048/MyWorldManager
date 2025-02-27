@@ -347,6 +347,10 @@ class MyWorld(val uuid: String) {
 
     fun warpPlayer(player: Player): Boolean {
         if (isRegistered) {
+            if (Bukkit.getWorld("my_world.$uuid") == null) {
+                Bukkit.createWorld(WorldCreator("my_world.$uuid"))
+            }
+
             val warpLocation = when (player) {
                 in members!! -> memberSpawnLocation!!
                 else -> guestSpawnLocation!!

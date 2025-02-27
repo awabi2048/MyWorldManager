@@ -44,22 +44,20 @@ object WorldSettingListener : Listener {
 
             val text = event.message
 
-            if (Lib.checkIfContainsBlacklisted(text)) {
-                PlayerNotification.BLACKLISTED_STRING.send(event.player)
-                return
-            }
-
-            if (state == PlayerWorldSettingState.CHANGE_NAME && !Lib.checkIfAlphaNumeric(text)) {
-                event.player.sendMessage("§cワールド名には半角英数字のみ利用可能です。再度入力してください。")
-                return
-            }
-
             if (state == PlayerWorldSettingState.CHANGE_NAME) {
+                if (!Lib.checkWorldNameAvailable(text, event.player)) return
+
                 world.name = text
                 event.player.sendMessage("§eワールドの名前が §6${text} §eに変更されました！")
             }
 
             if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
+                // ブラックリスト判定
+                if (Lib.checkIfContainsBlacklisted(text)) {
+                    event.player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
+                    return
+                }
+
                 world.description = text
                 event.player.sendMessage("§eワールドの説明が §6${text} §eに変更されました！")
             }

@@ -128,4 +128,21 @@ object Config {
             DataFiles.config.set("cancel_flag", value)
             DataFiles.save()
         }
+
+    var availableWorldNameLength: IntRange
+        get() {
+            val minLength = section.getInt("min_world_name_length").coerceAtLeast(1)
+            val maxLength = section.getInt("min_world_name_length").coerceAtLeast(minLength)
+
+            return minLength..maxLength
+        }
+        set(value) {
+            val minLength = value.min()
+            val maxLength = value.max()
+
+            DataFiles.config.set("min_world_name_length", minLength)
+            DataFiles.config.set("max_world_name_length", maxLength)
+
+            DataFiles.save()
+        }
 }

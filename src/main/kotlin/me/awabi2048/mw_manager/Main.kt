@@ -45,6 +45,7 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(VoteListener, instance)
         server.pluginManager.registerEvents(WorldSettingListener, instance)
         server.pluginManager.registerEvents(MiscInteractiveUIListener, instance)
+
     }
 
     override fun onDisable() {

@@ -18,7 +18,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
         }
 
         if (p3?.size != 1) {
-            p0.sendMessage("$prefix §c無効なコマンドです。")
+            p0.sendMessage("§c無効なコマンドです。")
             return true
         }
 
@@ -26,14 +26,19 @@ object VisitCommand: CommandExecutor, TabCompleter {
 
         // 引数チェック
         if (targetWorld == null) {
-            p0.sendMessage("$prefix §c指定されたワールドが見つかりませんでした。")
+            p0.sendMessage("§c指定されたワールドが見つかりませんでした。")
             return true
         }
 
         // ワールドの訪問可否チェック
-        if (targetWorld.publishLevel == PublishLevel.PRIVATE) {
-            p0.sendMessage("$prefix §7指定されたワールドは§c非公開設定§7であるため、訪問できません。")
+        if (!p0.hasPermission("mw_manager.admin") && targetWorld.publishLevel == PublishLevel.PRIVATE) {
+            p0.sendMessage("§7指定されたワールドは§c非公開設定§7であるため、訪問できません。")
+            p0.playSound(p0, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
             return true
+        }
+
+        if (p0.hasPermission("mw_manager.admin") && targetWorld.publishLevel == PublishLevel.PRIVATE) {
+            p0.sendMessage("$prefix §e管理者権限により、公開設定をバイパスします。")
         }
 
         // 問題なければワープ

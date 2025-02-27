@@ -1,6 +1,6 @@
 package me.awabi2048.mw_manager.my_world
 
-import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import org.bukkit.Bukkit
 import org.bukkit.WorldCreator
@@ -36,12 +36,13 @@ object MyWorldManager {
     }
 
     fun updateData() {
-        // 存在しないワールドをworld_data.ymlから削除
+        // 存在しないワールドをworld_data.yml・MVから削除
         DataFiles.worldData.getKeys(false).forEach { uuid ->
             String
             if (Bukkit.getWorld("my_world.$uuid") == null) {
-                instance.logger.info("Removed world data which its world does not exist from world_data.yml. (UUID: $uuid)")
                 DataFiles.worldData.set(uuid, null)
+
+                mvWorldManager.removeWorldFromConfig("my_world.$uuid")
             }
         }
 
@@ -60,8 +61,9 @@ object MyWorldManager {
         DataFiles.save()
     }
 
-    fun updateTask(myWorld: MyWorld) {
-        updateData()
-        myWorld.sync()
+    fun unloadMyWorlds() {
+        registeredMyWorld.forEach {
+            Bukkit.unloadWorld(it.vanillaWorld!!, false)
+        }
     }
 }

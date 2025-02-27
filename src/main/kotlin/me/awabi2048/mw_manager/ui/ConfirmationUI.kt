@@ -97,6 +97,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
 
     override fun open(firstOpen: Boolean) {
         owner.openInventory(ui)
+        owner.playSound(owner, Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f)
     }
 
     override fun construct(): Inventory {

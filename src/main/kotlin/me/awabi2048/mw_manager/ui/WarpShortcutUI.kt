@@ -69,7 +69,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
                 owner.closeInventory()
 
-                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】をワープショートカットから§c削除§7しました。")
+                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】§7をワープショートカットから§c削除§7しました。")
                 owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
             }
         }
