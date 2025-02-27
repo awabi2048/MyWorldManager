@@ -7,7 +7,7 @@ import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.CreationData
-import me.awabi2048.mw_manager.my_world.CreationLevel
+import me.awabi2048.mw_manager.my_world.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.player_expansion.notify
@@ -125,7 +125,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         if (sender is Player) {
             if (creationDataSet.any {it.player == sender}) creationDataSet.removeIf {it.player == sender}
 
-            val creationData = CreationData(sender, null, null, CreationLevel.WORLD_NAME)
+            val creationData = CreationData(sender, null, null, CreationStage.WORLD_NAME)
             creationDataSet += creationData
 
             // 最初 → ワールド名設定

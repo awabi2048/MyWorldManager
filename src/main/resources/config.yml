@@ -17,3 +17,7 @@ global_world_count_max: 40
 oage_ganbaru_message:
   - よいしょ！
 
+escape_world: "world"
+escape_pos: "(0, 0, 0)"
+
+cancel_flag: "_cancel"

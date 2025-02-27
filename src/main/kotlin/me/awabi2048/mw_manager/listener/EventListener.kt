@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager.listener
 
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import org.bukkit.Sound
 import org.bukkit.World
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -25,6 +27,9 @@ object EventListener : Listener {
 
         // テンプレートワールドの中にいたら追い出す
         if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
+            val escapeLocation = Config.escapeLocation?: return
+            event.player.teleport(escapeLocation)
+            event.player.playSound(event.player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
         }
     }
 

@@ -9,11 +9,11 @@ import java.util.*
 data class CreationData(
     val player: Player,
     var worldName: String?,
-    var sourceWorldName: String?,
-    var creationLevel: CreationLevel,
+    var templateId: String?,
+    var creationStage: CreationStage,
 ) {
     fun register() {
-        if (worldName != null && sourceWorldName != null) {
+        if (worldName != null && templateId != null) {
             val uuid = UUID.randomUUID().toString()
             val myWorld = MyWorld(uuid)
 
@@ -24,7 +24,7 @@ data class CreationData(
             Bukkit.getScheduler().runTaskLater(
                 instance,
                 Runnable {
-                    myWorld.initiate(sourceWorldName!!, player, worldName!!)
+                    myWorld.initiate(templateId!!, player, worldName!!)
                 },
                 10L
             )
