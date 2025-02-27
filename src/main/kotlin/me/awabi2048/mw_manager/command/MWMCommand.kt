@@ -20,7 +20,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
 
         when (option) {
             CREATE -> subcommandExecutor.create()
-            INFO -> TODO()
+            INFO -> subcommandExecutor.info()
             DEACTIVATE -> TODO()
             ACTIVATE -> TODO()
             UPDATE -> subcommandExecutor.update()
@@ -37,21 +37,6 @@ object MWMCommand : CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        if (p3.isNullOrEmpty()) return Option.entries.map { it.toString().lowercase() }.toMutableList()
-
-//        if (p3[0] == "create") {
-//
-//            if (p3.size == 1) return listOf("player:", "puuid:")
-//            if (p3.size == 2) {
-//                if (p3[1].startsWith("player:")) return listOf()
-//                if (p3[1].startsWith("puuid:")) return listOf()
-//            }
-//            if (p3.size == 3) {
-//                if (p3[2].startsWith("world:")) return MyWorldManager.registeredMyWorld.map { it.name!! }
-//                if (p3[2].startsWith("wuuid:")) return MyWorldManager.registeredMyWorld.map { it.uuid }
-//            }
-//        }
-//
-        return mutableListOf()
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

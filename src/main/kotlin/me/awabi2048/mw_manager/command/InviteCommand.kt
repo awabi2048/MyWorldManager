@@ -70,9 +70,6 @@ object InviteCommand: CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        when (p3?.size) {
-            1 -> return Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
-            else -> return mutableListOf()
-        }
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

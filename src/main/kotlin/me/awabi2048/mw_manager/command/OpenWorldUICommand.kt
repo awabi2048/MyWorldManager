@@ -7,9 +7,11 @@ import me.awabi2048.mw_manager.ui.WorldManagementUI
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import sun.tools.jconsole.Tab
 
-object OpenWorldUICommand : CommandExecutor {
+object OpenWorldUICommand : CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (p0 !is Player) {
             p0.sendMessage("MVM >> This command is only available on player execution.")
@@ -36,5 +38,14 @@ object OpenWorldUICommand : CommandExecutor {
         menu.open(true)
 
         return true
+    }
+
+    override fun onTabComplete(
+        p0: CommandSender,
+        p1: Command,
+        p2: String,
+        p3: Array<out String>?,
+    ): MutableList<String> {
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

@@ -3,10 +3,12 @@ package me.awabi2048.mw_manager.command
 import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.player_data.PlayerData
 import org.bukkit.Bukkit
+import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.entity.Player
 
 // /worldpoint %player% add|subtract|set|get %value%?
 object WorldPointCommand : CommandExecutor, TabCompleter {
@@ -47,17 +49,15 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
             }
 
             // 通知のため値を保管する
-            val modifiedValue = when (option) {
-                "add" -> data.worldPoint + value
-                "subtract" -> data.worldPoint - value
-                "set" -> data.worldPoint
-                else -> data.worldPoint
+            when (option) {
+                "add" -> data.worldPoint += value
+                "subtract" -> data.worldPoint -= value
+                "set" -> data.worldPoint = value
+                else -> return true
             }
 
-            data.worldPoint = modifiedValue
-
             // 結果の通知
-            p0.sendMessage("$prefix §e${player.displayName}§7のワールドポイントを§a${modifiedValue}§7に変更しました。")
+            p0.sendMessage("$prefix §e${player.displayName} §7のワールドポイントを §a${data.worldPoint} §7に変更しました。")
 
         } else if (p3.size == 2) {
             if (option != "get") {
@@ -66,7 +66,7 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
             }
 
             // 結果の送信
-            p0.sendMessage("$prefix §e${player.displayName}§7のワールドポイントは、現在§a${data.worldPoint}です。")
+            p0.sendMessage("$prefix §e${player.displayName} §7のワールドポイントは、現在 §a${data.worldPoint} §7です。")
 
         }
 
@@ -79,6 +79,6 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return mutableListOf()
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

@@ -6,9 +6,10 @@ import me.awabi2048.mw_manager.ui.WarpShortcutUI
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-object WarpCommand: CommandExecutor {
+object WarpCommand : CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (p0 !is Player) {
             p0.sendMessage("MVM >> This command is only available on player execution.")
@@ -46,5 +47,14 @@ object WarpCommand: CommandExecutor {
             p0.sendMessage("§c無効なコマンドです。")
             return true
         }
+    }
+
+    override fun onTabComplete(
+        p0: CommandSender,
+        p1: Command,
+        p2: String,
+        p3: Array<out String>?,
+    ): MutableList<String> {
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

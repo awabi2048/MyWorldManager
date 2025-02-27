@@ -36,10 +36,10 @@ object Lib {
         }
     }
 
-    fun convertPlayerSpecifier(specifier: String): Player? {
+    fun translatePlayerSpecifier(specifier: String): Player? {
         val player = when (specifier.split(":")[0]) {
             "player" -> Bukkit.getPlayer(specifier.split(":")[1])
-            "puuid" -> Bukkit.getPlayer(UUID.fromString(specifier.split(":")[1]))
+            "uuid" -> Bukkit.getPlayer(UUID.fromString(specifier.split(":")[1]))
             else -> null
         }
 

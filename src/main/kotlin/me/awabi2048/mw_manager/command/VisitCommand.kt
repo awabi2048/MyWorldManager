@@ -52,7 +52,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
         p1: Command,
         p2: String,
         p3: Array<out String>?,
-    ): MutableList<String>? {
-        TODO("Not yet implemented")
+    ): MutableList<String> {
+        return CommandManager.getTabCompletion(p3?.toList(), this)
     }
 }

@@ -36,7 +36,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         val sourceWorldName = args[2]
         val worldName = args[3]
 
-        val owner = Lib.convertPlayerSpecifier(ownerSpecifier)
+        val owner = Lib.translatePlayerSpecifier(ownerSpecifier)
         val uuid = UUID.randomUUID().toString()
 
         if (owner == null) {
@@ -67,7 +67,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        if (args[1].startsWith("world:") || args[1].startsWith("wuuid:")) {
+        if (args[1].startsWith("world:") || args[1].startsWith("uuid:")) {
             val worldSpecifier = args[1].substringAfter("world:")
             val specifiedWorld = Lib.translateWorldSpecifier(worldSpecifier)
 
@@ -83,7 +83,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         if (args[1].startsWith("player:") || args[1].startsWith("puuid:")) {
             val playerSpecifier = args[1].substringAfter("player:")
-            val specifiedPlayer = Lib.convertPlayerSpecifier(playerSpecifier)
+            val specifiedPlayer = Lib.translatePlayerSpecifier(playerSpecifier)
 
             if (specifiedPlayer == null) {
                 sender.notify("§c指定されたプレイヤーが見つかりませんでした。", null)
