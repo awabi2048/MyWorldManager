@@ -11,6 +11,7 @@ import me.awabi2048.mw_manager.my_world.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.player_expansion.notify
+import me.awabi2048.mw_manager.ui.WorldInfoListUI
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -62,44 +63,72 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     }
 
     fun info() {
-        if (args.size !in 2..3) {
-            sender.notify("§c無効なコマンドです。", null)
+        // ワールド指定 → そのワールドのデータをチャット欄に表示
+        // プレイヤー指定 → そのプレイヤーの所属するワールドを一覧表示
+        // 指定なし → この世のすべてのワールドを一覧表示
+
+        if (sender !is Player) {
+            sender.sendMessage("§cこのコマンドはプレイヤーからのみ実行可能です。")
             return
         }
 
-        if (args[1].startsWith("world:") || args[1].startsWith("uuid:")) {
-            val worldSpecifier = args[1].substringAfter("world:")
-            val specifiedWorld = Lib.translateWorldSpecifier(worldSpecifier)
+        // /mwm info
+        if (args.size == 1) {
+            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.toSet(), 1)
+            ui.open(true)
+        }
 
-            if (specifiedWorld == null) {
-                sender.notify("§c指定されたワールドが見つかりませんでした。", null)
+        // /mwm info %page%
+        if (args.size == 2 && args[1].toIntOrNull() != null) {
+            val page = args[1].toInt()
+            val pageRange = 1.. MyWorldManager.registeredMyWorld.size / 36 + 1
+
+            if (page !in pageRange) {
+                sender.sendMessage("§c無効なページの指定です。")
                 return
             }
 
-            specifiedWorld.fixedData.forEach {
+            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.toSet(), page)
+            ui.open(true)
+        }
+
+        // /mwm info %world%
+        if (args.size == 2 && Lib.translateWorldSpecifier(args[1]) != null) {
+            val world = Lib.translateWorldSpecifier(args[1])!!
+
+            sender.sendMessage("§8【§a${world.name}§8】 §eのデータ")
+            world.fixedData.forEach {
                 sender.sendMessage(it)
             }
+
+            return
         }
 
-        if (args[1].startsWith("player:") || args[1].startsWith("puuid:")) {
-            val playerSpecifier = args[1].substringAfter("player:")
-            val specifiedPlayer = Lib.translatePlayerSpecifier(playerSpecifier)
+        // /mwm info %player%
+        if (args.size == 2 && Lib.translatePlayerSpecifier(args[1]) != null) {
+            val player = Lib.translatePlayerSpecifier(args[1])!!
 
-            if (specifiedPlayer == null) {
-                sender.notify("§c指定されたプレイヤーが見つかりませんでした。", null)
+            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.filter {it.members!!.contains(player)}.toSet(), 1)
+            ui.open(true)
+        }
+
+        // /mwm info %player% %page%
+        if (args.size == 3 && Lib.translatePlayerSpecifier(args[1]) != null && args[2].toIntOrNull() != null) {
+            val player = Lib.translatePlayerSpecifier(args[1])!!
+            val page = args[2].toInt()
+
+            val pageRange = 1.. MyWorldManager.registeredMyWorld.size / 36 + 1
+
+            if (page !in pageRange) {
+                sender.sendMessage("§c無効なページの指定です。")
                 return
             }
 
-            val worlds = MyWorldManager.registeredMyWorld.filter { it.owner == specifiedPlayer }
-
-            worlds.forEach {
-
-            }
+            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.filter {it.members!!.contains(player)}.toSet(), page)
+            ui.open(true)
         }
 
-        //
-        val specifier = args[1]
-
+        return
     }
 
     fun update() {

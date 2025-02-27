@@ -23,6 +23,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
         data class OnCreationTemplate(val templateId: String) : UIData()
         data class AddWarpShortcut(val targetWorld: MyWorld) : UIData()
         data class RemoveWarpShortcut(val targetWorld: MyWorld) : UIData()
+        data class WorldAdminDelete(val world: MyWorld): UIData()
     }
 
     private fun onConfirm() {
@@ -75,6 +76,11 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                 owner.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットから§c削除§7しました。")
                 owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
             }
+
+            is UIData.WorldAdminDelete -> {
+                owner.sendMessage("$prefix §b${uiData.world.name} §7を§c削除§7しました。")
+                uiData.world.delete()
+            }
         }
     }
 
@@ -106,6 +112,10 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                 // ワープメニュー開く
                 val warpShortcutUI = WarpShortcutUI(owner)
                 warpShortcutUI.open(false)
+            }
+
+            is UIData.WorldAdminDelete -> {
+                owner.closeInventory()
             }
         }
     }
@@ -154,6 +164,8 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
 
             is UIData.AddWarpShortcut -> "§7ワープショートカットに§8【§a${uiData.targetWorld.name}§8】§7を§a追加§7する"
             is UIData.RemoveWarpShortcut -> "§7ワープショートカットから§8【§a${uiData.targetWorld.name}§8】§7を§c削除§7する"
+
+            is UIData.WorldAdminDelete -> "§8【§a${uiData.world.name}§8】§7を§c完全消去§7する"
         }
 
         val contentInfo = when (uiData) {
@@ -162,14 +174,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
 
             is UIData.AddWarpShortcut -> "§c追加したワールドはいつでも削除できます"
             is UIData.RemoveWarpShortcut -> "§c§nこの操作は復元できません"
-        }
-
-        val breadcrumb = when (uiData) {
-            is UIData.OnCreationName -> "§0WorldCreation » Name"
-            is UIData.OnCreationTemplate -> "§0WorldCreation » Template"
-
-            is UIData.AddWarpShortcut -> "§0WarpShortcut » Add"
-            is UIData.RemoveWarpShortcut -> "§0WarpShortcut » Remove"
+            is UIData.WorldAdminDelete -> "§c§l§nこの操作は復元できません"
         }
 
         val contentIcon = ItemStack(Material.REDSTONE_TORCH)
@@ -180,8 +185,6 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                     Component.text(bar),
                     Component.text("$index $content"),
                     Component.text("$index $contentInfo"),
-                    Component.text(bar),
-                    Component.text(breadcrumb),
                     Component.text(bar),
                 )
             )

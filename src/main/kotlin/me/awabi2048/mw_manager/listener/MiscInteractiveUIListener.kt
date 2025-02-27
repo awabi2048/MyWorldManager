@@ -1,8 +1,7 @@
 package me.awabi2048.mw_manager.listener
 
-import me.awabi2048.mw_manager.Main
+import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.confirmationTracker
-import me.awabi2048.mw_manager.ui.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.ConfirmationUI
 import me.awabi2048.mw_manager.ui.WarpShortcutUI
 import net.kyori.adventure.text.TextComponent
@@ -25,5 +24,31 @@ object MiscInteractiveUIListener : Listener {
         if (event.view.title != "§8§l確認") return
         val tracker = confirmationTracker.find {it.player == event.whoClicked}?: return
         ConfirmationUI(tracker.player, tracker.uiData).onClick(event)
+    }
+
+    @EventHandler
+    fun onAdminInfoUIClick(event: InventoryClickEvent) {
+        if (event.view.title != "§8§lワールドデータの管理") return
+
+        event.isCancelled = true
+
+        if (event.slot !in 9..44) return
+        if (event.currentItem?.itemMeta?.isHideTooltip == true) return
+        println((event.currentItem!!.itemMeta!!.lore()!![2] as TextComponent).content())
+        println((event.currentItem!!.itemMeta!!.itemName() as TextComponent).content())
+        val ownerName = (event.currentItem!!.itemMeta.lore()!![2] as TextComponent).content().drop(15)
+        val worldName = (event.currentItem!!.itemMeta.itemName() as TextComponent).content().drop(5).dropLast(3)
+
+        val world = Lib.translateWorldSpecifier("$ownerName:$worldName")?: return
+        val player = event.whoClicked as Player
+
+        if (event.click.isLeftClick) {
+            world.warpPlayer(player)
+        }
+
+        if (event.click.isRightClick) {
+            val ui = ConfirmationUI(player, ConfirmationUI.UIData.WorldAdminDelete(world))
+            ui.open(true)
+        }
     }
 }

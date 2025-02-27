@@ -158,19 +158,8 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
         val infoIcon = ItemStack(world.iconMaterial!!)
         infoIcon.itemMeta = infoIcon.itemMeta.apply {
             setItemName("§7【§a${world.name}§7】")
-            lore = listOf(
-                bar,
-                "$index §7${world.description}",
-                "$index §7拡張レベル §e§l${world.borderExpansionLevel}§7/${Config.borderExpansionMax}",
-                bar,
-                "$index §7最終更新日時 §b${Lib.formatDate(world.lastUpdated!!)}",
-                "$index §8§n${Lib.formatDate(world.expireDate!!)} §8に期限切れ (§8§n${
-                    ChronoUnit.DAYS.between(LocalDate.now(), world.expireDate)
-                }日後§8)",
-                "$index §7メンバー §e${world.members!!.size}人 §7(オンライン: §a${world.members!!.filter { it.isOnline }.size}人§7)",
-                "$index §7公開レベル §e${world.publishLevel!!.toJapanese()}",
-                bar,
-            )
+
+            lore = world.fixedData
         }
 
         // 設定ゾーン: 名前・説明

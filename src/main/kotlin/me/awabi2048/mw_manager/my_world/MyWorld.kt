@@ -19,6 +19,7 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import java.io.File
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.math.pow
 
@@ -150,15 +151,30 @@ class MyWorld(val uuid: String) {
 
     val fixedData: List<String>
         get() {
+            val bar = "§7" + "━".repeat(30)
+            val index = "§f§l|"
+
+            val expireState = when(isOutDated!!) {
+                true -> "$index §c§n${Lib.formatDate(expireDate!!)} に期限切れ §8(§c§n${ChronoUnit.DAYS.between(LocalDate.now(), expireDate)}日前§8)"
+                false -> "$index §8§n${Lib.formatDate(expireDate!!)} §8に期限切れ (§8§n${ChronoUnit.DAYS.between(LocalDate.now(), expireDate)}日後§8)"
+            }
+
+            val ownerOnlineState = when(owner!!.isOnline) {
+                true -> "§a"
+                false -> "§c"
+            }
+
             return listOf(
-                "§7- §fUUID: §b$uuid",
-                "§7- §fWorld Name: §b$name",
-                "§7- §fSource: §b$sourceWorldName",
-                "§7- §fLast Updated: ${lastUpdated.toString()} (Expires in ${
-                    expireDate?.toEpochDay()?.minus(LocalDate.now().toEpochDay())
-                })",
-                "§7- §fOwner: §b${owner?.displayName}",
-                "§7- §fMembers: §b${members!!.joinToString()}",
+                bar,
+                "$index §7${description}",
+                "$index §7オーナー $ownerOnlineState${owner!!.displayName}",
+                "$index §7拡張レベル §e§l${borderExpansionLevel}§7/${Config.borderExpansionMax}",
+                bar,
+                "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
+                expireState,
+                "$index §7メンバー §e${members!!.size}人 §7(オンライン: §a${members!!.filter { it.isOnline }.size}人§7)",
+                "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
+                bar,
             )
         }
 
@@ -451,6 +467,21 @@ class MyWorld(val uuid: String) {
 
         target.sendMessage("§b${inviter}さん§7がワールドのメンバーに招待しました！ $text")
         target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
+    }
+
+    fun delete(): Boolean {
+        if (isRegistered) {
+
+            mvWorldManager.removePlayersFromWorld("my_world.$uuid")
+            mvWorldManager.removeWorldFromConfig("my_world.$uuid")
+            mvWorldManager.deleteWorld("my_world.$uuid")
+
+            DataFiles.worldData.set(uuid, null)
+            DataFiles.save()
+
+            return true
+
+        } else return false
     }
 }
 
