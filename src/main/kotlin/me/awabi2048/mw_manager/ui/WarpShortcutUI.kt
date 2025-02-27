@@ -44,12 +44,9 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                     return
                 }
 
-                playerData.warpShortcuts += uuid
-
-                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】をワープショートカットに§a追加§7しました！")
-                owner.playSound(owner, Sound.BLOCK_SMITHING_TABLE_USE, 1.0f, 1.0f)
-
-                owner.closeInventory()
+                // 確認メニュー
+                val confirmationUI = ConfirmationUI(owner, ConfirmationUI.UIData.AddWarpShortcut(world))
+                confirmationUI.open(true)
 
             } else { // 登録済み: ワープ
 
@@ -59,18 +56,16 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 owner.sendMessage("§7登録済みのショートカット先へワープします...")
                 targetWorld.warpPlayer(owner)
             }
+
             // 右クリック → 削除
         } else if (event.isRightClick && !event.isShiftClick) {
             if (itemName != "§b未登録") {
-
+                // 確認メニュー
                 val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
-                val playerData = PlayerData(owner)
-                playerData.warpShortcuts -= uuid
+                val world = MyWorld(uuid)
 
-                owner.closeInventory()
-
-                owner.sendMessage("§8【§a${MyWorld(uuid).name}§8】§7をワープショートカットから§c削除§7しました。")
-                owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
+                val confirmationUI = ConfirmationUI(owner, ConfirmationUI.UIData.RemoveWarpShortcut(world))
+                confirmationUI.open(true)
             }
         }
     }
@@ -79,7 +74,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
         //
         owner.openInventory(ui)
         if (firstOpen) {
-            owner.playSound(owner, Sound.ENTITY_ENDERMAN_AMBIENT, 1.0f, 1.0f)
+            owner.playSound(owner, Sound.BLOCK_CHEST_OPEN, 1.0f, 2.0f)
             owner.playSound(owner, Sound.ENTITY_ILLUSIONER_PREPARE_MIRROR, 1.0f, 1.2f)
         }
     }
@@ -113,7 +108,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
             return slot
         }
 
-        val menu = createTemplate(4, "§8§lWarp Shortcut")!!
+        val menu = createTemplate(4, "§8§lワープショートカット")!!
 
         val playerData = PlayerData(owner)
 

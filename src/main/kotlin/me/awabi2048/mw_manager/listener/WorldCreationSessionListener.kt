@@ -42,30 +42,18 @@ object WorldCreationSessionListener : Listener {
 
             // 確認メニュー開く
             val confirmationUI = ConfirmationUI(event.player, ConfirmationUI.UIData.OnCreationName(registerWorldName))
-            event.player.playSound(event.player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
+            event.player.playSound(event.player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             confirmationUI.open(true)
         }
     }
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
-        val isConfirmationUI = event.view.title == "§8§l確認"
         val creationData = creationDataSet.find { it.player == event.whoClicked } ?: return
         val player = event.whoClicked as Player
 
-        // 確認メニュー
-        if (isConfirmationUI) {
-            val ui = when(creationData.creationStage) {
-                WORLD_NAME -> ConfirmationUI(player, ConfirmationUI.UIData.OnCreationName(creationData.worldName!!))
-                CLONE_SOURCE -> ConfirmationUI(player, ConfirmationUI.UIData.OnCreationTemplate(creationData.templateId!!))
-                else -> null
-            }?: return
-
-            ui.onClick(event)
-        }
-
         // ソース選択
-        if (!isConfirmationUI && creationData.creationStage == CLONE_SOURCE) {
+        if (creationData.creationStage == CLONE_SOURCE) {
             event.isCancelled = true
 
             val templateId = (event.currentItem?.itemMeta?.lore?.get(1) ?: return).drop(2)

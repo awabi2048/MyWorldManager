@@ -1,11 +1,13 @@
 package me.awabi2048.mw_manager.ui
 
+import me.awabi2048.mw_manager.Main.Companion.confirmationTracker
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.my_world.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.player_data.PlayerData
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -53,8 +55,26 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                 )
             }
 
-            is UIData.AddWarpShortcut -> TODO()
-            is UIData.RemoveWarpShortcut -> TODO()
+            is UIData.AddWarpShortcut -> {
+                // 登録処理
+                val playerData = PlayerData(owner)
+                playerData.warpShortcuts += uiData.targetWorld.uuid
+
+                owner.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットに§a追加§7しました！")
+                owner.playSound(owner, Sound.BLOCK_SMITHING_TABLE_USE, 1.0f, 1.0f)
+
+                owner.closeInventory()
+            }
+
+            is UIData.RemoveWarpShortcut -> {
+                val playerData = PlayerData(owner)
+                playerData.warpShortcuts -= uiData.targetWorld.uuid
+
+                owner.closeInventory()
+
+                owner.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットから§c削除§7しました。")
+                owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
+            }
         }
     }
 
@@ -76,8 +96,17 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                 templateSelectUI.open(false)
             }
 
-            is UIData.AddWarpShortcut -> TODO()
-            is UIData.RemoveWarpShortcut -> TODO()
+            is UIData.AddWarpShortcut -> {
+                // ワープメニュー開く
+                val warpShortcutUI = WarpShortcutUI(owner)
+                warpShortcutUI.open(false)
+            }
+
+            is UIData.RemoveWarpShortcut -> {
+                // ワープメニュー開く
+                val warpShortcutUI = WarpShortcutUI(owner)
+                warpShortcutUI.open(false)
+            }
         }
     }
 
@@ -93,11 +122,15 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             true -> onConfirm()
             false -> onCancel()
         }
+
+        confirmationTracker.removeIf{it.player == owner}
     }
 
     override fun open(firstOpen: Boolean) {
         owner.openInventory(ui)
         owner.playSound(owner, Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f)
+
+        confirmationTracker.add(ConfirmationTracker(owner, uiData))
     }
 
     override fun construct(): Inventory {
@@ -127,8 +160,16 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             is UIData.OnCreationName -> "§cワールド名はあとから変更できます"
             is UIData.OnCreationTemplate -> "§c§nワールド生成後は変更できません。確定後、ワールドが作成されます！"
 
-            is UIData.AddWarpShortcut -> "§cいつでも削除できます"
+            is UIData.AddWarpShortcut -> "§c追加したワールドはいつでも削除できます"
             is UIData.RemoveWarpShortcut -> "§c§nこの操作は復元できません"
+        }
+
+        val breadcrumb = when (uiData) {
+            is UIData.OnCreationName -> "§0WorldCreation » Name"
+            is UIData.OnCreationTemplate -> "§0WorldCreation » Template"
+
+            is UIData.AddWarpShortcut -> "§0WarpShortcut » Add"
+            is UIData.RemoveWarpShortcut -> "§0WarpShortcut » Remove"
         }
 
         val contentIcon = ItemStack(Material.REDSTONE_TORCH)
@@ -139,6 +180,8 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                     Component.text(bar),
                     Component.text("$index $content"),
                     Component.text("$index $contentInfo"),
+                    Component.text(bar),
+                    Component.text(breadcrumb),
                     Component.text(bar),
                 )
             )

@@ -7,6 +7,7 @@ import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.listener.*
 import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.ui.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
@@ -20,6 +21,8 @@ class Main : JavaPlugin() {
 
         lateinit var creationDataSet: MutableSet<CreationData>
         var worldSettingState: MutableMap<Player, PlayerWorldSettingState> = mutableMapOf()
+
+        var confirmationTracker: MutableSet<ConfirmationTracker> = mutableSetOf()
 
         var invitationCodeMap = mutableMapOf<String, String>()
         var recruitmentCodeMap = mutableMapOf<String, String>()
