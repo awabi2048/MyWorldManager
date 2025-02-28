@@ -13,6 +13,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -22,7 +23,7 @@ import org.bukkit.event.player.PlayerChatEvent
 import org.bukkit.event.player.PlayerInteractEvent
 
 object WorldSettingListener : Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun onChatInput(event: PlayerChatEvent) {
         if (worldSettingState[event.player] !in listOf(
                 PlayerWorldSettingState.CHANGE_NAME,

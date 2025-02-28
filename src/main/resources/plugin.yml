@@ -50,7 +50,7 @@ commands:
   worldpoint:
     description: ""
 
-  warp:
+  worldwarp:
     description: ""
 
   mwm_invite_accept:

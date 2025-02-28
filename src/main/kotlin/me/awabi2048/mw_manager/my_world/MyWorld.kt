@@ -431,6 +431,7 @@ class MyWorld(val uuid: String) {
             //
             mvWorld!!.setAllowAnimalSpawn(false)
             mvWorld!!.setAllowMonsterSpawn(false)
+            mvWorld!!.setGameMode(GameMode.SURVIVAL)
 
             vanillaWorld!!.setGameRule(GameRule.KEEP_INVENTORY, true)
             vanillaWorld!!.setGameRule(GameRule.DO_PATROL_SPAWNING, false)

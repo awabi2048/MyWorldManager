@@ -46,8 +46,6 @@ object CommandManager {
 
         val size = args?.size ?: 0
 
-//        println("SIZE: $size, ARGS: $args")
-
         if (executor == VisitCommand) {
             if (size == 1) {
                 return worldSpecifier(args!![0])

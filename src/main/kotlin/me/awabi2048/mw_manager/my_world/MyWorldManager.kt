@@ -3,6 +3,7 @@ package me.awabi2048.mw_manager.my_world
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.World
 import org.bukkit.WorldCreator
 import java.io.File
@@ -26,6 +27,7 @@ object MyWorldManager {
         }
         registeredTemplateWorld.forEach {
             it.cbWorld!!.entities.filter {it.scoreboardTags.contains("mwm.template_preview")}.forEach{it.remove()}
+            it.mvWorld!!.setGameMode(GameMode.SPECTATOR)
         }
     }
 

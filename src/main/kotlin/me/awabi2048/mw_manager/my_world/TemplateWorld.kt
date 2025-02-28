@@ -12,9 +12,11 @@ import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.World
+import org.bukkit.command.ConsoleCommandSender
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.roundToInt
@@ -38,7 +40,7 @@ class TemplateWorld(val worldId: String) {
 
     val mvWorld: MultiverseWorld?
         get() {
-            return mvWorldManager.mvWorlds.find {it.cbWorld == cbWorld}
+            return mvWorldManager.mvWorlds.find { it.cbWorld == cbWorld }
         }
 
     val originLocation: Location
@@ -64,30 +66,49 @@ class TemplateWorld(val worldId: String) {
         val returnLocation = player.location
         val returnGamemode = player.gameMode
 
+        println("return data: $returnLocation, $returnGamemode")
+
         // プレイヤーに通知
+        player.sendMessage("§b「${name}」 §7をプレビュー中...")
+        player.sendMessage("§7${description}")
 
         // プレビューの準備
-        val previewEntity = cbWorld!!.spawnEntity(originLocation.add(0.0, 7.0, 0.0), EntityType.ARMOR_STAND) as ArmorStand
-        previewEntity.isMarker = true
-        previewEntity.isInvisible = true
+        originLocation.chunk.load() // チャンクをロードしないとTPできない
+
+        val previewLocation = originLocation.apply {
+            add(0.0, 7.0, 0.0)
+        }
+
+        val previewEntity =
+            cbWorld!!.spawnEntity(previewLocation, EntityType.ITEM_DISPLAY) as ItemDisplay
         previewEntity.addScoreboardTag("mwm.template_preview")
 
-        previewEntity.location.chunk.load() // チャンクをロードしないとTPできない
+        val previewTimeSec = 12
+        val delay = 6L
 
-        player.gameMode = GameMode.SPECTATOR
-        player.spectatorTarget = previewEntity
+        player.teleport(originLocation) // spectateでディメンションを跨ぐと、観察状態が強制的に解除される（バグ？）
 
-        val previewTimeSec = 18
+        // Multiverseの野郎のおかげで、同tickで処理すると上書きされる
+        Bukkit.getScheduler().runTaskLater(
+            instance,
+            Runnable {
+//                println("PLAYER START PREVIEW PROCESS")
+                player.gameMode = GameMode.SPECTATOR
+                player.spectatorTarget = previewEntity
+
+//                println("start spectate: ${player.spectatorTarget}, preview: $previewEntity")
+            }, delay
+        )
 
         // スケジュール: 終了後に原状復帰
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
+//                println("PLAYER END PREVIEW PROCESS")
                 // ここの解除で発火しないように
                 previewEntity.removeScoreboardTag("mwm.template_preview")
 
                 // スペクテイター解除
-                player.spectatorTarget = null
                 player.gameMode = returnGamemode
                 previewEntity.remove()
 
@@ -102,12 +123,13 @@ class TemplateWorld(val worldId: String) {
         // ぐるっと一周
         object : BukkitRunnable() {
             override fun run() {
+//                println("PREVIEW PROCESS")
                 val location = previewEntity.location.apply {
-                    yaw += 1.0f
-                    pitch = (sin(Math.toRadians(yaw.toDouble() / 2)) * 10).roundToInt().toFloat() // ピッチをいい感じにしたいけど、ラグでがたがたになる
+                    yaw += 1.5f
                 }
 
                 previewEntity.teleport(location)
+//                println("player spectator target: ${player.spectatorTarget}")
 
                 // 何かしらでワールドを抜けたら (終了時も含む)
                 if (player.world != cbWorld) {
@@ -118,10 +140,9 @@ class TemplateWorld(val worldId: String) {
                 if (!player.isOnline) {
                     previewEntity.remove()
                     cancel()
-                    creationDataSet.removeIf{it.player == player}
+                    creationDataSet.removeIf { it.player == player }
                 }
             }
-
-        }.runTaskTimer(instance, 0, 1)
+        }.runTaskTimer(instance, delay + 1, 0L)
     }
 }

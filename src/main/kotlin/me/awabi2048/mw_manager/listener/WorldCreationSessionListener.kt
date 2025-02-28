@@ -2,6 +2,7 @@ package me.awabi2048.mw_manager.listener
 
 import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.Main.Companion.confirmationTracker
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.CreationStage.*
@@ -12,6 +13,7 @@ import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
@@ -21,7 +23,7 @@ import org.bukkit.event.player.PlayerChatEvent
 import org.bukkit.event.player.PlayerLoginEvent
 
 object WorldCreationSessionListener : Listener {
-    @EventHandler()
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun onChatInput(event: PlayerChatEvent) {
         val creationData = creationDataSet.find { it.player == event.player } ?: return
         event.isCancelled = true
@@ -57,7 +59,7 @@ object WorldCreationSessionListener : Listener {
         val player = event.whoClicked as Player
 
         // ソース選択
-        if (creationData.creationStage == CLONE_SOURCE) {
+        if (creationData.creationStage == CLONE_SOURCE && !confirmationTracker.any {it.player == player}) {
             event.isCancelled = true
 
             val templateId = (event.currentItem?.itemMeta?.lore?.get(1) ?: return).drop(2)
@@ -89,7 +91,8 @@ object WorldCreationSessionListener : Listener {
 
     @EventHandler
     fun onInventoryClose (event: InventoryCloseEvent) {
-        if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER && event.inventory.type != InventoryType.PLAYER) {
+        println(event.inventory.type)
+        if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER && event.inventory.type == InventoryType.CHEST) {
             val player = event.player as Player
 
             creationDataSet.removeIf {it.player == player}
