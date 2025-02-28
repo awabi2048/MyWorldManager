@@ -84,7 +84,7 @@ class TemplateWorld(val worldId: String) {
         previewEntity.addScoreboardTag("mwm.template_preview")
 
         val previewTimeSec = 12
-        val delay = 6L
+        val delay = 8L
 
         player.teleport(originLocation) // spectateでディメンションを跨ぐと、観察状態が強制的に解除される（バグ？）
 

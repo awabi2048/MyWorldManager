@@ -6,10 +6,7 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.data_file.DataFiles
-import me.awabi2048.mw_manager.my_world.CreationData
-import me.awabi2048.mw_manager.my_world.CreationStage
-import me.awabi2048.mw_manager.my_world.MyWorld
-import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.player_expansion.notify
 import me.awabi2048.mw_manager.ui.WorldInfoListUI
 import org.bukkit.Sound
@@ -148,8 +145,28 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         sender.notify("§a指定されたワールドを更新しました。", null)
     }
 
-    fun toggleActive() {
+    fun setWorldState(state: WorldActivityState) {
+        // コマンド有効判定
+        if (args.size != 2) {
+            sender.sendMessage("$prefix §c無効なコマンドです。")
+            return
+        }
 
+        val world = Lib.translateWorldSpecifier(args[1])
+        if (world == null) {
+            sender.sendMessage("$prefix §c無効なワールド指定です。")
+            return
+        }
+
+        if (world.activityState == state) {
+            sender.sendMessage("§c指定されたワールドは、既に${state.toJapanese()}§c状態です。")
+            return
+        }
+
+        // 実行
+        world.activityState = state
+
+        sender.sendMessage("$prefix §aワールド「${world.name}」を${state.toJapanese()}状態に設定しました。")
     }
 
     fun startCreationSession() {

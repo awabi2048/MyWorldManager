@@ -2,6 +2,7 @@ package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.WorldActivityState
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandExecutor
 
@@ -87,12 +88,18 @@ object CommandManager {
                     if (size == 2) playerSpecifier(args[1]) else mutableListOf()
                 }
 
-                Option.DEACTIVATE -> {
-                    if (size == 2) worldSpecifier(args[1]) else mutableListOf()
+                Option.ARCHIVE -> {
+                    when (size) {
+                        2 -> worldSpecifier(args[1])
+                        else -> mutableListOf()
+                    }
                 }
 
                 Option.ACTIVATE -> {
-                    if (size == 2) worldSpecifier(args[1]) else mutableListOf()
+                    when (size) {
+                        2 -> worldSpecifier(args[1])
+                        else -> mutableListOf()
+                    }
                 }
 
                 Option.UPDATE -> {

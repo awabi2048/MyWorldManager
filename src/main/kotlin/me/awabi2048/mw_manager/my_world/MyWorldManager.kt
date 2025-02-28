@@ -1,5 +1,6 @@
 package me.awabi2048.mw_manager.my_world
 
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import org.bukkit.Bukkit
@@ -32,21 +33,17 @@ object MyWorldManager {
     }
 
     fun updateData() {
-        // 存在しないワールドをworld_data.yml・MVから削除
-        DataFiles.worldData.getKeys(false).forEach { uuid ->
-            String
-            if (Bukkit.getWorld("my_world.$uuid") == null) {
-                DataFiles.worldData.set(uuid, null)
-
-                mvWorldManager.removeWorldFromConfig("my_world.$uuid")
-            }
+        // どこにも存在しないワールドをworld_data.yml・MVから削除
+        DataFiles.worldData.getKeys(false).filter{!MyWorld(it).isRealWorld}.forEach {
+            DataFiles.worldData.set(it, null)
+            mvWorldManager.removeWorldFromConfig("my_world.$it")
         }
 
         // プレイヤーデータのワープから存在しないワールドを削除
         DataFiles.playerData.getKeys(false).forEach { uuid ->
             String
             val shortcuts = DataFiles.playerData.getStringList("$uuid.warp_shortcuts")
-            if (shortcuts.any { !MyWorld(it).isRegistered }) {
+            if (shortcuts.any { MyWorld(it).vanillaWorld == null }) {
 //                instance.logger.info("")
                 shortcuts.removeIf { !MyWorld(it).isRegistered }
                 DataFiles.playerData.set("$uuid.warp_shortcuts", shortcuts)

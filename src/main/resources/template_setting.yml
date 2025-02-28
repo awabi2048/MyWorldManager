@@ -22,4 +22,4 @@ template_1:
   icon: GRASS_BLOCK
 
   # スポーン座標（初期スポーン位置）
-  origin_location: "(59, 111, -84)"
+  origin_location: "(12, 75, -102)"

@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.command
 
-import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.command.Option.*
+import me.awabi2048.mw_manager.my_world.WorldActivityState
 import me.awabi2048.mw_manager.player_expansion.notify
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -21,8 +21,8 @@ object MWMCommand : CommandExecutor, TabCompleter {
         when (option) {
             CREATE -> subcommandExecutor.create()
             INFO -> subcommandExecutor.info()
-            DEACTIVATE -> TODO()
-            ACTIVATE -> TODO()
+            ARCHIVE -> subcommandExecutor.setWorldState(WorldActivityState.ARCHIVED)
+            ACTIVATE -> subcommandExecutor.setWorldState(WorldActivityState.ACTIVE)
             UPDATE -> subcommandExecutor.update()
             START_CREATION_SESSION -> subcommandExecutor.startCreationSession()
             RELOAD -> subcommandExecutor.reload()

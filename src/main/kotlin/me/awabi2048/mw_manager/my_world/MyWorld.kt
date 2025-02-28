@@ -58,7 +58,6 @@ class MyWorld(val uuid: String) {
                 dataSection?.getString("name")
             } else null
         }
-
         set(value) {
             if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.name", value)
@@ -72,7 +71,6 @@ class MyWorld(val uuid: String) {
                 dataSection?.getString("description")
             } else null
         }
-
         set(value) {
             if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.description", value)
@@ -154,12 +152,23 @@ class MyWorld(val uuid: String) {
             val bar = "§7" + "━".repeat(30)
             val index = "§f§l|"
 
-            val expireState = when(isOutDated!!) {
-                true -> "$index §c§n${Lib.formatDate(expireDate!!)} に期限切れ §8(§c§n${ChronoUnit.DAYS.between(LocalDate.now(), expireDate)}日前§8)"
-                false -> "$index §8§n${Lib.formatDate(expireDate!!)} §8に期限切れ (§8§n${ChronoUnit.DAYS.between(LocalDate.now(), expireDate)}日後§8)"
+            val expireState = when (isOutDated!!) {
+                true -> "$index §c§n${Lib.formatDate(expireDate!!)} に期限切れ §8(§c§n${
+                    ChronoUnit.DAYS.between(
+                        LocalDate.now(),
+                        expireDate
+                    )
+                }日前§8)"
+
+                false -> "$index §8§n${Lib.formatDate(expireDate!!)} §8に期限切れ (§8§n${
+                    ChronoUnit.DAYS.between(
+                        LocalDate.now(),
+                        expireDate
+                    )
+                }日後§8)"
             }
 
-            val ownerOnlineState = when(owner!!.isOnline) {
+            val ownerOnlineState = when (owner!!.isOnline) {
                 true -> "§a"
                 false -> "§c"
             }
@@ -258,6 +267,56 @@ class MyWorld(val uuid: String) {
             }
         }
 
+    var activityState: WorldActivityState?
+        get() {
+            if (isRegistered) {
+                return WorldActivityState.valueOf(dataSection?.getString("activity_state") ?: return null)
+            } else return null
+        }
+
+        set(value) {
+            if (value != null && isRegistered && value != activityState) { // ※ すでのその状態の場合は処理中断する
+                // データファイルに書き込み
+                DataFiles.worldData.set("$uuid.activity_state", value.toString())
+                DataFiles.save()
+
+                // データの移動
+                val worldContainerFile = instance.server.worldContainer
+                val worldDataFile = File(worldContainerFile.path + File.separator + "my_world.$uuid")
+                val archivedDataFile =
+                    File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
+
+                File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator).mkdir()
+                archivedDataFile.mkdir()
+                worldDataFile.mkdir()
+
+//                println("$worldDataFile, $worldContainerFile, $archivedDataFile")
+
+                when (value) {
+                    WorldActivityState.ACTIVE -> {
+                        // コピー後、削除（アーカイブ　→　ワールド）
+                        FileUtils.copyFolder(archivedDataFile, worldDataFile)
+                        FileUtils.deleteFolder(archivedDataFile)
+
+                        instance.logger.info("World activated. UUID: $uuid")
+                    }
+                    WorldActivityState.ARCHIVED -> {
+                        // コピー後、削除（アーカイブ　→　ワールド）
+                        FileUtils.copyFolder(worldDataFile, archivedDataFile)
+                        mvWorldManager.deleteWorld("my_world.$uuid")
+
+                        instance.logger.info("World archived. UUID: $uuid")
+                    }
+                }
+            }
+        }
+
+    val isRealWorld: Boolean
+        get() {
+            return Bukkit.getWorld("my_world.$uuid") == null && !File(instance.server.worldContainer.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid").exists()
+        }
+
+
     fun initiate(templateWorldName: String, owner: Player, registerWorldName: String?): Boolean {
         if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
             // clone world
@@ -286,49 +345,23 @@ class MyWorld(val uuid: String) {
                 "spawn_pos_member" to sourceWorldOrigin,
                 "border_center_pos" to sourceWorldOrigin,
                 "border_expansion_level" to 0,
+                "activity_state" to WorldActivityState.ACTIVE.name
             )
 
             DataFiles.worldData.createSection(uuid, map)
             DataFiles.save()
 
-            instance.logger.info("Registered world. UUID: $uuid, Expire Date: ${
-                LocalDate.now().plusDays(expireIn.toLong())
-            } (Expires in $expireIn days)")
+            instance.logger.info(
+                "Registered world. UUID: $uuid, Expire Date: ${
+                    LocalDate.now().plusDays(expireIn.toLong())
+                } (Expires in $expireIn days)"
+            )
 
             return true
         } else return false
     }
+    private fun activate(): Boolean {
 
-    fun deactivate(): Boolean {
-        if (mvWorld == null) return false
-        mvWorldManager.removePlayersFromWorld("my_world.$uuid")
-//        println(instance.dataFolder.parentFile.parentFile.path)
-        if (mvWorld == null) return false
-        val worldFile = File(instance.dataFolder.parentFile.parentFile.path + File.separator + "my_world.$uuid")
-        val storageFile = File(instance.dataFolder.path + File.separator + "inactive_worlds")
-
-        FileUtils.copyFolder(worldFile, storageFile)
-//        FileUtils.deleteFolder(worldFile)
-        mvWorldManager.deleteWorld("my_world.$uuid")
-
-        instance.logger.info("World deactivated. UUID: $uuid")
-
-        return true
-    }
-
-    fun activate(): Boolean {
-        if (mvWorld == null) return false
-//        println(instance.dataFolder.parentFile.parentFile.path)
-        if (mvWorld == null) return false
-        val worldFolder = File(instance.dataFolder.parentFile.parentFile.path + File.separator)
-        val worldFile =
-            File(instance.dataFolder.path + File.separator + "inactive_worlds" + File.separator + "my_world.$uuid")
-
-        FileUtils.copyFolder(worldFile, worldFolder)
-        FileUtils.deleteFolder(worldFile)
-//        mvWorldManager.deleteWorld("my_world.$uuid")
-
-        instance.logger.info("World activated. UUID: $uuid")
 
         return true
     }
