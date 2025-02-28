@@ -1,5 +1,6 @@
 package me.awabi2048.mw_manager.listener
 
+import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.data_file.Config
@@ -7,6 +8,7 @@ import me.awabi2048.mw_manager.my_world.CreationStage.*
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.my_world.TemplateWorld
 import me.awabi2048.mw_manager.ui.ConfirmationUI
+import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -14,10 +16,12 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason
+import org.bukkit.event.inventory.InventoryType
 import org.bukkit.event.player.PlayerChatEvent
+import org.bukkit.event.player.PlayerLoginEvent
 
 object WorldCreationSessionListener : Listener {
-    @EventHandler
+    @EventHandler()
     fun onChatInput(event: PlayerChatEvent) {
         val creationData = creationDataSet.find { it.player == event.player } ?: return
         event.isCancelled = true
@@ -65,6 +69,8 @@ object WorldCreationSessionListener : Listener {
             if (event.isLeftClick && !event.isShiftClick) {
                 // TODO: プレビュー時に読み込みが挟まないようにしたい
                 templateWorld.preview(player)
+                player.closeInventory()
+
                 player.sendMessage("§e「${templateWorld.name}」§7をプレビュー中...")
                 player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             }
@@ -83,12 +89,33 @@ object WorldCreationSessionListener : Listener {
 
     @EventHandler
     fun onInventoryClose (event: InventoryCloseEvent) {
-        if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER) {
+        if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER && event.inventory.type != InventoryType.PLAYER) {
             val player = event.player as Player
 
             creationDataSet.removeIf {it.player == player}
             player.sendMessage("§cメニューを閉じたため、作成をキャンセルしました。")
             player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 0.5f)
+        }
+    }
+
+    // プレビュー、スペクテイター外れようとしたとき
+    @EventHandler
+    fun onPlayerEscape(event: PlayerStopSpectatingEntityEvent) {
+        if (event.spectatorTarget.scoreboardTags.contains("mwm.template_preview")) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPlayerLogin(event: PlayerLoginEvent) {
+        println(event.player.world)
+        // テンプレートワールドの中にいたら追い出す
+        if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
+            val escapeLocation = Config.escapeLocation?: return
+
+            event.player.teleport(escapeLocation)
+            if (event.player.gameMode == GameMode.SPECTATOR) event.player.gameMode = event.player.previousGameMode?: GameMode.SURVIVAL
+            event.player.playSound(event.player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
         }
     }
 }

@@ -49,6 +49,9 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(WorldSettingListener, instance)
         server.pluginManager.registerEvents(MiscInteractiveUIListener, instance)
 
+        //
+        MyWorldManager.loadTemplateWorlds()
+
     }
 
     override fun onDisable() {

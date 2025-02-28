@@ -35,13 +35,6 @@ object EventListener : Listener {
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
         updateTask(event.player.world)
-
-        // テンプレートワールドの中にいたら追い出す
-        if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
-            val escapeLocation = Config.escapeLocation?: return
-            event.player.teleport(escapeLocation)
-            event.player.playSound(event.player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
-        }
     }
 
     @EventHandler

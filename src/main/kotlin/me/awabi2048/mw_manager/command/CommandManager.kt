@@ -18,7 +18,7 @@ object CommandManager {
         instance.getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
 
         instance.getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
-        instance.getCommand("warp")?.setExecutor(WarpCommand)
+        instance.getCommand("worldwarp")?.setExecutor(WarpCommand)
     }
 
     fun getTabCompletion(args: List<String>?, executor: CommandExecutor): MutableList<String> {

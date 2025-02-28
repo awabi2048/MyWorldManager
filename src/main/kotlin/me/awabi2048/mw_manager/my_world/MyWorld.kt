@@ -399,8 +399,6 @@ class MyWorld(val uuid: String) {
                 RIGHT_DOWN -> centerPos.add(+borderSize!! / 2, 0.0, -borderSize!! / 2)
             }
 
-            println("size: $borderSize, before: $centerPos, after: $newBorderCenterLocation")
-
             // データファイルへの書き込み
             DataFiles.worldData.set(
                 "$uuid.border_center_pos",

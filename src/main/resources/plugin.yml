@@ -28,8 +28,8 @@ permissions:
   mw_manager.command.worldmenu:
     description: "/worldmenu"
 
-  mw_manager.command.warp:
-    description: "/warp"
+  mw_manager.command.worldwarp:
+    description: "/worldwarp"
 
 commands:
   myworldmanager:

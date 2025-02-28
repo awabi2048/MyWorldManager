@@ -34,8 +34,6 @@ object MiscInteractiveUIListener : Listener {
 
         if (event.slot !in 9..44) return
         if (event.currentItem?.itemMeta?.isHideTooltip == true) return
-        println((event.currentItem!!.itemMeta!!.lore()!![2] as TextComponent).content())
-        println((event.currentItem!!.itemMeta!!.itemName() as TextComponent).content())
         val ownerName = (event.currentItem!!.itemMeta.lore()!![2] as TextComponent).content().drop(15)
         val worldName = (event.currentItem!!.itemMeta.itemName() as TextComponent).content().drop(5).dropLast(3)
 
