@@ -11,6 +11,7 @@ object DataFiles {
     lateinit var worldData: FileConfiguration
     lateinit var templateSetting: FileConfiguration
     lateinit var portalData: FileConfiguration
+    lateinit var macroSetting: FileConfiguration
 
     val filePath = listOf(
         "config.yml",
@@ -18,6 +19,7 @@ object DataFiles {
         "world_data.yml",
         "template_setting.yml",
         "portal_data.yml",
+        "macro_setting.yml",
     )
 
     fun loadAll() {
@@ -26,6 +28,7 @@ object DataFiles {
         worldData = Lib.YamlUtil.load("world_data.yml")
         templateSetting = Lib.YamlUtil.load("template_setting.yml")
         portalData = Lib.YamlUtil.load("portal_data.yml")
+        macroSetting = Lib.YamlUtil.load("macro_setting.yml")
     }
 
     /**

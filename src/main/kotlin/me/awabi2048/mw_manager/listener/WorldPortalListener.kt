@@ -57,7 +57,6 @@ object WorldPortalListener : Listener {
                                 set(2, Component.text("§bリンク先§7: §8【§e${myWorld.name}§8】"))
                             }
                         )
-                        println(it.lore())
                     }
 
                     player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
@@ -69,7 +68,7 @@ object WorldPortalListener : Listener {
                 }
 
                 // 登録済み → Shiftクリックで解除
-            } else if (event.player.isSneaking) {
+            } else if (linkedWorldUUID != "none" && event.player.isSneaking) {
                 event.isCancelled = true
 
                 event.item!!.editMeta {

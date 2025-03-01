@@ -33,6 +33,8 @@ enum class CustomItem {
                             PersistentDataType.STRING,
                             "none"
                         )
+
+                        it.setMaxStackSize(1)
                     }
 
                     // return

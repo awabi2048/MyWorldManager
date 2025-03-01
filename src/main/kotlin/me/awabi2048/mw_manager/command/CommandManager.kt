@@ -30,8 +30,6 @@ object CommandManager {
     }
 
     fun hasCorrectPermission(sender: CommandSender, executor: CommandExecutor): Boolean {
-        println(sender.effectivePermissions.map {it.permission})
-
         if (sender is ConsoleCommandSender) return false
 
         return if (sender is Player) {

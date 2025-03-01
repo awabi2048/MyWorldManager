@@ -33,6 +33,8 @@ class WorldInfoListUI(val owner: Player, val worlds: Set<MyWorld>, val page: Int
                 meta.itemName(Component.text("§8【§a${myWorld.name}§8】"))
                 meta.lore(
                     myWorld.fixedData.map { Component.text(it) } + listOf(
+                        Component.text("$index §7UUID §b${myWorld.uuid}"),
+                        Component.text(bar),
                         Component.text("$index §7ステータス ${myWorld.activityState?.toJapanese()}"),
                         Component.text(bar),
                         Component.text("$index §e左クリック§7 このワールドに§bワープ§7する"),

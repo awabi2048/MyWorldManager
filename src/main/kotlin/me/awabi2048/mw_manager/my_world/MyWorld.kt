@@ -8,6 +8,7 @@ import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
+import me.awabi2048.mw_manager.macro_executor.MacroExecutor
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
 import net.kyori.adventure.text.Component
@@ -99,7 +100,7 @@ class MyWorld(val uuid: String) {
             } else null
         }
 
-    val sourceWorldName: String?
+    val templateWorldName: String?
         get() {
             return DataFiles.worldData.getString("$uuid.source_world")
         }
@@ -379,6 +380,10 @@ class MyWorld(val uuid: String) {
                 } (Expires in $expireIn days)"
             )
 
+            // macro execution
+            val macroExecutor = MacroExecutor(MacroExecutor.Flag.ON_WORLD_CREATE)
+            macroExecutor.run(this, owner)
+
             return true
         } else return false
     }
@@ -431,6 +436,10 @@ class MyWorld(val uuid: String) {
                 it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
                 it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
             }
+
+            // macro execution
+            val macroExecutor = MacroExecutor(MacroExecutor.Flag.ON_PLAYER_WARP)
+            macroExecutor.run(this, player)
 
             return true
 
