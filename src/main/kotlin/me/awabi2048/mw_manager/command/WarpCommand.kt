@@ -16,36 +16,43 @@ object WarpCommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        if (p3?.size == 0) {
-
-            val menu = WarpShortcutUI(p0)
-            menu.open(true)
+        if (!CommandManager.hasCorrectPermission(p0, this)) {
+            p0.sendMessage("§c権限がありません。")
             return true
+        }
 
-        } else if (p3?.size == 1) {
+        when (p3?.size) {
+            0 -> {
+                val menu = WarpShortcutUI(p0)
+                menu.open(true)
+                return true
+            }
 
-            val shortcutIndex = p3[0].toIntOrNull()?.minus(1)
+            1 -> {
+                val shortcutIndex = p3[0].toIntOrNull()?.minus(1)
 
-            if (shortcutIndex == null) {
+                if (shortcutIndex == null) {
+                    p0.sendMessage("§c無効なコマンドです。")
+                    return true
+                }
+
+                val shortcutList = PlayerData(p0).warpShortcuts
+                if (shortcutIndex !in shortcutList.indices) {
+                    p0.sendMessage("§c無効なスロット指定です。")
+                    return true
+                }
+
+                val targetUUID = shortcutList[shortcutIndex]
+                val targetWorld = MyWorld(targetUUID)
+
+                targetWorld.warpPlayer(p0)
+                return true
+            }
+
+            else -> {
                 p0.sendMessage("§c無効なコマンドです。")
                 return true
             }
-
-            val shortcutList = PlayerData(p0).warpShortcuts
-            if (shortcutIndex !in shortcutList.indices) {
-                p0.sendMessage("§c無効なスロット指定です。")
-                return true
-            }
-
-            val targetUUID = shortcutList[shortcutIndex]
-            val targetWorld = MyWorld(targetUUID)
-
-            targetWorld.warpPlayer(p0)
-            return true
-
-        } else {
-            p0.sendMessage("§c無効なコマンドです。")
-            return true
         }
     }
 
@@ -55,6 +62,6 @@ object WarpCommand : CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return CommandManager.getTabCompletion(p3?.toList(), this)
+        return CommandManager.getTabCompletion(p0, p3?.toList(), this)
     }
 }

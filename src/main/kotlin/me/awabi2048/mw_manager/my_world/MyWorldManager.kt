@@ -3,6 +3,7 @@ package me.awabi2048.mw_manager.my_world
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
+import me.awabi2048.mw_manager.portal.WorldPortal
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.World
@@ -12,6 +13,8 @@ import java.io.File
 object MyWorldManager {
     val registeredMyWorld: List<MyWorld>
         get() {
+//            println(DataFiles.worldData.getKeys(false))
+
             return DataFiles.worldData.getKeys(false).map {
                 MyWorld(it)
             }
@@ -20,6 +23,11 @@ object MyWorldManager {
     val registeredTemplateWorld: List<TemplateWorld>
         get() {
             return DataFiles.templateSetting.getKeys(false).map { TemplateWorld(it) }
+        }
+
+    val registeredPortal: List<WorldPortal>
+        get() {
+            return DataFiles.portalData.getKeys(false).map {WorldPortal(it)}
         }
 
     fun loadTemplateWorlds() {

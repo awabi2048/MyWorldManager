@@ -91,7 +91,6 @@ object WorldCreationSessionListener : Listener {
 
     @EventHandler
     fun onInventoryClose (event: InventoryCloseEvent) {
-        println(event.inventory.type)
         if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER && event.inventory.type == InventoryType.CHEST) {
             val player = event.player as Player
 
@@ -111,7 +110,6 @@ object WorldCreationSessionListener : Listener {
 
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
-        println(event.player.world)
         // テンプレートワールドの中にいたら追い出す
         if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
             val escapeLocation = Config.escapeLocation?: return

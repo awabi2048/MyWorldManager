@@ -17,6 +17,11 @@ object VisitCommand: CommandExecutor, TabCompleter {
             return true
         }
 
+        if (!CommandManager.hasCorrectPermission(p0, this)) {
+            p0.sendMessage("§c権限がありません。")
+            return true
+        }
+
         if (p3?.size != 1) {
             p0.sendMessage("§c無効なコマンドです。")
             return true
@@ -53,6 +58,6 @@ object VisitCommand: CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return CommandManager.getTabCompletion(p3?.toList(), this)
+        return CommandManager.getTabCompletion(p0, p3?.toList(), this)
     }
 }

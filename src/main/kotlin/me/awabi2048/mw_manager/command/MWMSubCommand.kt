@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.player_expansion.notify
@@ -32,7 +33,9 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         //
         val ownerSpecifier = args[1]
         val sourceWorldName = args[2]
-        val worldName = args[3]
+        val worldName = if (args.size == 4) {
+            args[3]
+        } else null
 
         val owner = Lib.translatePlayerSpecifier(ownerSpecifier)
         val uuid = UUID.randomUUID().toString()
@@ -78,7 +81,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         // /mwm info %page%
         if (args.size == 2 && args[1].toIntOrNull() != null) {
             val page = args[1].toInt()
-            val pageRange = 1.. MyWorldManager.registeredMyWorld.size / 36 + 1
+            val pageRange = 1..MyWorldManager.registeredMyWorld.size / 36 + 1
 
             if (page !in pageRange) {
                 sender.sendMessage("§c無効なページの指定です。")
@@ -105,7 +108,11 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         if (args.size == 2 && Lib.translatePlayerSpecifier(args[1]) != null) {
             val player = Lib.translatePlayerSpecifier(args[1])!!
 
-            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.filter {it.members!!.contains(player)}.toSet(), 1)
+            val ui = WorldInfoListUI(
+                sender,
+                MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
+                1
+            )
             ui.open(true)
         }
 
@@ -114,14 +121,18 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             val player = Lib.translatePlayerSpecifier(args[1])!!
             val page = args[2].toInt()
 
-            val pageRange = 1.. MyWorldManager.registeredMyWorld.size / 36 + 1
+            val pageRange = 1..MyWorldManager.registeredMyWorld.size / 36 + 1
 
             if (page !in pageRange) {
                 sender.sendMessage("§c無効なページの指定です。")
                 return
             }
 
-            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.filter {it.members!!.contains(player)}.toSet(), page)
+            val ui = WorldInfoListUI(
+                sender,
+                MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
+                page
+            )
             ui.open(true)
         }
 
@@ -171,7 +182,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun startCreationSession() {
         if (sender is Player) {
-            if (creationDataSet.any {it.player == sender}) creationDataSet.removeIf {it.player == sender}
+            if (creationDataSet.any { it.player == sender }) creationDataSet.removeIf { it.player == sender }
 
             val creationData = CreationData(sender, null, null, CreationStage.WORLD_NAME)
             creationDataSet += creationData
@@ -181,11 +192,11 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
 
             // タイムアウト判定
-            object: BukkitRunnable() {
+            object : BukkitRunnable() {
                 override fun run() {
                     // まだ作成手続き中ならキャンセル（5分）
-                    if (creationDataSet.any {it.player == sender}) {
-                        creationDataSet.removeIf {it.player == sender}
+                    if (creationDataSet.any { it.player == sender }) {
+                        creationDataSet.removeIf { it.player == sender }
                         sender.sendMessage("§cセッションがタイムアウトしました。")
                         sender.closeInventory()
                     } else cancel()
@@ -193,5 +204,25 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             }.runTaskLater(instance, 300 * 20)
 
         } else return
+    }
+
+    fun getItem() {
+        if (sender !is Player) {
+            sender.sendMessage("$prefix §cこのコマンドはプレイヤーからのみ実行可能です。")
+            return
+        }
+
+        if (args.size == 1) {
+            sender.sendMessage("$prefix §c無効なコマンドです。 /mwm get_item <アイテムId>")
+            return
+        }
+
+        if (args[1] !in CustomItem.entries.map {it.name}) {
+            sender.sendMessage("$prefix §c無効なアイテムIdです。")
+            return
+        }
+
+        val item = CustomItem.valueOf(args[1])
+        item.give(sender)
     }
 }

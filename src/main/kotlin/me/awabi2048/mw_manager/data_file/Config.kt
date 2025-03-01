@@ -145,4 +145,15 @@ object Config {
 
             DataFiles.save()
         }
+
+    var commandHelp: Map<String, String>?
+        get() {
+            val commands = section.getConfigurationSection("command_help")?.getKeys(false)
+            return commands?.associate { it to section.getString("command_help.$it")!!}
+        }
+        set(value) {
+            value?.forEach {
+                section.set("command_help.${it.key}", it.value)
+            }
+        }
 }

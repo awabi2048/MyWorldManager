@@ -66,8 +66,6 @@ class TemplateWorld(val worldId: String) {
         val returnLocation = player.location
         val returnGamemode = player.gameMode
 
-        println("return data: $returnLocation, $returnGamemode")
-
         // プレイヤーに通知
         player.sendMessage("§b「${name}」 §7をプレビュー中...")
         player.sendMessage("§7${description}")

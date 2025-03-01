@@ -6,8 +6,8 @@ enum class WorldActivityState {
 
     fun toJapanese(): String {
         return when(this) {
-            ACTIVE -> "§aアクティブ"
-            ARCHIVED -> "§bアーカイブ済み"
+            ACTIVE -> "アクティブ"
+            ARCHIVED -> "アーカイブ済み"
         }
     }
 }

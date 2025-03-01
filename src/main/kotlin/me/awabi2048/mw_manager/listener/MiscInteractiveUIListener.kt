@@ -4,6 +4,7 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.confirmationTracker
 import me.awabi2048.mw_manager.ui.ConfirmationUI
 import me.awabi2048.mw_manager.ui.WarpShortcutUI
+import me.awabi2048.mw_manager.ui.WorldInfoListUI
 import net.kyori.adventure.text.TextComponent
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -44,8 +45,13 @@ object MiscInteractiveUIListener : Listener {
             world.warpPlayer(player)
         }
 
-        if (event.click.isRightClick) {
+        if (event.click.isRightClick && event.click.isShiftClick) {
             val ui = ConfirmationUI(player, ConfirmationUI.UIData.WorldAdminDelete(world))
+            ui.open(true)
+        }
+
+        if (event.click.isRightClick && !event.click.isShiftClick) {
+            val ui = ConfirmationUI(player, ConfirmationUI.UIData.WorldAdminToggleActivity(world))
             ui.open(true)
         }
     }

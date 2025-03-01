@@ -4,6 +4,7 @@ import me.awabi2048.mw_manager.Main.Companion.prefix
 import net.kyori.adventure.sound.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 fun CommandSender.notify(message: String, sound: Sound?) {
     if (this is Player) {

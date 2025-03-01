@@ -2,7 +2,6 @@ package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.my_world.MyWorld
 import net.kyori.adventure.text.Component
-import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -26,17 +25,23 @@ class WorldInfoListUI(val owner: Player, val worlds: Set<MyWorld>, val page: Int
 
         // 与えられたリストからアイテムを配置していく
         worlds.filter { worlds.indexOf(it) in displayRange }.forEach { myWorld ->
+//            println(myWorld.iconMaterial)
+
             val icon = ItemStack(myWorld.iconMaterial!!)
+
             icon.editMeta { meta ->
                 meta.itemName(Component.text("§8【§a${myWorld.name}§8】"))
                 meta.lore(
                     myWorld.fixedData.map { Component.text(it) } + listOf(
+                        Component.text("$index §7ステータス ${myWorld.activityState?.toJapanese()}"),
                         Component.text(bar),
-                        Component.text("§e左クリック§7: このワールドに§bワープ§7する"),
-                        Component.text("§e右クリック§7: このワールドを§c削除§7する"),
+                        Component.text("$index §e左クリック§7 このワールドに§bワープ§7する"),
+                        Component.text("$index §e右クリック§7 このワールドのアーカイブ状態を切り替える"),
+                        Component.text("$index §eShift + 右クリック§7 このワールドを§c完全に削除§7する"),
                         Component.text(bar),
                     )
                 )
+
                 if (myWorld.isOutDated!!) meta.setEnchantmentGlintOverride(true)
             }
 

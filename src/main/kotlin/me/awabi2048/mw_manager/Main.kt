@@ -7,8 +7,10 @@ import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.listener.*
 import me.awabi2048.mw_manager.my_world.CreationData
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.portal.WorldPortal
 import me.awabi2048.mw_manager.ui.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -52,6 +54,23 @@ class Main : JavaPlugin() {
         //
         MyWorldManager.loadTemplateWorlds()
 
+        // ポータルの判定・演出
+        Bukkit.getScheduler().runTaskTimer(
+            instance,
+            Runnable {
+                DataFiles.portalData.getKeys(false).forEach {
+                    val portal = WorldPortal(it)
+
+                    if (!portal.isAvailable) return@forEach // 無効なポータル
+                    if (!portal.location.isChunkLoaded) return@forEach // ロードされていない
+                    if (portal.location.getNearbyPlayers(10.0).isEmpty()) return@forEach // 10ブロック以内にプレイヤーがいない
+
+                    portal.tickingProcess()
+                }
+            },
+            100L, // ロード処理諸々があるため念の為
+            5L
+        )
     }
 
     override fun onDisable() {

@@ -10,12 +10,14 @@ object DataFiles {
     lateinit var playerData: FileConfiguration
     lateinit var worldData: FileConfiguration
     lateinit var templateSetting: FileConfiguration
+    lateinit var portalData: FileConfiguration
 
     val filePath = listOf(
         "config.yml",
         "player_data.yml",
         "world_data.yml",
         "template_setting.yml",
+        "portal_data.yml",
     )
 
     fun loadAll() {
@@ -23,6 +25,7 @@ object DataFiles {
         playerData = Lib.YamlUtil.load("player_data.yml")
         worldData = Lib.YamlUtil.load("world_data.yml")
         templateSetting = Lib.YamlUtil.load("template_setting.yml")
+        portalData = Lib.YamlUtil.load("portal_data.yml")
     }
 
     /**
@@ -31,6 +34,7 @@ object DataFiles {
     fun save() {
         Lib.YamlUtil.save("player_data.yml", playerData)
         Lib.YamlUtil.save("world_data.yml", worldData)
+        Lib.YamlUtil.save("portal_data.yml", portalData)
     }
 
     fun copy() {

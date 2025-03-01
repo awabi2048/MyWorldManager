@@ -10,6 +10,11 @@ import org.bukkit.command.TabCompleter
 
 object MWMCommand : CommandExecutor, TabCompleter {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        if (!CommandManager.hasCorrectPermission(sender, this)) {
+            sender.sendMessage("§c権限がありません。")
+            return true
+        }
+
         if (args.isEmpty() || args[0] !in Option.entries.map { it.toString().lowercase() }) {
             sender.notify("§c無効なコマンドです。", null)
             return true
@@ -26,6 +31,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
             UPDATE -> subcommandExecutor.update()
             START_CREATION_SESSION -> subcommandExecutor.startCreationSession()
             RELOAD -> subcommandExecutor.reload()
+            GET_ITEM -> subcommandExecutor.getItem()
         }
 
         return true
@@ -37,6 +43,6 @@ object MWMCommand : CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return CommandManager.getTabCompletion(p3?.toList(), this)
+        return CommandManager.getTabCompletion(p0, p3?.toList(), this)
     }
 }

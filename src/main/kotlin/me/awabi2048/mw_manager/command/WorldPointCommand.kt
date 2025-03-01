@@ -13,6 +13,11 @@ import org.bukkit.entity.Player
 // /worldpoint %player% add|subtract|set|get %value%?
 object WorldPointCommand : CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
+        if (!CommandManager.hasCorrectPermission(p0, this)) {
+            p0.sendMessage("§c権限がありません。")
+            return true
+        }
+
         if (p3?.size !in 2..3) {
             p0.sendMessage("$prefix §c無効なコマンドです。")
             return true
@@ -79,6 +84,6 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return CommandManager.getTabCompletion(p3?.toList(), this)
+        return CommandManager.getTabCompletion(p0, p3?.toList(), this)
     }
 }

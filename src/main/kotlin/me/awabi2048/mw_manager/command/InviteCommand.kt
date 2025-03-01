@@ -18,13 +18,18 @@ object InviteCommand: CommandExecutor, TabCompleter {
             return true
         }
 
+        if (!CommandManager.hasCorrectPermission(p0, this)) {
+            p0.sendMessage("§c権限がありません。")
+            return true
+        }
+
         if (p3.isNullOrEmpty()) {
             p0.notify("§c引数を入力してください。", null)
             return true
         }
 
-        var targetWorld: MyWorld? = null
-        var targetPlayer: CommandSender? = null
+        val targetWorld: MyWorld?
+        val targetPlayer: CommandSender?
 
         if (p3.size == 1) {
             val worldUUID = p0.world.name.substringAfter("my_world.")
@@ -59,6 +64,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
         }
 
         // 招待送信
+        p0.sendMessage("§b${targetPlayer.name}さん §7をワールドに招待しました。")
         targetWorld.invitePlayer(p0, targetPlayer)
 
         return true
@@ -70,6 +76,6 @@ object InviteCommand: CommandExecutor, TabCompleter {
         p2: String,
         p3: Array<out String>?,
     ): MutableList<String> {
-        return CommandManager.getTabCompletion(p3?.toList(), this)
+        return CommandManager.getTabCompletion(p0, p3?.toList(), this)
     }
 }

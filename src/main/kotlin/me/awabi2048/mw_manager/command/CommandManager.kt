@@ -1,10 +1,14 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.command.Option.*
+import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.my_world.WorldActivityState
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
+import org.bukkit.command.ConsoleCommandSender
+import org.bukkit.entity.Player
 
 object CommandManager {
     fun setExecutor() {
@@ -17,12 +21,37 @@ object CommandManager {
 
         instance.getCommand("worldpoint")?.setExecutor(WorldPointCommand)
         instance.getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
+//        instance.getCommand("mwm_recruit_accept")?.setExecutor()
 
         instance.getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
         instance.getCommand("worldwarp")?.setExecutor(WarpCommand)
+
+        instance.getCommand("mwm_help")?.setExecutor(HelpCommand)
     }
 
-    fun getTabCompletion(args: List<String>?, executor: CommandExecutor): MutableList<String> {
+    fun hasCorrectPermission(sender: CommandSender, executor: CommandExecutor): Boolean {
+        println(sender.effectivePermissions.map {it.permission})
+
+        if (sender is ConsoleCommandSender) return false
+
+        return if (sender is Player) {
+            when(executor) {
+                MWMCommand -> sender.hasPermission("mw_manager.command.mwm")
+                InviteCommand -> sender.hasPermission("mw_manager.command.invite")
+                VisitCommand -> sender.hasPermission("mw_manager.command.visit")
+                WorldPointCommand -> sender.hasPermission("mw_manager.command.worldpoint")
+                InviteAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_invite_accept")
+    //                RecruitAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_recruit_accept")
+                OpenWorldUICommand -> sender.hasPermission("mw_manager.command.worldmenu")
+                WarpCommand -> sender.hasPermission("mw_manager.command.worldwarp")
+                HelpCommand -> sender.hasPermission("mw_manager.command.mwm_help")
+                else -> false
+            }
+        } else false
+    }
+
+    // size → 確定したもの + 入力中のもの　(デフォルトで1からスタート)
+    fun getTabCompletion(sender: CommandSender, args: List<String>?, executor: CommandExecutor): MutableList<String> {
         fun worldSpecifier(arg: String): MutableList<String> {
             if (!arg.contains(":")) {
                 return Bukkit.getOnlinePlayers().map { "${it.displayName}:" }.toMutableList()
@@ -38,24 +67,26 @@ object CommandManager {
             if (!arg.contains(":")) {
                 return mutableListOf("player:", "uuid:")
             } else {
-                if (arg.contains("player:")) return Bukkit.getOnlinePlayers().map {"player:${it.displayName}"}.toMutableList()
-                if (arg.contains("uuid:")) return Bukkit.getOnlinePlayers().map {"uuid:${it.uniqueId}"}.toMutableList()
+                if (arg.contains("player:")) return Bukkit.getOnlinePlayers().map { "player:${it.displayName}" }
+                    .toMutableList()
+                if (arg.contains("uuid:")) return Bukkit.getOnlinePlayers().map { "uuid:${it.uniqueId}" }
+                    .toMutableList()
             }
 
             return mutableListOf()
         }
 
-        val size = args?.size ?: 0
+        val size = args?.size ?: return mutableListOf()
 
         if (executor == VisitCommand) {
             if (size == 1) {
-                return worldSpecifier(args!![0])
+                return worldSpecifier(args[0])
             }
         }
 
         if (executor == InviteCommand) {
             if (size == 1) {
-                return Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
+                return Bukkit.getOnlinePlayers().filter { it != sender }.map { it.displayName }.toMutableList()
             }
         }
 
@@ -68,52 +99,59 @@ object CommandManager {
         }
 
         if (executor == MWMCommand) {
-            if (size == 1) {
-                return Option.entries.map {it.toString().lowercase()}.toMutableList()
-            }
-
-            val option = Option.valueOf(args!![0].uppercase())
+            if (size == 1) return Option.entries.map { it.toString().lowercase() }.toMutableList()
+            if (args[0] !in Option.entries.map { it.name.lowercase() }) return mutableListOf()
+            val option = Option.valueOf(args[0].uppercase())
 
             return when (option) {
-                Option.CREATE -> {
-                    when(size) {
+                CREATE -> {
+                    when (size) {
                         2 -> playerSpecifier(args[1])
-                        3 -> MyWorldManager.registeredTemplateWorld.map {it.worldId}.toMutableList()
+                        3 -> MyWorldManager.registeredTemplateWorld.map { it.worldId }.toMutableList()
                         4 -> mutableListOf()
                         else -> mutableListOf()
                     }
                 }
 
-                Option.INFO -> {
+                INFO -> {
                     if (size == 2) playerSpecifier(args[1]) else mutableListOf()
                 }
 
-                Option.ARCHIVE -> {
+                ARCHIVE -> {
                     when (size) {
                         2 -> worldSpecifier(args[1])
                         else -> mutableListOf()
                     }
                 }
 
-                Option.ACTIVATE -> {
+                ACTIVATE -> {
                     when (size) {
                         2 -> worldSpecifier(args[1])
                         else -> mutableListOf()
                     }
                 }
 
-                Option.UPDATE -> {
+                UPDATE -> {
                     if (size == 2) worldSpecifier(args[1]) else mutableListOf()
                 }
 
-                Option.START_CREATION_SESSION -> {
-                    when(size) {
-                        2 -> Bukkit.getOnlinePlayers().map{it.displayName}.toMutableList()
+                START_CREATION_SESSION -> {
+                    when (size) {
+                        2 -> Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
                         else -> mutableListOf()
                     }
                 }
 
-                Option.RELOAD -> mutableListOf()
+                GET_ITEM -> {
+                    when(size) {
+                        2 -> CustomItem.entries.map {it.name}.toMutableList()
+                        else -> mutableListOf()
+                    }
+                }
+
+                RELOAD -> mutableListOf()
+
+
             }
         }
 

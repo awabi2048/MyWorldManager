@@ -9,11 +9,22 @@ permissions:
   mw_manager.admin:
     description: "admin"
     children:
-      - mw_manager.command.register_world
-      - mw_manager.command.update_world
-      - mw_manager.command.check_world_updated
+      - mw_manager.command.mwm
+      - mw_manager.command.world_point
+      - mw_manager.citizen
 
-  mw_manager.command.main:
+  mw_manager.citizen:
+    description: "user"
+    children:
+      - mw_manager.command.invite
+      - mw_manager.command.visit
+      - mw_manager.command.worldmenu
+      - mw_manager.command.worldwarp
+      - mw_manager.command.mwm_help
+      - mw_manager.command.mwm_invite_accept
+      - mw_manager.command.mwm_recruit_accept
+
+  mw_manager.command.mwm:
     description: "/mwm"
 
   mw_manager.command.invite:
@@ -30,6 +41,16 @@ permissions:
 
   mw_manager.command.worldwarp:
     description: "/worldwarp"
+
+  mw_manager.command.mwm_help:
+    description: ""
+
+  mw_manager.command.mwm_invite_accept:
+    description: ""
+
+  mw_manager.command.mwm_recruit_accept:
+    description: ""
+
 
 commands:
   myworldmanager:
@@ -53,8 +74,12 @@ commands:
   worldwarp:
     description: ""
 
+  mwm_help:
+    description: ""
+
   mwm_invite_accept:
     description: ""
 
   mwm_recruit_accept:
     description: ""
+

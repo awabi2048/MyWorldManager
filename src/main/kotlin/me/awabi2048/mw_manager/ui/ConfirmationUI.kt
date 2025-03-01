@@ -7,6 +7,7 @@ import me.awabi2048.mw_manager.Main.Companion.prefix
 import me.awabi2048.mw_manager.my_world.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.WorldActivityState
 import me.awabi2048.mw_manager.player_data.PlayerData
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -23,7 +24,8 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
         data class OnCreationTemplate(val templateId: String) : UIData()
         data class AddWarpShortcut(val targetWorld: MyWorld) : UIData()
         data class RemoveWarpShortcut(val targetWorld: MyWorld) : UIData()
-        data class WorldAdminDelete(val world: MyWorld): UIData()
+        data class WorldAdminToggleActivity(val world: MyWorld) : UIData()
+        data class WorldAdminDelete(val world: MyWorld) : UIData()
     }
 
     private fun onConfirm() {
@@ -80,6 +82,22 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             is UIData.WorldAdminDelete -> {
                 owner.sendMessage("$prefix §b${uiData.world.name} §7を§c削除§7しました。")
                 uiData.world.delete()
+
+                owner.closeInventory()
+            }
+
+            is UIData.WorldAdminToggleActivity -> {
+                val activity = when (uiData.world.activityState) {
+                    WorldActivityState.ARCHIVED -> WorldActivityState.ACTIVE
+                    WorldActivityState.ACTIVE -> WorldActivityState.ARCHIVED
+                    null -> null
+                } ?: return
+
+                owner.closeInventory()
+
+                owner.sendMessage("$prefix §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
+                uiData.world.activityState = activity
+
             }
         }
     }
@@ -117,6 +135,10 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             is UIData.WorldAdminDelete -> {
                 owner.closeInventory()
             }
+
+            is UIData.WorldAdminToggleActivity -> {
+                owner.closeInventory()
+            }
         }
     }
 
@@ -133,7 +155,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             false -> onCancel()
         }
 
-        confirmationTracker.removeIf{it.player == owner}
+        confirmationTracker.removeIf { it.player == owner }
     }
 
     override fun open(firstOpen: Boolean) {
@@ -166,6 +188,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             is UIData.RemoveWarpShortcut -> "§7ワープショートカットから§8【§a${uiData.targetWorld.name}§8】§7を§c削除§7する"
 
             is UIData.WorldAdminDelete -> "§8【§a${uiData.world.name}§8】§7を§c完全消去§7する"
+            is UIData.WorldAdminToggleActivity -> "§8【§a${uiData.world.name}§8】§7のアーカイブ状態を切り替える"
         }
 
         val contentInfo = when (uiData) {
@@ -175,6 +198,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             is UIData.AddWarpShortcut -> "§c追加したワールドはいつでも削除できます"
             is UIData.RemoveWarpShortcut -> "§c§nこの操作は復元できません"
             is UIData.WorldAdminDelete -> "§c§l§nこの操作は復元できません"
+            is UIData.WorldAdminToggleActivity -> "§cワールドデータを移動します。"
         }
 
         val contentIcon = ItemStack(Material.REDSTONE_TORCH)

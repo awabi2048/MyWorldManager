@@ -8,4 +8,5 @@ enum class Option {
     UPDATE,
     START_CREATION_SESSION,
     RELOAD,
+    GET_ITEM,
 }

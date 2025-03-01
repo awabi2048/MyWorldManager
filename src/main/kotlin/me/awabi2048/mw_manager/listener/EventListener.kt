@@ -13,11 +13,6 @@ import org.bukkit.event.world.WorldLoadEvent
 
 object EventListener : Listener {
     // MyWorldははじめロードしないようにする
-    @EventHandler
-    fun onServerLoad(event: WorldLoadEvent) {
-        MyWorldManager.unloadMyWorlds()
-    }
-
     private fun updateTask(world: World) {
         // データファイルのアップデート
         MyWorldManager.updateData()
