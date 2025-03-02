@@ -173,7 +173,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         // アイコン変更
         if (option == "change_icon") {
             worldSettingState[player] = PlayerWorldSettingState.CHANGE_ICON
-            PlayerNotification.WORLD_SETTING_DISPLAY.send(player)
+            player.sendMessage("§7インベントリ内のアイテムをクリックして、アイコンを設定します。")
             player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f)
         }
 

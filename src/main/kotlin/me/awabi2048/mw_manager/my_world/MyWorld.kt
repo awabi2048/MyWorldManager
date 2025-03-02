@@ -6,12 +6,14 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
+import me.awabi2048.mw_manager.Main.Companion.worldDeletionQueue
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.macro_executor.MacroExecutor
 import me.awabi2048.mw_manager.macro_executor.MacroFlag
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
+import me.awabi2048.mw_manager.portal.WorldPortal
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import net.kyori.adventure.text.event.HoverEvent
@@ -94,7 +96,6 @@ class MyWorld(val uuid: String) {
                     .map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
             } else null
         }
-
         set(value) {
             if (value != null && isRegistered) {
                 val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
@@ -339,7 +340,7 @@ class MyWorld(val uuid: String) {
 
                         // コピー後、削除（アーカイブ　→　ワールド）
                         FileUtils.copyFolder(worldDataFile, archivedDataFile)
-                        mvWorldManager.removeWorldFromConfig("my_world.$uuid")
+//                        mvWorldManager.removeWorldFromConfig("my_world.$uuid")
 
                         Bukkit.unloadWorld("my_world.$uuid", true)
                         Bukkit.getScheduler().runTaskLater(
@@ -365,11 +366,18 @@ class MyWorld(val uuid: String) {
         if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
             // clone world
             mvWorldManager.cloneWorld(templateWorldName, "my_world.$uuid")
+            Bukkit.createWorld(WorldCreator("my_world.$uuid"))
 
             val expireIn = Config.defaultExpireDays
 
             //
-            val worldName = registerWorldName ?: "my_world.${owner.displayName}"
+            val index =
+                MyWorldManager.registeredMyWorld.filter { it.name!!.startsWith("my_world.${owner.name}") }.size + 1
+            val worldName =
+                when (MyWorldManager.registeredMyWorld.any { it.name!!.startsWith("my_world.${owner.name}") }) {
+                    true -> registerWorldName ?: "my_world.${owner.name}_$index"
+                    false -> registerWorldName ?: "my_world.${owner.name}"
+                }
 
             // template
             val sourceWorldOrigin = Lib.locationToString(TemplateWorld(templateWorldName).originLocation)
@@ -382,7 +390,7 @@ class MyWorld(val uuid: String) {
             // register
             val map = mapOf(
                 "name" to worldName,
-                "description" to "${owner.displayName}のワールド",
+                "description" to "${owner.name}のワールド",
                 "icon" to Material.GRASS_BLOCK.toString(),
                 "source_world" to templateWorldName,
                 "last_updated" to LocalDate.now().toString(),
@@ -434,7 +442,7 @@ class MyWorld(val uuid: String) {
                 players = players?.plus(player)
             }
 
-            players!!.filter {it.isOnline}.forEach {
+            players!!.filter { it.isOnline }.forEach {
                 it.player!!.sendMessage("§a${player.name} さんがワールドメンバーになりました！")
                 it.player!!.playSound(it.player!!, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             }
@@ -556,14 +564,29 @@ class MyWorld(val uuid: String) {
     }
 
     fun delete(): Boolean {
-        if (isRegistered && activityState == WorldActivityState.ACTIVE) {
+        if (isRegistered) {
+
+            worldDeletionQueue += vanillaWorld!!
+
+            val worldFolder: File
+
+            if (activityState == WorldActivityState.ACTIVE){
+                Bukkit.unloadWorld(vanillaWorld!!, false)
+                worldFolder = vanillaWorld!!.worldFolder
+            } else {
+                worldFolder = File(Bukkit.getWorldContainer().path + File.separator + "my_world.$uuid")
+            }
+
+            FileUtils.deleteFolder(worldFolder)
+
+            DataFiles.worldData.set(uuid, null)
+            DataFiles.portalData.getKeys(false).filter { !(WorldPortal(it).isAvailable) }.forEach {
+                DataFiles.portalData.set(it, null)
+            }
+            DataFiles.save()
 
             mvWorldManager.removePlayersFromWorld("my_world.$uuid")
             mvWorldManager.removeWorldFromConfig("my_world.$uuid")
-            mvWorldManager.deleteWorld("my_world.$uuid")
-
-            DataFiles.worldData.set(uuid, null)
-            DataFiles.save()
 
             return true
 

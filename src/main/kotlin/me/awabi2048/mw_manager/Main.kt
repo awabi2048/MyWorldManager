@@ -12,6 +12,7 @@ import me.awabi2048.mw_manager.ui.AbstractUI
 import me.awabi2048.mw_manager.ui.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
 import org.bukkit.Bukkit
+import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -31,6 +32,8 @@ class Main : JavaPlugin() {
         var recruitmentCodeMap = mutableMapOf<String, String>()
 
         var playerUIState: MutableMap<Player, AbstractUI> = mutableMapOf()
+
+        val worldDeletionQueue: MutableList<World> = mutableListOf()
     }
 
     override fun onEnable() {
@@ -78,6 +81,7 @@ class Main : JavaPlugin() {
     }
 
     override fun onDisable() {
-        // Plugin shutdown logic
+        // キュー内のワールドデータを削除
+
     }
 }

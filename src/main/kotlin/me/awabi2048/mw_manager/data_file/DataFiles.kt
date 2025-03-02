@@ -38,6 +38,8 @@ object DataFiles {
         Lib.YamlUtil.save("player_data.yml", playerData)
         Lib.YamlUtil.save("world_data.yml", worldData)
         Lib.YamlUtil.save("portal_data.yml", portalData)
+
+        loadAll()
     }
 
     fun copy() {
