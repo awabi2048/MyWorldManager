@@ -60,7 +60,10 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
                 val targetWorld = MyWorld(uuid)
 
                 player.sendMessage("§7登録済みのショートカット先へワープします...")
-                targetWorld.warpPlayer(player)
+
+                val isInSameWorld = player.world == targetWorld.vanillaWorld
+
+                targetWorld.warpPlayer(player, !isInSameWorld)
             }
 
             // 右クリック → 削除

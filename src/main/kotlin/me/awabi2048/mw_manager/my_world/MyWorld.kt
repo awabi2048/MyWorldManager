@@ -417,7 +417,7 @@ class MyWorld(val uuid: String) {
         } else return false
     }
 
-    fun warpPlayer(player: Player): Boolean {
+    fun warpPlayer(player: Player, sendNotification: Boolean): Boolean {
         if (isRegistered && activityState == WorldActivityState.ACTIVE) {
             if (Bukkit.getWorld("my_world.$uuid") == null) {
                 Bukkit.createWorld(WorldCreator("my_world.$uuid"))
@@ -433,9 +433,11 @@ class MyWorld(val uuid: String) {
 
             player.sendMessage("§8【§a${name}§8】§7にワープしました。")
 
-            members?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
-                it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
-                it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+            if (sendNotification){
+                members?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
+                    it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
+                    it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+                }
             }
 
             // macro execution

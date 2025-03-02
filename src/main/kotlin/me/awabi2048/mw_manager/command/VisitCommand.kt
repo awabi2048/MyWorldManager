@@ -42,12 +42,19 @@ object VisitCommand: CommandExecutor, TabCompleter {
             return true
         }
 
+        // もういるよ！！
+        if (p0.world == targetWorld.vanillaWorld) {
+            p0.sendMessage("§c既にこのワールドにいます。")
+            return true
+        }
+
+        // バイパス通知
         if (p0.hasPermission("mw_manager.admin") && targetWorld.publishLevel == PublishLevel.PRIVATE) {
             p0.sendMessage("$prefix §e管理者権限により、公開設定をバイパスします。")
         }
 
         // 問題なければワープ
-        targetWorld.warpPlayer(p0)
+        targetWorld.warpPlayer(p0, true)
         p0.playSound(p0, Sound.BLOCK_CHEST_OPEN, 1.0f, 2.0f)
         return true
     }

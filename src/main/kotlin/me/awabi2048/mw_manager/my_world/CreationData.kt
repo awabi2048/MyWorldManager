@@ -32,7 +32,7 @@ data class CreationData(
             Bukkit.getScheduler().runTaskLater(
                 instance,
                 Runnable {
-                    myWorld.warpPlayer(player)
+                    myWorld.warpPlayer(player, false)
                 },
                 60L
             )

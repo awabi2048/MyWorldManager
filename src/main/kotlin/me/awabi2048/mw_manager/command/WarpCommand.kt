@@ -22,12 +22,14 @@ object WarpCommand : CommandExecutor, TabCompleter {
         }
 
         when (p3?.size) {
+            // 引数なし → メニュー開く
             0 -> {
                 val menu = WarpShortcutUI(p0)
                 menu.open(true)
                 return true
             }
 
+            // 引数１ → このスロットのワープを呼び出し
             1 -> {
                 val shortcutIndex = p3[0].toIntOrNull()?.minus(1)
 
@@ -45,7 +47,13 @@ object WarpCommand : CommandExecutor, TabCompleter {
                 val targetUUID = shortcutList[shortcutIndex]
                 val targetWorld = MyWorld(targetUUID)
 
-                targetWorld.warpPlayer(p0)
+                // もういるよ！！
+                if (p0.world == targetWorld.vanillaWorld) {
+                    p0.sendMessage("§c既にこのワールドにいます。")
+                    return true
+                }
+
+                targetWorld.warpPlayer(p0, true)
                 return true
             }
 

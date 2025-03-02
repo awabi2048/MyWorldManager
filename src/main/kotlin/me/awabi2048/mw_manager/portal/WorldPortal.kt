@@ -139,7 +139,9 @@ class WorldPortal(private val uuid: String) {
      */
     fun sendPlayer(player: Player) {
         if (isAvailable) {
-            destinationWorld.warpPlayer(player)
+            val isInSameWorld = player.world == destinationWorld.vanillaWorld
+
+            destinationWorld.warpPlayer(player, !isInSameWorld)
         }
     }
 

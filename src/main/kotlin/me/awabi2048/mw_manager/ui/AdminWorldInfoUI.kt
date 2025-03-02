@@ -29,7 +29,7 @@ class AdminWorldInfoUI(val player: Player, val worlds: Set<MyWorld>, val page: I
         val player = event.whoClicked as Player
 
         if (event.click.isLeftClick) {
-            world.warpPlayer(player)
+            world.warpPlayer(player, false)
             return
         }
 

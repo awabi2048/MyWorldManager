@@ -23,7 +23,7 @@ object InviteAcceptCommand: CommandExecutor {
         val worldUUID = invitationCodeMap[invitationCode]?: return true
 
         val world = MyWorld(worldUUID)
-        world.warpPlayer(p0)
+        world.warpPlayer(p0, true)
         p0.playSound(p0, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
         p0.playSound(p0, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
 
