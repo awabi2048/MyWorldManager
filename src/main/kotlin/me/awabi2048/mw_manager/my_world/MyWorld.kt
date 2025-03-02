@@ -98,9 +98,25 @@ class MyWorld(val uuid: String) {
         }
         set(value) {
             if (value != null && isRegistered) {
+                // マクロ呼び出し
+                if (value.size > players!!.size) {
+                    (value - players!!).forEach {
+                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberAdded(this, it))
+                        macroExecutor.run()
+                    }
+                }
+
+                // マクロ呼び出し
+                if (value.size < players!!.size) {
+                    (players!! - value).forEach {
+                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
+                        macroExecutor.run()
+                    }
+                }
+
                 val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
                     this[owner!!] = "OWNER"
-                    filter { it.key in moderators!! }.keys.forEach { moderator ->
+                    filter { it.key in moderators }.keys.forEach { moderator ->
                         this[moderator] = "MODERATOR"
                     }
                 }
@@ -415,8 +431,8 @@ class MyWorld(val uuid: String) {
             )
 
             // macro execution
-            val macroExecutor = MacroExecutor(MacroFlag.ON_WORLD_CREATE)
-            macroExecutor.run(this, owner)
+            val macroExecutor = MacroExecutor(MacroFlag.OnWorldCreate(this, owner))
+            macroExecutor.run()
 
             return true
         } else return false
@@ -475,8 +491,8 @@ class MyWorld(val uuid: String) {
             }
 
             // macro execution
-            val macroExecutor = MacroExecutor(MacroFlag.ON_PLAYER_WARP)
-            macroExecutor.run(this, player)
+            val macroExecutor = MacroExecutor(MacroFlag.OnWorldWarp(this, player))
+            macroExecutor.run()
 
             return true
 

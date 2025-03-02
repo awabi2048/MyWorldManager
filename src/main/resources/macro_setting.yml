@@ -7,3 +7,9 @@ on_world_create:
 on_world_warp:
 #  - "/say WARP %player%, %world_uuid%"
   -
+
+on_member_added:
+  - "say ADD %player% %world_uuid%"
+
+on_member_removed:
+  - "say REMOVE %player% %world_uuid%"

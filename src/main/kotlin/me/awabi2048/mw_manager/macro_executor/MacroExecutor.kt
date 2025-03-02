@@ -2,34 +2,42 @@ package me.awabi2048.mw_manager.macro_executor
 
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.data_file.DataFiles
-import me.awabi2048.mw_manager.my_world.MyWorld
-import org.bukkit.entity.Player
+import me.awabi2048.mw_manager.macro_executor.MacroFlag.*
 
 class MacroExecutor(private val flag: MacroFlag) {
-    private fun resolvePlaceholder(input: String, world: MyWorld, player: Player): String {
+    private fun resolvePlaceholder(input: String): String {
         return when(flag) {
-            MacroFlag.ON_WORLD_CREATE -> input
-                .replace("%owner%", player.name)
-                .replace("%world_uuid%", world.uuid)
-                .replace("%world_name%", world.name!!)
-                .replace("%template_name%", world.templateWorldName!!)
+            is OnWorldCreate -> input
+                .replace("%owner%", flag.owner.name)
+                .replace("%world_uuid%", flag.world.uuid)
 
-            MacroFlag.ON_PLAYER_WARP -> input
-                .replace("%player%", player.name)
-                .replace("%world_uuid%", world.uuid)
+            is OnWorldWarp -> input
+                .replace("%player%", flag.player.name)
+                .replace("%world_uuid%", flag.world.uuid)
+
+            is OnWorldMemberAdded -> input
+                .replace("%player%", flag.addedPlayer.name!!)
+                .replace("%world_uuid%", flag.world.uuid)
+
+            is OnWorldMemberRemoved -> input
+                .replace("%player%", flag.removedPlayer.name!!)
+                .replace("%world_uuid%", flag.world.uuid)
         }
     }
 
-    fun run(world: MyWorld, player: Player) {
-        val executeCommands = DataFiles.macroSetting.getStringList(flag.name.lowercase())
-            .map {resolvePlaceholder(it, world, player)}
+    fun run() {
 
-        executeCommands.forEach {
+        // 登録されたコマンドからプレースホルダーを置換
+        val key = flag.key
+        val commands = DataFiles.macroSetting.getStringList(key)
+            .map {resolvePlaceholder(it)}
+
+        // 実行
+        commands.forEach {
             instance.server.dispatchCommand(
                 instance.server.consoleSender,
                 it
             )
         }
-
     }
 }
