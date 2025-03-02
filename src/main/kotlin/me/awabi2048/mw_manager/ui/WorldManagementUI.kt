@@ -209,11 +209,8 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
 
         // メンバーを招待
         if (option == "add_member") {
-
             val memberUI = MemberUI(player, world)
             memberUI.open(false)
-
-            player.playSound(player, Sound.ENTITY_VILLAGER_TRADE, 1.0f, 1.2f)
         }
 
         // タイムアウト判定　切り替えのみ即座の設定だから除外
@@ -358,7 +355,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         val memberIcon = ItemStack(Material.PLAYER_HEAD)
         memberIcon.itemMeta = memberIcon.itemMeta.apply {
 
-            val memberList = world.members!!.map {
+            val memberList = world.players!!.map {
                 when (it) {
                     world.owner -> "§e${it.name} §f(§cオーナー§f)"
                     in world.moderators!! -> "§e${it.name} §f(§b管理者§f)"

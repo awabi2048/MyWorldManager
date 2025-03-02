@@ -28,20 +28,25 @@ class PortalUI(private val player: Player, private val portal: WorldPortal) : Ab
         // テキスト表示
         if (slot == 11) {
             portal.displayText = !portal.displayText
+            update()
         }
 
         // 色
         if (slot == 13) {
-            val index = portal.color.ordinal.coerceIn(0..<WorldPortal.PortalColor.entries.size)
+            val index = when (event.click.isLeftClick) {
+                true -> portal.color.ordinal + 1
+                false -> portal.color.ordinal - 1
+            }.coerceIn(0..<WorldPortal.PortalColor.entries.size)
+
             portal.color = WorldPortal.PortalColor.entries[index]
+            update()
         }
 
         // 撤去
         if (slot == 15) {
+            player.closeInventory(InventoryCloseEvent.Reason.CANT_USE)
             portal.remove()
         }
-
-        open(false)
     }
 
     override fun preOpenProcess(firstOpen: Boolean) {

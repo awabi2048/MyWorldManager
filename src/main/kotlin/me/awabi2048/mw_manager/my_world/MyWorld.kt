@@ -87,18 +87,41 @@ class MyWorld(val uuid: String) {
             } else null
         }
 
-    val members: Set<OfflinePlayer>?
+    var players: Set<OfflinePlayer>?
         get() {
             return if (isRegistered) {
-                dataSection!!.getStringList("member").map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
+                dataSection!!.getConfigurationSection("member")!!.getKeys(false)
+                    .map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
             } else null
         }
 
-    val moderators: Set<OfflinePlayer>?
+        set(value) {
+            if (value != null && isRegistered) {
+                val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
+                    this[owner!!] = "OWNER"
+                    filter { it.key in moderators!! }.keys.forEach { moderator ->
+                        this[moderator] = "MODERATOR"
+                    }
+                }
+
+                DataFiles.worldData.set("$uuid.member", map.mapKeys { it.key.uniqueId.toString() })
+                DataFiles.save()
+                DataFiles.loadAll()
+            }
+        }
+
+    val members: Set<OfflinePlayer>?
         get() {
-            return if (isRegistered) {
-                dataSection!!.getStringList("moderator").map { Bukkit.getOfflinePlayer(it) }.toSet()
-            } else null
+            return players?.filter {
+                dataSection?.getString("member.${it.uniqueId}") == "MEMBER"
+            }?.toSet()
+        }
+
+    val moderators: Set<OfflinePlayer>
+        get() {
+            return players?.filter {
+                dataSection?.getString("member.${it.uniqueId}") == "MODERATOR"
+            }!!.toSet() + owner!!
         }
 
     val templateWorldName: String?
@@ -175,7 +198,7 @@ class MyWorld(val uuid: String) {
                 bar,
                 "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
                 expireState,
-                "$index §7メンバー §e${members!!.size}人 §7(オンライン: §a${members!!.filter { it.isOnline }.size}人§7)",
+                "$index §7メンバー §e${players!!.size}人 §7(オンライン: §a${players!!.filter { it.isOnline }.size}人§7)",
                 "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
                 bar,
             )
@@ -224,7 +247,6 @@ class MyWorld(val uuid: String) {
                 return Material.valueOf(materialString)
             } else return null
         }
-
         set(value) {
             if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.icon", value.name)
@@ -268,7 +290,6 @@ class MyWorld(val uuid: String) {
                 return WorldActivityState.valueOf(dataSection?.getString("activity_state") ?: return null)
             } else return null
         }
-
         set(value) {
             if (value != null && isRegistered && value != activityState) { // ※ すでのその状態の場合は処理中断する
                 // データファイルに書き込み
@@ -324,9 +345,10 @@ class MyWorld(val uuid: String) {
                         Bukkit.getScheduler().runTaskLater(
                             instance,
                             Runnable {
-                            FileUtils.deleteFolder(worldDataFile)
-                            System.gc()
-                        }, 10L)
+                                FileUtils.deleteFolder(worldDataFile)
+                                System.gc()
+                            }, 10L
+                        )
 
                         instance.logger.info("World archived. UUID: $uuid")
                     }
@@ -352,6 +374,11 @@ class MyWorld(val uuid: String) {
             // template
             val sourceWorldOrigin = Lib.locationToString(TemplateWorld(templateWorldName).originLocation)
 
+            // member
+            val playerMap = mapOf(
+                owner.uniqueId.toString() to OWNER.name
+            )
+
             // register
             val map = mapOf(
                 "name" to worldName,
@@ -361,7 +388,7 @@ class MyWorld(val uuid: String) {
                 "last_updated" to LocalDate.now().toString(),
                 "expire_in" to expireIn,
                 "owner" to owner.uniqueId.toString(),
-                "member" to listOf(owner.uniqueId.toString()),
+                "member" to playerMap,
                 "publish_level" to PublishLevel.PRIVATE.toString(),
                 "spawn_pos_guest" to sourceWorldOrigin,
                 "spawn_pos_member" to sourceWorldOrigin,
@@ -372,8 +399,6 @@ class MyWorld(val uuid: String) {
 
             DataFiles.worldData.createSection(uuid, map)
             DataFiles.save()
-
-//            println("$uuid, $map")
 
             instance.logger.info(
                 "Registered world. UUID: $uuid, Expire Date: ${
@@ -403,16 +428,17 @@ class MyWorld(val uuid: String) {
 
     fun registerPlayer(player: Player, role: MemberRole): Boolean {
         if (isRegistered && activityState == WorldActivityState.ACTIVE) {
-            val path = "$uuid.${role.toString().lowercase()}"
-
             if (role == OWNER) {
-                DataFiles.worldData.set(path, player.uniqueId.toString())
+                return false
             } else {
-                val list = dataSection!!.getStringList(role.toString().lowercase()) + player.uniqueId.toString()
-                DataFiles.worldData.set(path, list)
+                players = players?.plus(player)
             }
 
-            DataFiles.save()
+            players!!.filter {it.isOnline}.forEach {
+                it.player!!.sendMessage("§a${player.name} さんがワールドメンバーになりました！")
+                it.player!!.playSound(it.player!!, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
+            }
+
             return true
         } else return false
     }
@@ -424,7 +450,7 @@ class MyWorld(val uuid: String) {
             }
 
             val warpLocation = when (player) {
-                in members!! -> memberSpawnLocation!!
+                in players!! -> memberSpawnLocation!!
                 else -> guestSpawnLocation!!
             }
 
@@ -433,8 +459,8 @@ class MyWorld(val uuid: String) {
 
             player.sendMessage("§8【§a${name}§8】§7にワープしました。")
 
-            if (sendNotification){
-                members?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
+            if (sendNotification) {
+                players?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
                     it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
                     it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                 }
@@ -518,11 +544,14 @@ class MyWorld(val uuid: String) {
         val recruitmentCode = UUID.randomUUID().toString()
         recruitmentCodeMap[recruitmentCode] = uuid
 
-        val text = Component.text("§7«§eクリックして承認§7»")
-            .hoverEvent(HoverEvent.showText(Component.text("")))
-            .clickEvent(ClickEvent.runCommand("/mwm_recruit_accept $recruitmentCode"))
+        val text = Component.text("§b${inviter.name}さん§7があなたを§bワールドメンバーに招待§7しました！")
+            .append(
+                Component.text("§7«§eクリックして承認§7»")
+                    .hoverEvent(HoverEvent.showText(Component.text("")))
+                    .clickEvent(ClickEvent.runCommand("/mwm_recruit_accept $recruitmentCode"))
+            )
 
-        target.sendMessage("§b${inviter}さん§7がワールドのメンバーに招待しました！ $text")
+        target.sendMessage(text)
         target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
     }
 

@@ -110,7 +110,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
             val ui = AdminWorldInfoUI(
                 sender,
-                MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
+                MyWorldManager.registeredMyWorld.filter { it.players!!.contains(player) }.toSet(),
                 1
             )
             ui.open(true)
@@ -130,7 +130,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
             val ui = AdminWorldInfoUI(
                 sender,
-                MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
+                MyWorldManager.registeredMyWorld.filter { it.players!!.contains(player) }.toSet(),
                 page
             )
             ui.open(true)

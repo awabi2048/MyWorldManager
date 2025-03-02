@@ -21,7 +21,7 @@ object CommandManager {
 
         instance.getCommand("worldpoint")?.setExecutor(WorldPointCommand)
         instance.getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
-//        instance.getCommand("mwm_recruit_accept")?.setExecutor()
+        instance.getCommand("mwm_recruit_accept")?.setExecutor(RecruitAcceptCommand)
 
         instance.getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
         instance.getCommand("worldwarp")?.setExecutor(WarpCommand)
@@ -33,13 +33,13 @@ object CommandManager {
         if (sender is ConsoleCommandSender) return false
 
         return if (sender is Player) {
-            when(executor) {
+            when (executor) {
                 MWMCommand -> sender.hasPermission("mw_manager.command.mwm")
                 InviteCommand -> sender.hasPermission("mw_manager.command.invite")
                 VisitCommand -> sender.hasPermission("mw_manager.command.visit")
                 WorldPointCommand -> sender.hasPermission("mw_manager.command.worldpoint")
                 InviteAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_invite_accept")
-    //                RecruitAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_recruit_accept")
+                RecruitAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_recruit_accept")
                 OpenWorldUICommand -> sender.hasPermission("mw_manager.command.worldmenu")
                 WarpCommand -> sender.hasPermission("mw_manager.command.worldwarp")
                 HelpCommand -> sender.hasPermission("mw_manager.command.mwm_help")
@@ -141,8 +141,8 @@ object CommandManager {
                 }
 
                 GET_ITEM -> {
-                    when(size) {
-                        2 -> CustomItem.entries.map {it.name}.toMutableList()
+                    when (size) {
+                        2 -> CustomItem.entries.map { it.name }.toMutableList()
                         else -> mutableListOf()
                     }
                 }

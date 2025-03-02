@@ -31,7 +31,7 @@ object OpenWorldUICommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        if (p0 !in world.members!!) {
+        if (p0 !in world.players!!) {
             p0.sendMessage("§cメニューを開くには、ワールドのメンバーである必要があります。")
             return true
         }

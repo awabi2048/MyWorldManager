@@ -53,6 +53,7 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(VoteListener, instance)
         server.pluginManager.registerEvents(WorldSettingListener, instance)
         server.pluginManager.registerEvents(UIListener, instance)
+        server.pluginManager.registerEvents(ChatInputListener, instance)
 
         //
         MyWorldManager.loadTemplateWorlds()

@@ -2,7 +2,6 @@ package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.my_world.MyWorld
-import me.awabi2048.mw_manager.my_world.PublishLevel
 import me.awabi2048.mw_manager.player_expansion.notify
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -36,7 +35,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
             val world = MyWorld(worldUUID)
 
             // 自分のワールドだけ
-            if (world.members?.contains(p0) == false) {
+            if (world.players?.contains(p0) == false) {
                 p0.notify("§c自分以外のワールドには招待できません。", null)
                 return true
             }

@@ -12,6 +12,7 @@ import me.awabi2048.mw_manager.player_data.PlayerData
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.OfflinePlayer
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -27,6 +28,9 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
         data class RemoveWarpShortcut(val targetWorld: MyWorld) : UIData()
         data class WorldAdminToggleActivity(val world: MyWorld) : UIData()
         data class WorldAdminDelete(val world: MyWorld) : UIData()
+
+        data class WorldMemberInvite(val player: Player, val world: MyWorld) : UIData()
+        data class WorldMemberRemove(val player: OfflinePlayer, val world: MyWorld) : UIData()
     }
 
     override fun update() {
@@ -105,6 +109,23 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
                 uiData.world.activityState = activity
 
             }
+
+            is UIData.WorldMemberInvite -> {
+                player.sendMessage("§e${uiData.player.name} §7をワールドメンバーに§b招待§7しました。")
+                uiData.world.recruitPlayer(player, uiData.player)
+
+                player.closeInventory(InventoryCloseEvent.Reason.PLAYER)
+            }
+
+            is UIData.WorldMemberRemove -> {
+                player.sendMessage("§c${uiData.player.name} をワールドメンバーから追放しました。")
+                uiData.world.players = uiData.world.players?.minus(uiData.player)
+
+                player.playSound(player, Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 1.0f)
+                player.playSound(player, Sound.ENTITY_PLAYER_DEATH, 1.0f, 0.5f)
+
+                player.closeInventory()
+            }
         }
     }
 
@@ -144,6 +165,16 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
             is UIData.WorldAdminToggleActivity -> {
                 player.closeInventory()
+            }
+
+            is UIData.WorldMemberInvite -> {
+                val memberUI = MemberUI(player, uiData.world)
+                memberUI.open(false)
+            }
+
+            is UIData.WorldMemberRemove -> {
+                val memberUI = MemberUI(player, uiData.world)
+                memberUI.open(false)
             }
         }
     }
@@ -195,6 +226,9 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
             is UIData.WorldAdminDelete -> "§8【§a${uiData.world.name}§8】§7を§c完全消去§7する"
             is UIData.WorldAdminToggleActivity -> "§8【§a${uiData.world.name}§8】§7のアーカイブ状態を切り替える"
+
+            is UIData.WorldMemberInvite -> "§e${uiData.player.name}§7を§bワールドメンバーとして招待§7する"
+            is UIData.WorldMemberRemove -> "§c${uiData.player.name}をワールドメンバーから追放する"
         }
 
         val contentInfo = when (uiData) {
@@ -205,6 +239,8 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             is UIData.RemoveWarpShortcut -> "§c§nこの操作は復元できません"
             is UIData.WorldAdminDelete -> "§c§l§nこの操作は復元できません"
             is UIData.WorldAdminToggleActivity -> "§cワールドデータを移動します。"
+            is UIData.WorldMemberInvite -> ""
+            is UIData.WorldMemberRemove -> ""
         }
 
         val contentIcon = ItemStack(Material.REDSTONE_TORCH)
