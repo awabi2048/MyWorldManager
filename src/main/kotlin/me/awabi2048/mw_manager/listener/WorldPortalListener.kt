@@ -1,23 +1,20 @@
 package me.awabi2048.mw_manager.listener
 
-import com.bencodez.votingplugin.listeners.BlockBreak
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.portal.WorldPortal
+import me.awabi2048.mw_manager.ui.PortalUI
 import net.kyori.adventure.text.Component
 import org.bukkit.NamespacedKey
-import org.bukkit.Particle
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
@@ -113,19 +110,17 @@ object WorldPortalListener : Listener {
     }
 
     @EventHandler
-    fun onPortalRemove(event: PlayerInteractEvent) {
-        if (event.action != Action.LEFT_CLICK_BLOCK) return
+    fun onPortalMenuOpen(event: PlayerInteractEvent) {
+        if (event.action != Action.RIGHT_CLICK_BLOCK) return
 
         val blockLocation = event.clickedBlock?.location?.toBlockLocation() ?: return
         val portal = MyWorldManager.registeredPortal.find { it.location == blockLocation } ?: return
 
-        // オーナー以外は壊せない
-        if (event.player != portal.owner && event.player.hasPermission("mw_manager.admin")) {
-            event.player.sendMessage("§cポータルは設置者のみ破壊可能です。")
-            event.isCancelled = true
-            return
-        }
+        if (event.player != portal.owner && !event.player.hasPermission("mw_manager.admin")) return // オーナーか権限バイパス時のみ
+        if (event.hand != EquipmentSlot.HAND) return // 片手のみ判定しないと二重に処理されてしまう
 
-        portal.remove()
+        val ui = PortalUI(event.player, portal)
+        ui.open(true)
     }
 }
+

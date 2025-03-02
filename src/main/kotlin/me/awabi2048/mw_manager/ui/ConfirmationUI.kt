@@ -15,10 +15,11 @@ import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractInteractiveUI(owner) {
+class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractInteractiveUI(player) {
     sealed class UIData {
         data class OnCreationName(val worldName: String) : UIData()
         data class OnCreationTemplate(val templateId: String) : UIData()
@@ -28,31 +29,36 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
         data class WorldAdminDelete(val world: MyWorld) : UIData()
     }
 
+    override fun update() {
+        val ui = ConfirmationUI(player, uiData)
+        ui.open(false)
+    }
+
     private fun onConfirm() {
         when (uiData) {
             is UIData.OnCreationName -> {
-                creationDataSet.find { it.player == owner }!!.creationStage = CreationStage.CLONE_SOURCE
+                creationDataSet.find { it.player == player }!!.creationStage = CreationStage.CLONE_SOURCE
 
-                owner.sendMessage("§7ワールドの名前を §a${uiData.worldName} §7に設定しました！")
+                player.sendMessage("§7ワールドの名前を §a${uiData.worldName} §7に設定しました！")
 
                 // ソース選択メニュー
-                val templateSelectUI = TemplateSelectUI(owner)
+                val templateSelectUI = TemplateSelectUI(player)
                 templateSelectUI.open(true)
             }
 
             is UIData.OnCreationTemplate -> {
                 // データを保存
-                creationDataSet.find { it.player == owner }!!.creationStage = CreationStage.WAITING_CREATION
+                creationDataSet.find { it.player == player }!!.creationStage = CreationStage.WAITING_CREATION
 
-                val creationSession = creationDataSet.find { it.player == owner }!!
-                creationDataSet.removeIf { it.player == owner }
+                val creationSession = creationDataSet.find { it.player == player }!!
+                creationDataSet.removeIf { it.player == player }
 
                 creationSession.register()
 
                 Bukkit.getScheduler().runTaskLater(
                     instance,
                     Runnable {
-                        owner.closeInventory()
+                        player.closeInventory()
                     },
                     5L
                 )
@@ -60,30 +66,30 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
 
             is UIData.AddWarpShortcut -> {
                 // 登録処理
-                val playerData = PlayerData(owner)
+                val playerData = PlayerData(player)
                 playerData.warpShortcuts += uiData.targetWorld.uuid
 
-                owner.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットに§a追加§7しました！")
-                owner.playSound(owner, Sound.BLOCK_SMITHING_TABLE_USE, 1.0f, 1.0f)
+                player.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットに§a追加§7しました！")
+                player.playSound(player, Sound.BLOCK_SMITHING_TABLE_USE, 1.0f, 1.0f)
 
-                owner.closeInventory()
+                player.closeInventory()
             }
 
             is UIData.RemoveWarpShortcut -> {
-                val playerData = PlayerData(owner)
+                val playerData = PlayerData(player)
                 playerData.warpShortcuts -= uiData.targetWorld.uuid
 
-                owner.closeInventory()
+                player.closeInventory()
 
-                owner.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットから§c削除§7しました。")
-                owner.playSound(owner, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
+                player.sendMessage("§8【§a${uiData.targetWorld.name}§8】§7をワープショートカットから§c削除§7しました。")
+                player.playSound(player, Sound.BLOCK_ANVIL_DESTROY, 1.0f, 0.8f)
             }
 
             is UIData.WorldAdminDelete -> {
-                owner.sendMessage("$prefix §b${uiData.world.name} §7を§c削除§7しました。")
+                player.sendMessage("$prefix §b${uiData.world.name} §7を§c削除§7しました。")
                 uiData.world.delete()
 
-                owner.closeInventory()
+                player.closeInventory()
             }
 
             is UIData.WorldAdminToggleActivity -> {
@@ -93,9 +99,9 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
                     null -> null
                 } ?: return
 
-                owner.closeInventory()
+                player.closeInventory()
 
-                owner.sendMessage("$prefix §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
+                player.sendMessage("$prefix §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
                 uiData.world.activityState = activity
 
             }
@@ -106,38 +112,38 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
         when (uiData) {
             is UIData.OnCreationName -> {
                 // 再度入力待ちにする
-                creationDataSet.find { it.player == owner }!!.worldName = null
-                owner.closeInventory()
+                creationDataSet.find { it.player == player }!!.worldName = null
+                player.closeInventory()
 
-                owner.sendMessage("$prefix §7設定を取り消しました。§e新しいワールド名§7を入力してください！")
-                owner.playSound(owner, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
+                player.sendMessage("$prefix §7設定を取り消しました。§e新しいワールド名§7を入力してください！")
+                player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
             }
 
             is UIData.OnCreationTemplate -> {
                 // テンプレート選択画面を開く
-                creationDataSet.find { it.player == owner }!!.templateId = null
-                val templateSelectUI = TemplateSelectUI(owner)
+                creationDataSet.find { it.player == player }!!.templateId = null
+                val templateSelectUI = TemplateSelectUI(player)
                 templateSelectUI.open(false)
             }
 
             is UIData.AddWarpShortcut -> {
                 // ワープメニュー開く
-                val warpShortcutUI = WarpShortcutUI(owner)
+                val warpShortcutUI = WarpShortcutUI(player)
                 warpShortcutUI.open(false)
             }
 
             is UIData.RemoveWarpShortcut -> {
                 // ワープメニュー開く
-                val warpShortcutUI = WarpShortcutUI(owner)
+                val warpShortcutUI = WarpShortcutUI(player)
                 warpShortcutUI.open(false)
             }
 
             is UIData.WorldAdminDelete -> {
-                owner.closeInventory()
+                player.closeInventory()
             }
 
             is UIData.WorldAdminToggleActivity -> {
-                owner.closeInventory()
+                player.closeInventory()
             }
         }
     }
@@ -145,7 +151,7 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
     override fun onClick(event: InventoryClickEvent) {
         event.isCancelled = true
         if (event.slot !in listOf(11, 15)) return
-        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
         val isConfirmed = event.slot == 11
 
@@ -155,14 +161,14 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
             false -> onCancel()
         }
 
-        confirmationTracker.removeIf { it.player == owner }
+        confirmationTracker.removeIf { it.player == player }
     }
 
-    override fun open(firstOpen: Boolean) {
-        owner.openInventory(ui)
-        owner.playSound(owner, Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f)
+    override fun preOpenProcess(firstOpen: Boolean) {
+        player.openInventory(ui)
+        player.playSound(player, Sound.BLOCK_ENDER_CHEST_OPEN, 1.0f, 1.0f)
 
-        confirmationTracker.add(ConfirmationTracker(owner, uiData))
+        confirmationTracker.add(ConfirmationTracker(player, uiData))
     }
 
     override fun construct(): Inventory {
@@ -219,5 +225,8 @@ class ConfirmationUI(val owner: Player, private val uiData: UIData) : AbstractIn
         ui.setItem(22, contentIcon)
 
         return ui
+    }
+
+    override fun onClose(reason: InventoryCloseEvent.Reason) {
     }
 }

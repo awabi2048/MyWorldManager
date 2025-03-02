@@ -1,22 +1,53 @@
 package me.awabi2048.mw_manager.ui
 
+import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.my_world.MyWorld
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class WorldInfoListUI(val owner: Player, val worlds: Set<MyWorld>, val page: Int) : AbstractInteractiveUI(owner) {
-    override fun onClick(event: InventoryClickEvent) {
-
+class AdminWorldInfoUI(val player: Player, val worlds: Set<MyWorld>, val page: Int) : AbstractInteractiveUI(player) {
+    override fun update() {
+        val ui = AdminWorldInfoUI(player, worlds, page)
+        ui.open(false)
     }
 
-    override fun open(firstOpen: Boolean) {
-        owner.openInventory(ui)
+    override fun onClick(event: InventoryClickEvent) {
+        event.isCancelled = true
 
-        if (firstOpen) owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 1.8f)
+        if (event.slot !in 9..44) return
+        if (event.currentItem?.itemMeta?.isHideTooltip == true) return
+        val ownerName = (event.currentItem!!.itemMeta.lore()!![2] as TextComponent).content().drop(15)
+        val worldName = (event.currentItem!!.itemMeta.itemName() as TextComponent).content().drop(5).dropLast(3)
+
+        val world = Lib.translateWorldSpecifier("$ownerName:$worldName")?: return
+        val player = event.whoClicked as Player
+
+        if (event.click.isLeftClick) {
+            world.warpPlayer(player)
+            return
+        }
+
+        if (event.click.isRightClick && event.click.isShiftClick) {
+            val ui = ConfirmationUI(player, ConfirmationUI.UIData.WorldAdminDelete(world))
+            ui.open(true)
+            return
+        }
+
+        if (event.click.isRightClick && !event.click.isShiftClick) {
+            val ui = ConfirmationUI(player, ConfirmationUI.UIData.WorldAdminToggleActivity(world))
+            ui.open(true)
+            return
+        }
+    }
+
+    override fun preOpenProcess(firstOpen: Boolean) {
+        if (firstOpen) player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 1.8f)
     }
 
     override fun construct(): Inventory {
@@ -52,5 +83,8 @@ class WorldInfoListUI(val owner: Player, val worlds: Set<MyWorld>, val page: Int
         }
 
         return ui
+    }
+
+    override fun onClose(reason: InventoryCloseEvent.Reason) {
     }
 }

@@ -1,7 +1,5 @@
 package me.awabi2048.mw_manager.command
 
-import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.ui.WorldManagementUI
 import org.bukkit.command.Command
@@ -9,7 +7,6 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
-import sun.tools.jconsole.Tab
 
 object OpenWorldUICommand : CommandExecutor, TabCompleter {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
@@ -39,8 +36,8 @@ object OpenWorldUICommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        val menu = WorldManagementUI(p0, world)
-        menu.open(true)
+        val ui = WorldManagementUI(p0, world)
+        ui.open(true)
 
         return true
     }

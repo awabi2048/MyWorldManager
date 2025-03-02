@@ -14,6 +14,45 @@ import java.util.*
  * @param uuid ポータルのUUID
  */
 class WorldPortal(private val uuid: String) {
+    enum class PortalColor {
+        WHITE,
+        GRAY,
+        RED,
+        ORANGE,
+        YELLOW,
+        GREEN,
+        BLUE,
+        PURPLE;
+
+        val rgb: List<Int>
+            get() {
+                return when (this) {
+                    WHITE -> listOf(255, 255, 255)
+                    GRAY -> listOf(127, 127, 127)
+                    RED -> listOf(255, 0, 0)
+                    ORANGE -> listOf(255, 127, 0)
+                    YELLOW -> listOf(255, 255, 0)
+                    GREEN -> listOf(0, 255, 0)
+                    BLUE -> listOf(0, 0, 255)
+                    PURPLE -> listOf(191, 0, 191)
+                }
+            }
+
+        val japaneseName: String
+            get() {
+                return when (this) {
+                    WHITE -> "§f白"
+                    GRAY -> "§7グレー"
+                    RED -> "§c赤"
+                    ORANGE -> "§6オレンジ"
+                    YELLOW -> "§e黄"
+                    GREEN -> "§a緑"
+                    BLUE -> "§b青"
+                    PURPLE -> "§d紫"
+                }
+            }
+    }
+
     private val section: ConfigurationSection
         get() {
             return DataFiles.portalData.getConfigurationSection(uuid)!!
@@ -30,7 +69,9 @@ class WorldPortal(private val uuid: String) {
 //            println(portalData.contains(uuid))
 //            println("-----------------")
 
-            return MyWorldManager.registeredMyWorld.any { it.uuid == destinationWorld.uuid } && DataFiles.portalData.contains(uuid)
+            return MyWorldManager.registeredMyWorld.any { it.uuid == destinationWorld.uuid } && DataFiles.portalData.contains(
+                uuid
+            )
         }
 
     var owner: OfflinePlayer
@@ -52,7 +93,6 @@ class WorldPortal(private val uuid: String) {
                 section.getInt("location.z").toDouble()
             )
         }
-
         set(value) {
             val map = mapOf(
                 "world" to value.world.name,
@@ -70,9 +110,26 @@ class WorldPortal(private val uuid: String) {
             val uuid = section.getString("destination")!!
             return MyWorld(uuid)
         }
-
         set(value) {
             DataFiles.portalData.set("$uuid.destination", value.uuid)
+            DataFiles.save()
+        }
+
+    var displayText: Boolean
+        get() {
+            return section.getBoolean("display_text")
+        }
+        set(value) {
+            DataFiles.portalData.set("$uuid.display_text", value)
+            DataFiles.save()
+        }
+
+    var color: PortalColor
+        get() {
+            return PortalColor.valueOf(section.getString("color")!!)
+        }
+        set(value) {
+            DataFiles.portalData.set("$uuid.color", value.name)
             DataFiles.save()
         }
 
@@ -115,9 +172,11 @@ class WorldPortal(private val uuid: String) {
     }
 
     fun place(portalLocation: Location, destination: MyWorld, owner: Player) {
-        location = portalLocation // locationはセッターがあるからあるので使う
-        DataFiles.portalData.set("$uuid.owner", owner.uniqueId.toString())
-        DataFiles.portalData.set("$uuid.destination", destination.uuid)
+        this.location = portalLocation // locationはセッターがあるからあるので使う
+        this.owner = owner
+        this.destinationWorld = destination
+        this.color = PortalColor.PURPLE
+        this.displayText = true
 
         DataFiles.save()
         DataFiles.loadAll() // Mainからスケジュールしている都合、再ロードしないとメモリ上にデータが載らなくてエラーになる ?
@@ -135,8 +194,8 @@ class WorldPortal(private val uuid: String) {
         // 判定内のプレイヤーを転送
         location.getNearbyPlayers(5.0).filter {
             it.location.toBlockLocation().blockX == location.toBlockLocation().blockX &&
-            it.location.toBlockLocation().blockY in (location.toBlockLocation().blockY .. location.toBlockLocation().blockY + 3) &&
-            it.location.toBlockLocation().blockZ == location.toBlockLocation().blockZ
+                    it.location.toBlockLocation().blockY in (location.toBlockLocation().blockY..location.toBlockLocation().blockY + 3) &&
+                    it.location.toBlockLocation().blockZ == location.toBlockLocation().blockZ
         }
 
             .forEach {

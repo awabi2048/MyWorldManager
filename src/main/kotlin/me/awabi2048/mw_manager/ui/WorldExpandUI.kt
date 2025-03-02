@@ -13,14 +13,20 @@ import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractiveUI(owner) {
+class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiveUI(player) {
     init {
         if (!world.isRegistered) {
             throw IllegalStateException("Unregistered world given.")
         }
+    }
+
+    override fun update() {
+        val ui = WorldExpandUI(player, world)
+        ui.open(false)
     }
 
     override fun onClick(event: InventoryClickEvent) {
@@ -35,13 +41,13 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         }
 
         // ポイント処理
-        val playerData = PlayerData(owner)
+        val playerData = PlayerData(player)
 
-        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-        owner.playSound(owner, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
-        owner.closeInventory()
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
+        player.closeInventory()
 
-        owner.sendMessage("§7おあげちゃんがワールドを拡げてくれています... §6「${Config.oageGanbaruMessage.random()}」")
+        player.sendMessage("§7おあげちゃんがワールドを拡げてくれています... §6「${Config.oageGanbaruMessage.random()}」")
 
         // 拡張を実行
         Bukkit.getScheduler().runTaskLater(
@@ -50,18 +56,17 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
                 world.expand(expandMethod)
                 playerData.worldPoint -= world.expandCost!!
 
-                owner.sendMessage("§dワールドが拡張されました！§8【§7${world.borderExpansionLevel!! - 1}§8】§f▶§8【§e§l${world.borderExpansionLevel}§8】 §7(残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
+                player.sendMessage("§dワールドが拡張されました！§8【§7${world.borderExpansionLevel!! - 1}§8】§f▶§8【§e§l${world.borderExpansionLevel}§8】 §7(残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
             },
             40L
         )
     }
 
-    override fun open(firstOpen: Boolean) {
-        owner.openInventory(ui)
+    override fun preOpenProcess(firstOpen: Boolean) {
     }
 
     override fun construct(): Inventory {
-        val ui = createTemplate(3, "§8§lWorld Expand")!!
+        val ui = createTemplate(3, "§8§lワールドの拡張")!!
 
         // 中央
 
@@ -145,5 +150,8 @@ class WorldExpandUI(val owner: Player, val world: MyWorld) : AbstractInteractive
         ui.setItem(16, methodRightUp)
 
         return ui
+    }
+
+    override fun onClose(reason: InventoryCloseEvent.Reason) {
     }
 }

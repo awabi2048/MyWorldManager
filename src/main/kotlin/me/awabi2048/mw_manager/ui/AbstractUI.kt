@@ -1,12 +1,14 @@
 package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.Main.Companion.playerUIState
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.event.inventory.InventoryCloseEvent.Reason
 import org.bukkit.inventory.Inventory
 
-abstract class AbstractUI(owner: Player) {
+abstract class AbstractUI(val owner: Player) {
     val ui: Inventory by lazy { construct() }
 
     val index = "§f§l|"
@@ -14,10 +16,25 @@ abstract class AbstractUI(owner: Player) {
         get() {
              return "§7" + "━".repeat(30)
         }
+    val titleBar: String
+        get() {
+            return "§b§l§o||"
+        }
 
-    abstract fun open(firstOpen: Boolean)
+    abstract fun preOpenProcess(firstOpen: Boolean)
+
+    fun open(firstOpen: Boolean) {
+        playerUIState[owner] = this
+        preOpenProcess(firstOpen)
+
+        owner.openInventory(ui)
+    }
 
     abstract fun construct(): Inventory
+
+    abstract fun onClose(reason: Reason)
+
+    abstract fun update()
 
     fun createTemplate(row: Int, title: String): Inventory? {
         if (row !in 1..6) return null

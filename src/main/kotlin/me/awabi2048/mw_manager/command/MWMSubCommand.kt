@@ -9,7 +9,7 @@ import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.player_expansion.notify
-import me.awabi2048.mw_manager.ui.WorldInfoListUI
+import me.awabi2048.mw_manager.ui.AdminWorldInfoUI
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -74,7 +74,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         // /mwm info
         if (args.size == 1) {
-            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.toSet(), 1)
+            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorld.toSet(), 1)
             ui.open(true)
         }
 
@@ -88,7 +88,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
                 return
             }
 
-            val ui = WorldInfoListUI(sender, MyWorldManager.registeredMyWorld.toSet(), page)
+            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorld.toSet(), page)
             ui.open(true)
         }
 
@@ -108,7 +108,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         if (args.size == 2 && Lib.translatePlayerSpecifier(args[1]) != null) {
             val player = Lib.translatePlayerSpecifier(args[1])!!
 
-            val ui = WorldInfoListUI(
+            val ui = AdminWorldInfoUI(
                 sender,
                 MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
                 1
@@ -128,7 +128,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
                 return
             }
 
-            val ui = WorldInfoListUI(
+            val ui = AdminWorldInfoUI(
                 sender,
                 MyWorldManager.registeredMyWorld.filter { it.members!!.contains(player) }.toSet(),
                 page

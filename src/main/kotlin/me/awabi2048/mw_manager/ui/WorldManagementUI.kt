@@ -9,28 +9,115 @@ import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.player_notification.PlayerNotification
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor.AQUA
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent.Reason
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
-class WorldManagementUI(private val owner: Player, private val world: MyWorld) : AbstractInteractiveUI(owner) {
+class WorldManagementUI(private val player: Player, private val world: MyWorld) : AbstractInteractiveUI(player) {
     init {
         if (!world.isRegistered) {
             throw IllegalStateException("Unregistered world given.")
         }
     }
 
+    private fun setIcon(material: Material) {
+        world.iconMaterial = material
+
+        // アイテム名を翻訳したいのでComponentを使用
+        val message = Component.text("§7ワールドのアイコンを")
+            .append(Component.translatable(material.translationKey()).color(AQUA))
+            .append(Component.text("§7に変更しました。"))
+
+        player.sendMessage(message)
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        player.playSound(player, Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f)
+
+        worldSettingState.remove(player)
+        val ui = WorldManagementUI(player, world)
+        ui.open(false)
+
+        return
+    }
+
+    fun setByChatInput(content: String) {
+        val state = worldSettingState[player]?: return
+
+        // ワールド名変更
+        if (state == PlayerWorldSettingState.CHANGE_NAME) {
+            if (!Lib.checkWorldNameAvailable(content, player)) return
+
+            world.name = content
+            player.sendMessage("§eワールドの名前が §6${content} §eに変更されました！")
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            update()
+        }
+
+        // 説明欄変更
+        if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
+            // ブラックリスト判定
+            if (Lib.checkIfContainsBlacklisted(content)) {
+                player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
+                return
+            }
+
+            world.description = content
+            player.sendMessage("§eワールドの説明が §6${content} §eに変更されました！")
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            update()
+        }
+
+        worldSettingState.remove(player)
+    }
+
+    fun setSpawnLocation(location: Location) {
+        val state = worldSettingState[player]!!
+
+        when (state) {
+            PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS -> {
+                player.sendMessage("§7ゲストのワールドスポーン位置が (§b${location.blockX}§7, §b${location.blockY}§7, §b${location.blockZ}§7)に変更されました。")
+                world.guestSpawnLocation = location
+            }
+
+            PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS -> {
+                player.sendMessage("§7メンバーのワールドスポーン位置が (§b${location.blockX}§7, §b${location.blockY}§7, §b${location.blockZ}§7)に変更されました。")
+                world.memberSpawnLocation = location
+            }
+
+            else -> return
+        }
+
+        worldSettingState.remove(player)
+        update()
+    }
+
+    override fun onClose(reason: Reason) {
+        if (worldSettingState[player] == PlayerWorldSettingState.CHANGE_ICON) {
+            worldSettingState.remove(player)
+            player.sendMessage("§cインベントリを閉じたため、設定をキャンセルしました。")
+        }
+    }
+
     override fun onClick(event: InventoryClickEvent) {
         fun timeOut() {
-            owner.sendMessage("§c一定時間が経過したため、設定をキャンセルしました。")
-            worldSettingState.remove(owner)
+            player.sendMessage("§c一定時間が経過したため、設定をキャンセルしました。")
+            worldSettingState.remove(player)
         }
+
+        // アイコン設定中 → 設定する
+        if (
+            worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON
+            && event.currentItem != null
+            && !event.clickedInventory!!.any { it != null && it.itemMeta.itemName == "§aワールド表示の変更" } // メニュー内のアイテムは掴めないように
+            && event.currentItem?.type !in listOf(Material.BLACK_STAINED_GLASS_PANE, Material.GRAY_STAINED_GLASS_PANE) // 背景アイテムだと悪用できそうなので
+        ) setIcon(event.currentItem!!.type)
 
         event.isCancelled = true
         val slot = event.slot
@@ -47,66 +134,66 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
         }
 
         //
-        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
         // チャット入力を監視
         if (option == "change_display") {
             if (event.click.isLeftClick) {
-                worldSettingState[owner] = PlayerWorldSettingState.CHANGE_NAME
-                owner.sendMessage("§7チャット欄に入力して、§bワールド名の変更§7を行います！")
+                worldSettingState[player] = PlayerWorldSettingState.CHANGE_NAME
+                player.sendMessage("§7チャット欄に入力して、§bワールド名の変更§7を行います！")
             }
             if (event.click.isRightClick) {
-                worldSettingState[owner] = PlayerWorldSettingState.CHANGE_DESCRIPTION
-                owner.sendMessage("§7チャット欄に入力して、§b説明文の変更§7を行います！")
+                worldSettingState[player] = PlayerWorldSettingState.CHANGE_DESCRIPTION
+                player.sendMessage("§7チャット欄に入力して、§b説明文の変更§7を行います！")
             }
 
-            owner.playSound(owner, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
 
-            owner.closeInventory()
+            player.closeInventory()
         }
 
-        // メニューを閉じる　→　プレイヤーがクリックした座標を新たに設定
+        // スポーン位置変更
         if (option == "change_spawn_pos") {
             if (event.click.isLeftClick) {
-                worldSettingState[owner] = PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS
-                owner.sendMessage("§7ブロックをクリックして、§bメンバーのスポーン位置の変更§7を行います！")
+                worldSettingState[player] = PlayerWorldSettingState.CHANGE_MEMBER_SPAWN_POS
+                player.sendMessage("§7ブロックをクリックして、§bメンバーのスポーン位置の変更§7を行います！")
             }
 
             if (event.click.isRightClick) {
-                worldSettingState[owner] = PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS
-                owner.sendMessage("§7ブロックをクリックして、§bゲストのスポーン位置の変更§7を行います！")
+                worldSettingState[player] = PlayerWorldSettingState.CHANGE_GUEST_SPAWN_POS
+                player.sendMessage("§7ブロックをクリックして、§bゲストのスポーン位置の変更§7を行います！")
             }
 
 
-            owner.playSound(owner, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
 
-            owner.closeInventory()
+            player.closeInventory()
         }
 
-        // メニュー閉じない　インベントリ内でクリックしたアイテムのMaterialをアイコンとして設定
+        // アイコン変更
         if (option == "change_icon") {
-            worldSettingState[owner] = PlayerWorldSettingState.CHANGE_ICON
-            PlayerNotification.WORLD_SETTING_DISPLAY.send(owner)
-            owner.playSound(owner, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f)
+            worldSettingState[player] = PlayerWorldSettingState.CHANGE_ICON
+            PlayerNotification.WORLD_SETTING_DISPLAY.send(player)
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f)
         }
 
-        // 専用メニュー開く
+        // 拡張
         if (option == "expand") {
-            val canExpand = PlayerData(owner).worldPoint >= world.expandCost!!
+            val canExpand = PlayerData(player).worldPoint >= world.expandCost!!
 
             if (canExpand) {
-                val expandUI = WorldExpandUI(owner, world)
-                expandUI.open(false)
+                val expandUI = WorldExpandUI(player, world)
 
-                owner.playSound(owner, Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 2.0f)
+                expandUI.open(false)
+                player.playSound(player, Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 2.0f)
 
             } else {
-                owner.sendMessage("§cワールドポイントが不足しています。")
-                owner.playSound(owner, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
+                player.sendMessage("§cワールドポイントが不足しています。")
+                player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
             }
         }
 
-        // 順番に切り替え
+        // 公開レベル変更
         if (option == "change_publish_level") {
             val currentOptionIndex = PublishLevel.entries.indexOf(world.publishLevel!!)
             val changedIndex = if (event.isLeftClick) (currentOptionIndex + 1).coerceIn(PublishLevel.entries.indices)
@@ -114,43 +201,47 @@ class WorldManagementUI(private val owner: Player, private val world: MyWorld) :
             val changedOption = PublishLevel.entries[changedIndex]
 
             world.publishLevel = changedOption
-            open(false)
+
+            this.world.publishLevel = changedOption
+
+            update()
         }
 
-        // チャット入力を監視　入力されたものをMCIDとして招待
+        // メンバーを招待
         if (option == "add_member") {
-            worldSettingState[owner] = PlayerWorldSettingState.ADD_MEMBER
 
-            owner.sendMessage("§7チャット欄に入力して、§bメンバー参加の招待§7を送ります！")
-            owner.playSound(owner, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f)
+            val memberUI = MemberUI(player, world)
+            memberUI.open(false)
 
-            owner.closeInventory()
+            player.playSound(player, Sound.ENTITY_VILLAGER_TRADE, 1.0f, 1.2f)
         }
 
-        // タイムアウト設定　切り替えのみ即座の設定だから除外
+        // タイムアウト判定　切り替えのみ即座の設定だから除外
         if (option != "change_publish_level") {
             Bukkit.getScheduler().runTaskLater(
                 instance,
                 Runnable {
-                    if (worldSettingState.keys.contains(owner)) timeOut()
+                    if (worldSettingState.keys.contains(player)) timeOut()
                 },
                 120 * 20L
             )
         }
     }
 
-    override fun open(firstOpen: Boolean) {
-        //
-        owner.openInventory(ui)
+    override fun update() {
+        val ui = WorldManagementUI(player, world)
+        ui.open(false)
+    }
 
+    override fun preOpenProcess(firstOpen: Boolean) {
         //
-        if (firstOpen) owner.playSound(owner, Sound.BLOCK_CHEST_OPEN, 1.0f, 1.2f)
+        if (firstOpen) player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1.0f, 1.2f)
     }
 
     override fun construct(): Inventory {
         val menu = createTemplate(5, "§8§lWorld Management")!!
 
-        val playerData = PlayerData(owner)
+        val playerData = PlayerData(player)
 
         if (!world.isRegistered) throw IllegalArgumentException("Unregistered world for management ui specified.")
 

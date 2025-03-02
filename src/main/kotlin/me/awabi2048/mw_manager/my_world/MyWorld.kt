@@ -9,6 +9,7 @@ import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.macro_executor.MacroExecutor
+import me.awabi2048.mw_manager.macro_executor.MacroFlag
 import me.awabi2048.mw_manager.my_world.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
 import net.kyori.adventure.text.Component
@@ -381,7 +382,7 @@ class MyWorld(val uuid: String) {
             )
 
             // macro execution
-            val macroExecutor = MacroExecutor(MacroExecutor.Flag.ON_WORLD_CREATE)
+            val macroExecutor = MacroExecutor(MacroFlag.ON_WORLD_CREATE)
             macroExecutor.run(this, owner)
 
             return true
@@ -438,7 +439,7 @@ class MyWorld(val uuid: String) {
             }
 
             // macro execution
-            val macroExecutor = MacroExecutor(MacroExecutor.Flag.ON_PLAYER_WARP)
+            val macroExecutor = MacroExecutor(MacroFlag.ON_PLAYER_WARP)
             macroExecutor.run(this, player)
 
             return true

@@ -4,48 +4,54 @@ import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.player_data.PlayerData
-import me.awabi2048.mw_manager.player_notification.PlayerNotification
+import net.kyori.adventure.text.TextComponent
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
+import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
+class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player) {
+    override fun update() {
+        val ui = WarpShortcutUI(player)
+        ui.open(false)
+    }
+
     override fun onClick(event: InventoryClickEvent) {
         event.isCancelled = true
         if (event.slot !in 10..16 && event.slot !in 19..25) return
 
-        val itemName = event.currentItem!!.itemMeta!!.itemName
+        val itemName = (event.currentItem!!.itemMeta!!.itemName() as TextComponent).content()
         if (itemName == "§cロック中") return
 
-        owner.playSound(owner, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
         if (event.isLeftClick && !event.isShiftClick) {// 新規登録
             if (itemName == "§b未登録") {
-                val world = MyWorldManager.registeredMyWorld.find{it.vanillaWorld == owner.world}
+                val world = MyWorldManager.registeredMyWorld.find{it.vanillaWorld == player.world}
                 if (world == null) {
 
-                    owner.sendMessage("§cこのワールドではワープを設定できません。")
-                    owner.playSound(owner, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
+                    player.sendMessage("§cこのワールドではワープを設定できません。")
+                    player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
 
-                    owner.closeInventory()
+                    player.closeInventory()
                     return
                 }
 
                 val uuid = world.uuid
-                val playerData = PlayerData(owner)
+                val playerData = PlayerData(player)
 
                 // 登録済
                 if (uuid in playerData.warpShortcuts) {
-                    owner.sendMessage("§c既にこのワールドを登録しています。")
-                    owner.playSound(owner, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
+                    player.sendMessage("§c既にこのワールドを登録しています。")
+                    player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
                     return
                 }
 
                 // 確認メニュー
-                val confirmationUI = ConfirmationUI(owner, ConfirmationUI.UIData.AddWarpShortcut(world))
+                val confirmationUI = ConfirmationUI(player, ConfirmationUI.UIData.AddWarpShortcut(world))
                 confirmationUI.open(true)
 
             } else { // 登録済み: ワープ
@@ -53,8 +59,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
                 val targetWorld = MyWorld(uuid)
 
-                owner.sendMessage("§7登録済みのショートカット先へワープします...")
-                targetWorld.warpPlayer(owner)
+                player.sendMessage("§7登録済みのショートカット先へワープします...")
+                targetWorld.warpPlayer(player)
             }
 
             // 右クリック → 削除
@@ -64,18 +70,18 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
                 val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID:")
                 val world = MyWorld(uuid)
 
-                val confirmationUI = ConfirmationUI(owner, ConfirmationUI.UIData.RemoveWarpShortcut(world))
+                val confirmationUI = ConfirmationUI(player, ConfirmationUI.UIData.RemoveWarpShortcut(world))
                 confirmationUI.open(true)
             }
         }
     }
 
-    override fun open(firstOpen: Boolean) {
+    override fun preOpenProcess(firstOpen: Boolean) {
         //
-        owner.openInventory(ui)
+        player.openInventory(ui)
         if (firstOpen) {
-            owner.playSound(owner, Sound.BLOCK_CHEST_OPEN, 1.0f, 2.0f)
-            owner.playSound(owner, Sound.ENTITY_ILLUSIONER_PREPARE_MIRROR, 1.0f, 1.2f)
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1.0f, 2.0f)
+            player.playSound(player, Sound.ENTITY_ILLUSIONER_PREPARE_MIRROR, 1.0f, 1.2f)
         }
     }
 
@@ -110,7 +116,7 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
         val menu = createTemplate(4, "§8§lワープショートカット")!!
 
-        val playerData = PlayerData(owner)
+        val playerData = PlayerData(player)
 
         //
         val unavailableIcon = ItemStack(Material.BEDROCK)
@@ -166,5 +172,8 @@ class WarpShortcutUI(private val owner: Player) : AbstractInteractiveUI(owner) {
 
 
         return menu
+    }
+
+    override fun onClose(reason: InventoryCloseEvent.Reason) {
     }
 }
