@@ -1,5 +1,7 @@
 package me.awabi2048.mw_manager
 
+import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.ProtocolManager
 import com.onarandombox.MultiverseCore.MultiverseCore
 import com.onarandombox.MultiverseCore.api.MVWorldManager
 import me.awabi2048.mw_manager.command.CommandManager
@@ -18,7 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
     companion object {
-        val prefix = "§aMWManager §7»"
+        const val PREFIX = "§aMWManager §7»"
 
         lateinit var instance: JavaPlugin
         lateinit var mvWorldManager: MVWorldManager
@@ -34,10 +36,13 @@ class Main : JavaPlugin() {
         var playerUIState: MutableMap<Player, AbstractUI> = mutableMapOf()
 
         val worldDeletionQueue: MutableList<World> = mutableListOf()
+
+        lateinit var protocolManager: ProtocolManager
     }
 
     override fun onEnable() {
         instance = this
+        protocolManager = ProtocolLibrary.getProtocolManager()
 
         DataFiles.copy()
         DataFiles.loadAll()

@@ -1,5 +1,6 @@
 package me.awabi2048.mw_manager.ui
 
+import me.awabi2048.mw_manager.portal.PortalColor
 import me.awabi2048.mw_manager.portal.WorldPortal
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
@@ -36,9 +37,9 @@ class PortalUI(private val player: Player, private val portal: WorldPortal) : Ab
             val index = when (event.click.isLeftClick) {
                 true -> portal.color.ordinal + 1
                 false -> portal.color.ordinal - 1
-            }.coerceIn(0..<WorldPortal.PortalColor.entries.size)
+            }.coerceIn(0..<PortalColor.entries.size)
 
-            portal.color = WorldPortal.PortalColor.entries[index]
+            portal.color = PortalColor.entries[index]
             update()
         }
 

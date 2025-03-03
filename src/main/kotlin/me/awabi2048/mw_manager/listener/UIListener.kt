@@ -1,6 +1,5 @@
 package me.awabi2048.mw_manager.listener
 
-import me.awabi2048.mw_manager.Main
 import me.awabi2048.mw_manager.Main.Companion.playerUIState
 import me.awabi2048.mw_manager.ui.AbstractInteractiveUI
 import org.bukkit.event.EventHandler

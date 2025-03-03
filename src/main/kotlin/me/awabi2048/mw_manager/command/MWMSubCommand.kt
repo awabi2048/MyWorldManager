@@ -4,11 +4,11 @@ import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.*
-import me.awabi2048.mw_manager.player_expansion.notify
+import me.awabi2048.mw_manager.extension.notify
 import me.awabi2048.mw_manager.ui.AdminWorldInfoUI
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
@@ -21,7 +21,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         DataFiles.copy()
         DataFiles.loadAll()
 
-        sender.sendMessage("$prefix §aデータファイルをリロードしました。")
+        sender.sendMessage("$PREFIX §aデータファイルをリロードしました。")
     }
 
     fun create() {
@@ -56,7 +56,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         if (initiated) {
             sender.notify(
-                "Owner: ${owner.displayName}, Source: $sourceWorldName でワールドを生成しました。(UUID:$uuid)",
+                "Owner: ${owner.name}, Source: $sourceWorldName でワールドを生成しました。(UUID:$uuid)",
                 null
             )
         }
@@ -159,13 +159,13 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     fun setWorldState(state: WorldActivityState) {
         // コマンド有効判定
         if (args.size != 2) {
-            sender.sendMessage("$prefix §c無効なコマンドです。")
+            sender.sendMessage("$PREFIX §c無効なコマンドです。")
             return
         }
 
         val world = Lib.translateWorldSpecifier(args[1])
         if (world == null) {
-            sender.sendMessage("$prefix §c無効なワールド指定です。")
+            sender.sendMessage("$PREFIX §c無効なワールド指定です。")
             return
         }
 
@@ -177,7 +177,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         // 実行
         world.activityState = state
 
-        sender.sendMessage("$prefix §aワールド「${world.name}」を${state.toJapanese()}状態に設定しました。")
+        sender.sendMessage("$PREFIX §aワールド「${world.name}」を${state.toJapanese()}状態に設定しました。")
     }
 
     fun startCreationSession() {
@@ -188,7 +188,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             creationDataSet += creationData
 
             // 最初 → ワールド名設定
-            sender.sendMessage("$prefix §eワールド名§7を入力してください！")
+            sender.sendMessage("$PREFIX §eワールド名§7を入力してください！")
             sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
 
             // タイムアウト判定
@@ -208,17 +208,17 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun getItem() {
         if (sender !is Player) {
-            sender.sendMessage("$prefix §cこのコマンドはプレイヤーからのみ実行可能です。")
+            sender.sendMessage("$PREFIX §cこのコマンドはプレイヤーからのみ実行可能です。")
             return
         }
 
         if (args.size == 1) {
-            sender.sendMessage("$prefix §c無効なコマンドです。 /mwm get_item <アイテムId>")
+            sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm get_item <アイテムId>")
             return
         }
 
         if (args[1] !in CustomItem.entries.map {it.name}) {
-            sender.sendMessage("$prefix §c無効なアイテムIdです。")
+            sender.sendMessage("$PREFIX §c無効なアイテムIdです。")
             return
         }
 

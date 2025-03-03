@@ -52,7 +52,7 @@ object CommandManager {
     fun getTabCompletion(sender: CommandSender, args: List<String>?, executor: CommandExecutor): MutableList<String> {
         fun worldSpecifier(arg: String): MutableList<String> {
             if (!arg.contains(":")) {
-                return Bukkit.getOnlinePlayers().map { "${it.displayName}:" }.toMutableList()
+                return Bukkit.getOnlinePlayers().map { "${it.name}:" }.toMutableList()
             } else {
                 val playerName = arg.substringBefore(":")
                 val playerUUID = Bukkit.getPlayer(playerName)?.uniqueId ?: return mutableListOf()
@@ -65,7 +65,7 @@ object CommandManager {
             if (!arg.contains(":")) {
                 return mutableListOf("player:", "uuid:")
             } else {
-                if (arg.contains("player:")) return Bukkit.getOnlinePlayers().map { "player:${it.displayName}" }
+                if (arg.contains("player:")) return Bukkit.getOnlinePlayers().map { "player:${it.name}" }
                     .toMutableList()
                 if (arg.contains("uuid:")) return Bukkit.getOnlinePlayers().map { "uuid:${it.uniqueId}" }
                     .toMutableList()
@@ -84,13 +84,13 @@ object CommandManager {
 
         if (executor == InviteCommand) {
             if (size == 1) {
-                return Bukkit.getOnlinePlayers().filter { it != sender }.map { it.displayName }.toMutableList()
+                return Bukkit.getOnlinePlayers().filter { it != sender }.map { it.name }.toMutableList()
             }
         }
 
         if (executor == WorldPointCommand) {
             return when (size) {
-                1 -> Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
+                1 -> Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
                 2 -> mutableListOf("add", "subtract", "set", "get")
                 else -> mutableListOf()
             }
@@ -135,7 +135,7 @@ object CommandManager {
 
                 START_CREATION_SESSION -> {
                     when (size) {
-                        2 -> Bukkit.getOnlinePlayers().map { it.displayName }.toMutableList()
+                        2 -> Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
                         else -> mutableListOf()
                     }
                 }

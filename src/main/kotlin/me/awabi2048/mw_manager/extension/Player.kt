@@ -1,14 +1,13 @@
-package me.awabi2048.mw_manager.player_expansion
+package me.awabi2048.mw_manager.extension
 
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import net.kyori.adventure.sound.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemStack
 
 fun CommandSender.notify(message: String, sound: Sound?) {
     if (this is Player) {
-        sendMessage("$prefix $message")
+        sendMessage("$PREFIX $message")
         if (sound != null) playSound(sound)
     } else {
         if (message.startsWith("§")) sendMessage("MWManager >> ${message.drop(2)}") else sendMessage("MWManager >> $message")

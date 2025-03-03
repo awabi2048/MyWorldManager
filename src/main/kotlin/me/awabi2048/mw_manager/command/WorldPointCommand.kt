@@ -1,14 +1,12 @@
 package me.awabi2048.mw_manager.command
 
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.player_data.PlayerData
 import org.bukkit.Bukkit
-import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.entity.Player
 
 // /worldpoint %player% add|subtract|set|get %value%?
 object WorldPointCommand : CommandExecutor, TabCompleter {
@@ -19,7 +17,7 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
         }
 
         if (p3?.size !in 2..3) {
-            p0.sendMessage("$prefix §c無効なコマンドです。")
+            p0.sendMessage("$PREFIX §c無効なコマンドです。")
             return true
         }
 
@@ -28,12 +26,12 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
         val option = p3[1]
 
         if (player == null) {
-            p0.sendMessage("$prefix §c該当のプレイヤーが見つかりませんでした。")
+            p0.sendMessage("$PREFIX §c該当のプレイヤーが見つかりませんでした。")
             return true
         }
 
         if (option !in listOf("add", "subtract", "set", "get")) {
-            p0.sendMessage("$prefix §c操作が無効です。")
+            p0.sendMessage("$PREFIX §c操作が無効です。")
             return true
         }
 
@@ -44,12 +42,12 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
             val value = p3[2].toIntOrNull()
 
             if (value == null) {
-                p0.sendMessage("$prefix §c入力値が無効です。")
+                p0.sendMessage("$PREFIX §c入力値が無効です。")
                 return true
             }
 
             if (option !in listOf("add", "subtract", "set")) {
-                p0.sendMessage("$prefix §c操作が無効です。")
+                p0.sendMessage("$PREFIX §c操作が無効です。")
                 return true
             }
 
@@ -62,16 +60,16 @@ object WorldPointCommand : CommandExecutor, TabCompleter {
             }
 
             // 結果の通知
-            p0.sendMessage("$prefix §e${player.displayName} §7のワールドポイントを §a${data.worldPoint} §7に変更しました。")
+            p0.sendMessage("$PREFIX §e${player.name} §7のワールドポイントを §a${data.worldPoint} §7に変更しました。")
 
         } else if (p3.size == 2) {
             if (option != "get") {
-                p0.sendMessage("$prefix §c操作が無効です。")
+                p0.sendMessage("$PREFIX §c操作が無効です。")
                 return true
             }
 
             // 結果の送信
-            p0.sendMessage("$prefix §e${player.displayName} §7のワールドポイントは、現在 §a${data.worldPoint} §7です。")
+            p0.sendMessage("$PREFIX §e${player.name} §7のワールドポイントは、現在 §a${data.worldPoint} §7です。")
 
         }
 

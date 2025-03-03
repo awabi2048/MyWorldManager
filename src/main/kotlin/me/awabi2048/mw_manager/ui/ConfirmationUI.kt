@@ -3,7 +3,7 @@ package me.awabi2048.mw_manager.ui
 import me.awabi2048.mw_manager.Main.Companion.confirmationTracker
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.my_world.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
@@ -90,7 +90,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             }
 
             is UIData.WorldAdminDelete -> {
-                player.sendMessage("$prefix §b${uiData.world.name} §7を§c削除§7しました。")
+                player.sendMessage("$PREFIX §b${uiData.world.name} §7を§c削除§7しました。")
                 uiData.world.delete()
 
                 player.closeInventory()
@@ -105,7 +105,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
                 player.closeInventory()
 
-                player.sendMessage("$prefix §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
+                player.sendMessage("$PREFIX §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
                 uiData.world.activityState = activity
 
             }
@@ -136,7 +136,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
                 creationDataSet.find { it.player == player }!!.worldName = null
                 player.closeInventory()
 
-                player.sendMessage("$prefix §7設定を取り消しました。§e新しいワールド名§7を入力してください！")
+                player.sendMessage("$PREFIX §7設定を取り消しました。§e新しいワールド名§7を入力してください！")
                 player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
             }
 

@@ -78,6 +78,7 @@ object Config {
         get() {
             return section.getInt("player_world_slot_max")
         }
+
         set(value) {
             DataFiles.config.set("player_world_slot_max", value.coerceAtLeast(1))
             DataFiles.save()

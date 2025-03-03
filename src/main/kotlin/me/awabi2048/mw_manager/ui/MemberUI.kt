@@ -31,7 +31,7 @@ class MemberUI(val player: Player, val world: MyWorld) : AbstractInteractiveUI(p
 
         // プレイヤー招待
         if (event.slot == 22) {
-            if (player in world.moderators!!) {
+            if (player in world.moderators) {
                 player.closeInventory()
                 player.sendMessage(Component.text("§7招待するプレイヤーの名前を入力してください！"))
                 player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
@@ -90,7 +90,7 @@ class MemberUI(val player: Player, val world: MyWorld) : AbstractInteractiveUI(p
 
                 val playerPermissionName = when (member) {
                     world.owner!! -> "§cオーナー"
-                    in world.moderators!! -> "§6管理者"
+                    in world.moderators -> "§6管理者"
                     else -> "§bメンバー"
                 }
 

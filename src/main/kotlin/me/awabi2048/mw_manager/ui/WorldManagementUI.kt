@@ -8,8 +8,8 @@ import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
-import me.awabi2048.mw_manager.player_notification.PlayerNotification
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -48,7 +48,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
     }
 
     fun setByChatInput(content: String) {
-        val state = worldSettingState[player]?: return
+        val state = worldSettingState[player] ?: return
 
         // ワールド名変更
         if (state == PlayerWorldSettingState.CHANGE_NAME) {
@@ -115,8 +115,11 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         if (
             worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON
             && event.currentItem != null
-            && !event.clickedInventory!!.any { it != null && it.itemMeta.itemName == "§aワールド表示の変更" } // メニュー内のアイテムは掴めないように
-            && event.currentItem?.type !in listOf(Material.BLACK_STAINED_GLASS_PANE, Material.GRAY_STAINED_GLASS_PANE) // 背景アイテムだと悪用できそうなので
+            && !event.clickedInventory!!.any { it != null && (it.itemMeta.itemName() as TextComponent).content() == "§aワールド表示の変更" } // メニュー内のアイテムは掴めないように
+            && event.currentItem?.type !in listOf(
+                Material.BLACK_STAINED_GLASS_PANE,
+                Material.GRAY_STAINED_GLASS_PANE
+            ) // 背景アイテムだと悪用できそうなので
         ) setIcon(event.currentItem!!.type)
 
         event.isCancelled = true
@@ -245,44 +248,50 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         // 総合情報
         val infoIcon = ItemStack(world.iconMaterial!!)
         infoIcon.itemMeta = infoIcon.itemMeta.apply {
-            setItemName("§7【§a${world.name}§7】")
+            itemName(Component.text("§7【§a${world.name}§7】"))
 
-            lore = world.fixedData
+            lore(world.fixedData.map { Component.text(it) })
         }
 
         // 設定ゾーン: 名前・説明
         val changeDisplayIcon = ItemStack(Material.NAME_TAG)
         changeDisplayIcon.itemMeta = changeDisplayIcon.itemMeta.apply {
-            setItemName("§aワールド表示の変更")
-            lore = listOf(
-                bar,
-                "$index §e左クリック§7: §aワールドの名前§7を変更します。",
-                "$index §e右クリック§7: §aワールドの説明§7を変更します。",
-                bar,
+            Component.text("§aワールド表示の変更")
+            lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("$index §e左クリック§7: §aワールドの名前§7を変更します。"),
+                    Component.text("$index §e右クリック§7: §aワールドの説明§7を変更します。"),
+                    Component.text(bar),
+                )
             )
         }
 
         // 設定ゾーン: アイコン
         val changeIconIcon = ItemStack(Material.ANVIL)
         changeIconIcon.itemMeta = changeDisplayIcon.itemMeta.apply {
-            setItemName("§aワールド表示の変更")
-            lore = listOf(
-                bar,
-                "$index §e左クリック§7: §aワールドのアイコン§7を変更します。",
-                "§7インベントリ内のアイテムをクリックして、そのアイテムをアイコンに設定します。",
-                bar,
+            itemName(Component.text("§aワールド表示の変更"))
+            lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("$index §e左クリック§7: §aワールドのアイコン§7を変更します。"),
+                    Component.text("§7インベントリ内のアイテムをクリックして、そのアイテムをアイコンに設定します。"),
+                    Component.text(bar),
+                )
             )
         }
 
         // 設定ゾーン: スポーン
         val changeSpawnIcon = ItemStack(Material.ENDER_PEARL)
         changeSpawnIcon.itemMeta = changeSpawnIcon.itemMeta.apply {
-            setItemName("§aスポーン位置の変更")
-            lore = listOf(
-                bar,
-                "$index §e左クリック§7: §aメンバーのスポーン位置§7を変更します。",
-                "$index §e右クリック§7: §aゲストのスポーン位置§7を変更します。",
-                bar,
+            itemName(Component.text("§aスポーン位置の変更"))
+            lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("$index §e左クリック§7: §aメンバーのスポーン位置§7を変更します。"),
+                    Component.text("$index §e右クリック§7: §aゲストのスポーン位置§7を変更します。"),
+                    Component.text(bar),
+                )
             )
         }
 
@@ -323,12 +332,14 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
                 )
             }
 
-            setItemName("§bワールドの拡張")
-            lore = listOf(
-                bar,
-                "§fクリックして§bワールドのボーダー§fを§a1段階拡張§fします。",
-                bar
-            ) + info + bar
+            itemName(Component.text("§bワールドの拡張"))
+            lore(
+                (listOf(
+                    bar,
+                    "§fクリックして§bワールドのボーダー§fを§a1段階拡張§fします。",
+                    bar
+                ) + info + bar).map { Component.text(it) }
+            )
         }
 
         // 機能ゾーン: 公開レベル
@@ -338,16 +349,18 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
                 if (it == world.publishLevel) "§f▶ ${it.toJapanese()}" else "§7${it.toJapanese().drop(2)}"
             }
 
-            setItemName("§bワールド公開レベルの変更")
-            lore = listOf(
-                bar,
-                "§fクリックして§eワールドの公開レベルを変更§fします。",
-                "$index §7現在の設定 §e${world.publishLevel!!.toJapanese()}",
-                bar,
-                list[0],
-                list[1],
-                list[2],
-                bar,
+            itemName(Component.text("§bワールド公開レベルの変更"))
+            lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("§fクリックして§eワールドの公開レベルを変更§fします。"),
+                    Component.text("$index §7現在の設定 §e${world.publishLevel!!.toJapanese()}"),
+                    Component.text(bar),
+                    Component.text(list[0]),
+                    Component.text(list[1]),
+                    Component.text(list[2]),
+                    Component.text(bar),
+                )
             )
         }
 
@@ -358,19 +371,20 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
             val memberList = world.players!!.map {
                 when (it) {
                     world.owner -> "§e${it.name} §f(§cオーナー§f)"
-                    in world.moderators!! -> "§e${it.name} §f(§b管理者§f)"
+                    in world.moderators -> "§e${it.name} §f(§b管理者§f)"
                     else -> "§e${it.name}"
                 }
             }
 
-            setItemName("§bメンバー")
-            lore = listOf(
-                bar,
-                "§fクリックしてほかのプレイヤーを§eメンバーに招待§fします。",
-                bar,
-            ) + memberList + listOf(
-                bar
-            )
+            itemName(Component.text("§bメンバー"))
+            lore(
+                (listOf(
+                    bar,
+                    "§fクリックしてほかのプレイヤーを§eメンバーに招待§fします。",
+                    bar,
+                ) + memberList + listOf(
+                    bar
+                )).map { Component.text(it) })
         }
 
         // set

@@ -1,15 +1,11 @@
 package me.awabi2048.mw_manager.listener
 
-import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import org.bukkit.Sound
 import org.bukkit.World
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerLoginEvent
-import org.bukkit.event.server.ServerLoadEvent
-import org.bukkit.event.world.WorldLoadEvent
 
 object EventListener : Listener {
     // MyWorldははじめロードしないようにする

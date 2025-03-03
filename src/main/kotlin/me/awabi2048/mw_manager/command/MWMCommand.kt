@@ -2,7 +2,7 @@ package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.command.Option.*
 import me.awabi2048.mw_manager.my_world.WorldActivityState
-import me.awabi2048.mw_manager.player_expansion.notify
+import me.awabi2048.mw_manager.extension.notify
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender

@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.my_world.PublishLevel
 import org.bukkit.Sound
 import org.bukkit.command.Command
@@ -50,7 +50,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
 
         // バイパス通知
         if (p0.hasPermission("mw_manager.admin") && targetWorld.publishLevel == PublishLevel.PRIVATE) {
-            p0.sendMessage("$prefix §e管理者権限により、公開設定をバイパスします。")
+            p0.sendMessage("$PREFIX §e管理者権限により、公開設定をバイパスします。")
         }
 
         // 問題なければワープ

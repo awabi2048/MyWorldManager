@@ -1,14 +1,11 @@
 package me.awabi2048.mw_manager.my_world
 
-import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.portal.WorldPortal
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
-import org.bukkit.World
 import org.bukkit.WorldCreator
-import java.io.File
 
 object MyWorldManager {
     val registeredMyWorld: List<MyWorld>
@@ -34,9 +31,9 @@ object MyWorldManager {
         registeredTemplateWorld.map {it.worldId}.forEach {
             Bukkit.createWorld(WorldCreator(it))
         }
-        registeredTemplateWorld.forEach {
-            it.cbWorld!!.entities.filter {it.scoreboardTags.contains("mwm.template_preview")}.forEach{it.remove()}
-            it.mvWorld!!.setGameMode(GameMode.SPECTATOR)
+        registeredTemplateWorld.forEach { templateWorld ->
+            templateWorld.cbWorld!!.entities.filter {it.scoreboardTags.contains("mwm.template_preview")}.forEach{it.remove()}
+            templateWorld.mvWorld!!.setGameMode(GameMode.SPECTATOR)
         }
     }
 
@@ -62,9 +59,4 @@ object MyWorldManager {
         DataFiles.save()
     }
 
-    fun unloadMyWorlds() {
-        registeredMyWorld.forEach {
-            Bukkit.unloadWorld(it.vanillaWorld!!, false)
-        }
-    }
 }

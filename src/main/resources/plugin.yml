@@ -4,6 +4,8 @@ main: me.awabi2048.mw_manager.Main
 api-version: '1.21'
 softdepend:
   - Multiverse-Core
+depend:
+  - ProtocolLib
 
 permissions:
   mw_manager.admin:

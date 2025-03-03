@@ -13,7 +13,7 @@ object DataFiles {
     lateinit var portalData: FileConfiguration
     lateinit var macroSetting: FileConfiguration
 
-    val filePath = listOf(
+    private val filePath = listOf(
         "config.yml",
         "player_data.yml",
         "world_data.yml",

@@ -1,6 +1,5 @@
 package me.awabi2048.mw_manager.my_world
 
-import com.onarandombox.MultiverseCore.MVWorld
 import com.onarandombox.MultiverseCore.api.MultiverseWorld
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
@@ -8,22 +7,15 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.ui.TemplateSelectUI
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.World
-import org.bukkit.command.ConsoleCommandSender
+import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
-import kotlin.math.roundToInt
-import kotlin.math.sin
 
 class TemplateWorld(val worldId: String) {
-    val dataSection: ConfigurationSection?
+    private val dataSection: ConfigurationSection?
         get() {
             return DataFiles.templateSetting.getConfigurationSection(worldId)
         }
@@ -59,6 +51,11 @@ class TemplateWorld(val worldId: String) {
     val description: String?
         get() {
             return dataSection?.getString("description")
+        }
+
+    val icon: Material?
+        get() {
+            return Material.valueOf(dataSection?.getString("icon")?: return null)
         }
 
     fun preview(player: Player) {

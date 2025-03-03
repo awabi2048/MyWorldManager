@@ -238,12 +238,12 @@ class MyWorld(val uuid: String) {
 
     private val borderSize: Double?
         get() {
-            if (isRegistered) {
-                return (Config.borderSizeBase * 2.0.pow(borderExpansionLevel!!.toDouble()))
-            } else return null
+            return if (isRegistered) {
+                (Config.borderSizeBase * 2.0.pow(borderExpansionLevel!!.toDouble()))
+            } else null
         }
 
-    var borderCenter: Location?
+    private var borderCenter: Location?
         get() {
             if (isRegistered) {
                 val raw = dataSection?.getString("border_center_pos")!!
@@ -382,11 +382,16 @@ class MyWorld(val uuid: String) {
         if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
             // clone world
             mvWorldManager.cloneWorld(templateWorldName, "my_world.$uuid")
-            Bukkit.createWorld(WorldCreator("my_world.$uuid"))
+
+            Bukkit.getScheduler().runTaskLater(
+                instance,
+                Runnable { Bukkit.createWorld(WorldCreator("my_world.$uuid")) },
+                5L
+            )
 
             val expireIn = Config.defaultExpireDays
 
-            //
+            // デフォルトのワールド名の場合はインデックス
             val index =
                 MyWorldManager.registeredMyWorld.filter { it.name!!.startsWith("my_world.${owner.name}") }.size + 1
             val worldName =
@@ -485,7 +490,7 @@ class MyWorld(val uuid: String) {
 
             if (sendNotification) {
                 players?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
-                    it.sendMessage("§e${player.displayName}さん§7があなたのワールドを訪れました！")
+                    it.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
                     it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                 }
             }
@@ -586,7 +591,7 @@ class MyWorld(val uuid: String) {
 
             val worldFolder: File
 
-            if (activityState == WorldActivityState.ACTIVE){
+            if (activityState == WorldActivityState.ACTIVE) {
                 Bukkit.unloadWorld(vanillaWorld!!, false)
                 worldFolder = vanillaWorld!!.worldFolder
             } else {

@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.custom_item
 
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.Main.Companion.prefix
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -60,7 +60,7 @@ enum class CustomItem {
         player.inventory.addItem(item)
 
         player.sendMessage(
-            Component.text("$prefix ")
+            Component.text("$PREFIX ")
                 .append(item.itemMeta.itemName())
                 .append(Component.text("§7を取得しました。"))
         )

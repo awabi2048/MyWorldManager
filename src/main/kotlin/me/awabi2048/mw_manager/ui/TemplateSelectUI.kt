@@ -1,12 +1,10 @@
 package me.awabi2048.mw_manager.ui
 
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
-import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.my_world.TemplateWorld
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
-import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -25,7 +23,6 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
 
         val templateId = (event.currentItem?.itemMeta?.lore()?.get(4) as TextComponent?)?.content()?.substringAfter("§7Id ")?: return
         val templateWorld = TemplateWorld(templateId)
-        val templateName = templateWorld.name?: return
 
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
@@ -59,14 +56,12 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
     override fun construct(): Inventory {
         val menu = createTemplate(5, "§8§lTemplate Selection")!!
 
-        val templateWorldList = DataFiles.templateSetting.getKeys(false)
+        MyWorldManager.registeredTemplateWorld.forEach { templateWorld ->
 
-        templateWorldList.forEach { worldId ->
-            val section = DataFiles.templateSetting.getConfigurationSection(worldId)!!
-            val name = section.getString("name")?: return@forEach
-            val description = section.getString("description")?: return@forEach
-            val iconMaterial = Material.valueOf(section.getString("icon", "GRASS_BLOCK")!!.uppercase())
-            val unlockState = when(player.hasPermission("mw_manager.template_unlock.$worldId")) {
+            val name = templateWorld.name?: return@forEach
+            val description = templateWorld.description?: return@forEach
+            val iconMaterial = templateWorld.icon?: return@forEach
+            val unlockState = when(player.hasPermission("mw_manager.template_unlock.${templateWorld.worldId}")) {
                 true -> "§a解放済"
                 false -> "§c未解放"
             }
@@ -80,17 +75,13 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
                     Component.text(description),
                     Component.text(unlockState),
                     Component.text(bar),
-                    Component.text("§7Id $worldId"),
+                    Component.text("§7Id ${templateWorld.worldId}"),
                     Component.text(bar),
                 ))
             }
 
-            val slot = templateWorldList.indexOf(worldId) + 9
+            val slot = MyWorldManager.registeredTemplateWorld.indexOf(templateWorld) + 9
             menu.setItem(slot, icon)
-        }
-
-        for (world in templateWorldList) {
-
         }
 
         return menu

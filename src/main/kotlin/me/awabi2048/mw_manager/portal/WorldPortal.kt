@@ -14,45 +14,6 @@ import java.util.*
  * @param uuid ポータルのUUID
  */
 class WorldPortal(private val uuid: String) {
-    enum class PortalColor {
-        WHITE,
-        GRAY,
-        RED,
-        ORANGE,
-        YELLOW,
-        GREEN,
-        BLUE,
-        PURPLE;
-
-        val rgb: List<Int>
-            get() {
-                return when (this) {
-                    WHITE -> listOf(255, 255, 255)
-                    GRAY -> listOf(127, 127, 127)
-                    RED -> listOf(255, 0, 0)
-                    ORANGE -> listOf(255, 127, 0)
-                    YELLOW -> listOf(255, 255, 0)
-                    GREEN -> listOf(0, 255, 0)
-                    BLUE -> listOf(0, 0, 255)
-                    PURPLE -> listOf(191, 0, 191)
-                }
-            }
-
-        val japaneseName: String
-            get() {
-                return when (this) {
-                    WHITE -> "§f白"
-                    GRAY -> "§7グレー"
-                    RED -> "§c赤"
-                    ORANGE -> "§6オレンジ"
-                    YELLOW -> "§e黄"
-                    GREEN -> "§a緑"
-                    BLUE -> "§b青"
-                    PURPLE -> "§d紫"
-                }
-            }
-    }
-
     private val section: ConfigurationSection
         get() {
             return DataFiles.portalData.getConfigurationSection(uuid)!!
@@ -105,7 +66,7 @@ class WorldPortal(private val uuid: String) {
             DataFiles.save()
         }
 
-    var destinationWorld: MyWorld
+    private var destinationWorld: MyWorld
         get() {
             val uuid = section.getString("destination")!!
             return MyWorld(uuid)
@@ -137,7 +98,7 @@ class WorldPortal(private val uuid: String) {
      * 指定したプレイヤーに通過処理を行います。
      * @param player 対象のプレイヤー
      */
-    fun sendPlayer(player: Player) {
+    private fun sendPlayer(player: Player) {
         if (isAvailable) {
             val isInSameWorld = player.world == destinationWorld.vanillaWorld
 

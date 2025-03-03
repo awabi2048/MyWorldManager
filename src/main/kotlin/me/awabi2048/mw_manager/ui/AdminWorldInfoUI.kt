@@ -11,7 +11,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class AdminWorldInfoUI(val player: Player, val worlds: Set<MyWorld>, val page: Int) : AbstractInteractiveUI(player) {
+class AdminWorldInfoUI(val player: Player, private val worlds: Set<MyWorld>, private val page: Int) : AbstractInteractiveUI(player) {
     override fun update() {
         val ui = AdminWorldInfoUI(player, worlds, page)
         ui.open(false)
