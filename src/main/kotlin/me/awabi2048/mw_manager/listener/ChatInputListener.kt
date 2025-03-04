@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Main.Companion.playerUIState
-import me.awabi2048.mw_manager.ui.ChatInputInterface
+import me.awabi2048.mw_manager.ui.abstract.ChatInputInterface
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerChatEvent

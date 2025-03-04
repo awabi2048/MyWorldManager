@@ -2,6 +2,7 @@ package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.command.Option.*
+import me.awabi2048.mw_manager.command.command_executor.*
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
@@ -25,6 +26,7 @@ object CommandManager {
 
         instance.getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
         instance.getCommand("worldwarp")?.setExecutor(WarpCommand)
+        instance.getCommand("myworld")?.setExecutor(MyWorldCommand)
 
         instance.getCommand("mwm_help")?.setExecutor(HelpCommand)
     }
@@ -78,7 +80,7 @@ object CommandManager {
 
         if (executor == VisitCommand) {
             if (size == 1) {
-                return worldSpecifier(args[0])
+                return Bukkit.getOnlinePlayers().map {it.name}.toMutableList()
             }
         }
 

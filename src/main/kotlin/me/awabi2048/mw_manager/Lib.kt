@@ -1,6 +1,7 @@
 package me.awabi2048.mw_manager
 
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
@@ -88,11 +89,11 @@ object Lib {
         return Location(world, coordinate[0] + 0.5, coordinate[1].toDouble(), coordinate[2] + 0.5)
     }
 
-    fun getItemID(item: ItemStack?): String? {
-        return item?.itemMeta?.persistentDataContainer?.get(
+    fun getCustomItem(item: ItemStack?): CustomItem? {
+        return CustomItem.valueOf(item?.itemMeta?.persistentDataContainer?.get(
             NamespacedKey(instance, "item_id"),
             PersistentDataType.STRING
-        )
+        )?.uppercase()?: return null)
     }
 
     fun formatDate(localDate: LocalDate): String {

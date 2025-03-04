@@ -1,5 +1,7 @@
 package me.awabi2048.mw_manager.portal
 
+import org.bukkit.Color
+
 enum class PortalColor {
     WHITE,
     GRAY,
@@ -10,17 +12,17 @@ enum class PortalColor {
     BLUE,
     PURPLE;
 
-    val rgb: List<Int>
+    val colorInstance: Color
         get() {
             return when (this) {
-                WHITE -> listOf(255, 255, 255)
-                GRAY -> listOf(127, 127, 127)
-                RED -> listOf(255, 0, 0)
-                ORANGE -> listOf(255, 127, 0)
-                YELLOW -> listOf(255, 255, 0)
-                GREEN -> listOf(0, 255, 0)
-                BLUE -> listOf(0, 0, 255)
-                PURPLE -> listOf(191, 0, 191)
+                WHITE -> Color.WHITE
+                GRAY -> Color.GRAY
+                RED -> Color.RED
+                ORANGE -> Color.ORANGE
+                YELLOW -> Color.YELLOW
+                GREEN -> Color.LIME
+                BLUE -> Color.AQUA
+                PURPLE -> Color.FUCHSIA
             }
         }
 

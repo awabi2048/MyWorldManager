@@ -11,8 +11,12 @@ import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.macro_executor.MacroExecutor
 import me.awabi2048.mw_manager.macro_executor.MacroFlag
-import me.awabi2048.mw_manager.my_world.ExpandMethod.*
-import me.awabi2048.mw_manager.my_world.MemberRole.OWNER
+import me.awabi2048.mw_manager.my_world.world_property.ExpandMethod.*
+import me.awabi2048.mw_manager.my_world.world_property.MemberRole.OWNER
+import me.awabi2048.mw_manager.my_world.world_property.ExpandMethod
+import me.awabi2048.mw_manager.my_world.world_property.MemberRole
+import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
+import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.portal.WorldPortal
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
@@ -20,10 +24,12 @@ import net.kyori.adventure.text.event.HoverEvent
 import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 
 /**
@@ -180,45 +186,58 @@ class MyWorld(val uuid: String) {
             }
         }
 
-    val fixedData: List<String>
+    val iconItem: ItemStack?
         get() {
-            val bar = "§7" + "━".repeat(30)
-            val index = "§f§l|"
+            try {// lore 生成
+                val bar = "§7" + "━".repeat(30)
+                val index = "§f§l|"
 
-            val expireState = when (isOutDated!!) {
-                true -> "$index §c§n${Lib.formatDate(expireDate!!)} に期限切れ §8(§c§n${
-                    ChronoUnit.DAYS.between(
-                        LocalDate.now(),
-                        expireDate
-                    )
-                }日前§8)"
+                val expireState = when (isOutDated!!) {
+                    true -> "$index §c§n${Lib.formatDate(expireDate!!)} に期限切れ §8(§c§n${
+                        ChronoUnit.DAYS.between(
+                            LocalDate.now(),
+                            expireDate
+                        ).absoluteValue
+                    }日前§8)"
 
-                false -> "$index §8§n${Lib.formatDate(expireDate!!)} §8に期限切れ (§8§n${
-                    ChronoUnit.DAYS.between(
-                        LocalDate.now(),
-                        expireDate
-                    )
-                }日後§8)"
+                    false -> "$index §8§n${Lib.formatDate(expireDate!!)} §8に期限切れ (§8§n${
+                        ChronoUnit.DAYS.between(
+                            LocalDate.now(),
+                            expireDate
+                        ).absoluteValue
+                    }日後§8)"
+                }
+
+                val ownerOnlineState = when (owner!!.isOnline) {
+                    true -> "§a"
+                    false -> "§c"
+                }
+
+                val lore = listOf(
+                    bar,
+                    "$index §7${description}",
+                    "$index §7オーナー $ownerOnlineState${owner!!.name}",
+                    "$index §7拡張レベル §e§l${borderExpansionLevel}§7/${Config.borderExpansionMax}",
+                    bar,
+                    "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
+                    expireState,
+                    "$index §7メンバー §e${players!!.size}人 §7(オンライン: §a${players!!.filter { it.isOnline }.size}人§7)",
+                    "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
+                    bar,
+                )
+
+                // item
+                val icon = ItemStack(iconMaterial ?: return null)
+                icon.editMeta { meta ->
+                    meta.itemName(Component.text("§7【§a${name}§7】"))
+                    meta.lore(lore.map { Component.text(it) })
+                    if (isOutDated == true) meta.setEnchantmentGlintOverride(true)
+                }
+
+                return icon
+            } catch (e: Exception) {
+                return null
             }
-
-//            println("Creating fixed information: $uuid")
-            val ownerOnlineState = when (owner!!.isOnline) {
-                true -> "§a"
-                false -> "§c"
-            }
-
-            return listOf(
-                bar,
-                "$index §7${description}",
-                "$index §7オーナー $ownerOnlineState${owner!!.name}",
-                "$index §7拡張レベル §e§l${borderExpansionLevel}§7/${Config.borderExpansionMax}",
-                bar,
-                "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
-                expireState,
-                "$index §7メンバー §e${players!!.size}人 §7(オンライン: §a${players!!.filter { it.isOnline }.size}人§7)",
-                "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
-                bar,
-            )
         }
 
     var borderExpansionLevel: Int?
@@ -335,12 +354,10 @@ class MyWorld(val uuid: String) {
                             }
                         )
 
-                        Bukkit.createWorld(WorldCreator("my_world.$uuid"))
-//                        println(Bukkit.getWorlds())
-
                         Bukkit.getScheduler().runTaskLater(
                             instance,
                             Runnable {
+                                Bukkit.createWorld(WorldCreator("my_world.$uuid")) // 同一 tick で処理すると生成されてしまう
                                 mvWorldManager.loadWorld("my_world.$uuid")
 //                                mvWorldManager.addWorld("my_world.$uuid", World.Environment.NORMAL, null, WorldType.NORMAL, false, null)
                             },
@@ -392,13 +409,19 @@ class MyWorld(val uuid: String) {
             val expireIn = Config.defaultExpireDays
 
             // デフォルトのワールド名の場合はインデックス
+            val worldNameDuped = MyWorldManager.registeredMyWorld.any { it.name!!.startsWith("my_world.${owner.name}") }
+            val temporalWorldName = when(registerWorldName == null) {
+                true -> "my_world.${owner.name}"
+                false -> registerWorldName
+            }
+
             val index =
-                MyWorldManager.registeredMyWorld.filter { it.name!!.startsWith("my_world.${owner.name}") }.size + 1
-            val worldName =
-                when (MyWorldManager.registeredMyWorld.any { it.name!!.startsWith("my_world.${owner.name}") }) {
-                    true -> registerWorldName ?: "my_world.${owner.name}_$index"
-                    false -> registerWorldName ?: "my_world.${owner.name}"
-                }
+                MyWorldManager.registeredMyWorld.filter { it.name == registerWorldName }.size + 1
+
+            val worldName = when(worldNameDuped) {
+                true -> "${temporalWorldName}_$index"
+                false -> temporalWorldName
+            }
 
             // template
             val sourceWorldOrigin = Lib.locationToString(TemplateWorld(templateWorldName).originLocation)
@@ -530,7 +553,7 @@ class MyWorld(val uuid: String) {
 
             // ワールドデータの変更
             vanillaWorld!!.worldBorder.apply {
-                setCenter(newBorderCenterLocation.x, newBorderCenterLocation.z)
+                setCenter(newBorderCenterLocation.blockX.toDouble(), newBorderCenterLocation.blockZ.toDouble())
                 setSize(borderSize!!, 0L)
             }
 
@@ -586,14 +609,10 @@ class MyWorld(val uuid: String) {
 
     fun delete(): Boolean {
         if (isRegistered) {
-
-            worldDeletionQueue += vanillaWorld!!
-
             val worldFolder: File
-
             if (activityState == WorldActivityState.ACTIVE) {
-                Bukkit.unloadWorld(vanillaWorld!!, false)
                 worldFolder = vanillaWorld!!.worldFolder
+                Bukkit.unloadWorld(vanillaWorld!!, false)
             } else {
                 worldFolder = File(Bukkit.getWorldContainer().path + File.separator + "my_world.$uuid")
             }

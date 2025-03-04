@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Main.Companion.playerUIState
-import me.awabi2048.mw_manager.ui.AbstractInteractiveUI
+import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent

@@ -4,9 +4,9 @@ import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.data_file.Config
-import me.awabi2048.mw_manager.my_world.CreationStage.WORLD_NAME
+import me.awabi2048.mw_manager.my_world.world_create.CreationStage.WORLD_NAME
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.ui.ConfirmationUI
+import me.awabi2048.mw_manager.ui.children.ConfirmationUI
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.entity.Player

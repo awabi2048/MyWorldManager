@@ -4,7 +4,6 @@ import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.portal.WorldPortal
 import org.bukkit.Bukkit
-import org.bukkit.GameMode
 import org.bukkit.WorldCreator
 
 object MyWorldManager {
@@ -31,9 +30,14 @@ object MyWorldManager {
         registeredTemplateWorld.map {it.worldId}.forEach {
             Bukkit.createWorld(WorldCreator(it))
         }
+
         registeredTemplateWorld.forEach { templateWorld ->
-            templateWorld.cbWorld!!.entities.filter {it.scoreboardTags.contains("mwm.template_preview")}.forEach{it.remove()}
-            templateWorld.mvWorld!!.setGameMode(GameMode.SPECTATOR)
+            try {
+                templateWorld.cbWorld!!.entities.filter { it.scoreboardTags.contains("mwm.template_preview") }
+                    .forEach { it.remove() }
+            } catch (e: NullPointerException) {
+                throw IllegalStateException("Template world data not found: ${templateWorld.worldId}")
+            }
         }
     }
 

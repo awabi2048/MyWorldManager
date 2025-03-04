@@ -7,12 +7,11 @@ import com.onarandombox.MultiverseCore.api.MVWorldManager
 import me.awabi2048.mw_manager.command.CommandManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.listener.*
-import me.awabi2048.mw_manager.my_world.CreationData
+import me.awabi2048.mw_manager.my_world.world_create.CreationData
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.portal.WorldPortal
-import me.awabi2048.mw_manager.ui.AbstractUI
-import me.awabi2048.mw_manager.ui.ConfirmationTracker
-import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
+import me.awabi2048.mw_manager.ui.abstract.AbstractUI
+import me.awabi2048.mw_manager.ui.state_manager.ConfirmationTracker
+import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
 import org.bukkit.Bukkit
 import org.bukkit.World
 import org.bukkit.entity.Player
@@ -65,19 +64,14 @@ class Main : JavaPlugin() {
 
         //
         MyWorldManager.loadTemplateWorlds()
+        MyWorldManager.updateData()
 
         // ポータルの判定・演出
         Bukkit.getScheduler().runTaskTimer(
             instance,
             Runnable {
-                DataFiles.portalData.getKeys(false).forEach {
-                    val portal = WorldPortal(it)
-
-                    if (!portal.isAvailable) return@forEach // 無効なポータル
-                    if (!portal.location.isChunkLoaded) return@forEach // ロードされていない
-                    if (portal.location.getNearbyPlayers(10.0).isEmpty()) return@forEach // 10ブロック以内にプレイヤーがいない
-
-                    portal.tickingProcess()
+                MyWorldManager.registeredPortal.forEach {
+                    it.tickingProcess()
                 }
             },
             100L, // ロード処理諸々があるため念の為

@@ -6,7 +6,7 @@ import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
-import me.awabi2048.mw_manager.ui.TemplateSelectUI
+import me.awabi2048.mw_manager.ui.children.TemplateSelectUI
 import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.EntityType

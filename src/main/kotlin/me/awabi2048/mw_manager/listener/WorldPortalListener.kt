@@ -2,26 +2,30 @@ package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.portal.WorldPortal
-import me.awabi2048.mw_manager.ui.PortalUI
+import me.awabi2048.mw_manager.ui.top_level.PortalUI
 import net.kyori.adventure.text.Component
 import org.bukkit.NamespacedKey
 import org.bukkit.Sound
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
 object WorldPortalListener : Listener {
     @EventHandler
     fun onPortalLink(event: PlayerInteractEvent) {
-        if (Lib.getItemID(event.item) == "WORLD_PORTAL") {
+        if (Lib.getCustomItem(event.item) == CustomItem.WORLD_PORTAL) {
             if (event.action !in listOf(Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK)) return
 
             // リンク先を確認
@@ -93,7 +97,7 @@ object WorldPortalListener : Listener {
     @EventHandler
     fun onPortalPlace(event: BlockPlaceEvent) {
         //
-        if (Lib.getItemID(event.player.equipment.itemInMainHand) == "WORLD_PORTAL") {
+        if (Lib.getCustomItem(event.player.equipment.itemInMainHand) == CustomItem.WORLD_PORTAL) {
             val location = event.blockPlaced.location.toBlockLocation()
 
             val worldUUID = event.player.equipment.itemInMainHand.itemMeta.persistentDataContainer.get(
@@ -121,6 +125,14 @@ object WorldPortalListener : Listener {
 
         val ui = PortalUI(event.player, portal)
         ui.open(true)
+    }
+
+    @EventHandler
+    fun onPortalBrokenForcibly (event: BlockBreakEvent) {
+        val location = event.block.location.toBlockLocation()
+        if (MyWorldManager.registeredPortal.any {it.location == location}) {
+            event.isCancelled = true
+        }
     }
 }
 

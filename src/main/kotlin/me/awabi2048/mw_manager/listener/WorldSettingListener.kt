@@ -2,8 +2,8 @@ package me.awabi2048.mw_manager.listener
 
 import me.awabi2048.mw_manager.Main.Companion.playerUIState
 import me.awabi2048.mw_manager.Main.Companion.worldSettingState
-import me.awabi2048.mw_manager.ui.PlayerWorldSettingState
-import me.awabi2048.mw_manager.ui.WorldManagementUI
+import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
+import me.awabi2048.mw_manager.ui.top_level.WorldManagementUI
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener

@@ -70,6 +70,9 @@ commands:
   worldmenu:
     description: ""
 
+  myworld:
+    description: ""
+
   worldpoint:
     description: ""
 

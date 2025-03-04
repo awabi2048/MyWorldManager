@@ -35,6 +35,11 @@ class WorldPortal(private val uuid: String) {
             )
         }
 
+    val isLoaded: Boolean
+        get() {
+            return location?.getNearbyPlayers(10.0)?.isNotEmpty()?: false
+        }
+
     var owner: OfflinePlayer
         get() {
             return Bukkit.getOfflinePlayer(UUID.fromString(section.getString("owner")))
@@ -44,9 +49,9 @@ class WorldPortal(private val uuid: String) {
             DataFiles.save()
         }
 
-    var location: Location
+    var location: Location?
         get() {
-            val world = Bukkit.getWorld(section.getString("location.world")!!)
+            val world = Bukkit.getWorld(section.getString("location.world")!!) ?: return null
             return Location(
                 world,
                 section.getInt("location.x").toDouble(),
@@ -55,15 +60,17 @@ class WorldPortal(private val uuid: String) {
             )
         }
         set(value) {
-            val map = mapOf(
-                "world" to value.world.name,
-                "x" to value.blockX,
-                "y" to value.blockY,
-                "z" to value.blockZ,
-            )
+            if (value != null) {
+                val map = mapOf(
+                    "world" to value.world.name,
+                    "x" to value.blockX,
+                    "y" to value.blockY,
+                    "z" to value.blockZ,
+                )
 
-            DataFiles.portalData.set("$uuid.location", map)
-            DataFiles.save()
+                DataFiles.portalData.set("$uuid.location", map)
+                DataFiles.save()
+            }
         }
 
     private var destinationWorld: MyWorld
@@ -110,20 +117,22 @@ class WorldPortal(private val uuid: String) {
      * ポータルを撤去します。
      */
     fun remove() {
+        if (location == null) return
+
         // ブロックを更新
-        location.block.type = Material.AIR
+        location!!.block.type = Material.AIR
 
         // 演出
-        location.getNearbyPlayers(5.0).forEach {
+        location!!.getNearbyPlayers(5.0).forEach {
             it.playSound(it, Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 2.0f)
-            it.spawnParticle(Particle.ENCHANTED_HIT, location, 20, 0.6, 0.6, 0.6, 1.0)
+            it.spawnParticle(Particle.ENCHANTED_HIT, location!!, 40, 0.6, 0.6, 0.6, 0.1)
         }
 
         // アイテムをgive
         if (owner.isOnline) {
             // いっぱいならその場にドロップ
             if (owner.player!!.inventory.firstEmpty() == -1) {
-                location.world.dropItemNaturally(location, CustomItem.WORLD_PORTAL.itemStack)
+                location!!.world.dropItemNaturally(location!!, CustomItem.WORLD_PORTAL.itemStack)
             } else {
                 owner.player!!.inventory.addItem(CustomItem.WORLD_PORTAL.itemStack)
             }
@@ -150,19 +159,34 @@ class WorldPortal(private val uuid: String) {
     }
 
     fun tickingProcess() {
-        // パーティクル演出
-        location.getNearbyPlayers(10.0)
-            .forEach { it.spawnParticle(Particle.PORTAL, location.add(0.5, 1.5, 0.5), 10, 0.5, 1.5, 0.5, 0.0) }
+        if (isAvailable && isLoaded) {
+            // パーティクル演出
+            val dustOption = Particle.DustOptions(color.colorInstance, 0.5f)
 
-        // 判定内のプレイヤーを転送
-        location.getNearbyPlayers(5.0).filter {
-            it.location.toBlockLocation().blockX == location.toBlockLocation().blockX &&
-                    it.location.toBlockLocation().blockY in (location.toBlockLocation().blockY..location.toBlockLocation().blockY + 3) &&
-                    it.location.toBlockLocation().blockZ == location.toBlockLocation().blockZ
-        }
+            location!!.getNearbyPlayers(10.0)
+                .forEach {
+                    it.spawnParticle(
+                        Particle.DUST,
+                        location!!.add(0.5, 1.5, 0.5),
+                        40,
+                        0.33,
+                        1.2,
+                        0.33,
+                        0.0,
+                        dustOption
+                    )
+                }
 
-            .forEach {
-                sendPlayer(it)
+            // 判定内のプレイヤーを転送
+            location!!.getNearbyPlayers(5.0).filter {
+                it.location.toBlockLocation().blockX == location!!.toBlockLocation().blockX &&
+                        it.location.toBlockLocation().blockY in (location!!.toBlockLocation().blockY..location!!.toBlockLocation().blockY + 3) &&
+                        it.location.toBlockLocation().blockZ == location!!.toBlockLocation().blockZ
             }
+
+                .forEach {
+                    sendPlayer(it)
+                }
+        }
     }
 }

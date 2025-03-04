@@ -9,7 +9,11 @@ import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.extension.notify
-import me.awabi2048.mw_manager.ui.AdminWorldInfoUI
+import me.awabi2048.mw_manager.my_world.world_create.CreationData
+import me.awabi2048.mw_manager.my_world.world_create.CreationStage
+import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
+import me.awabi2048.mw_manager.ui.top_level.AdminWorldInfoUI
+import net.kyori.adventure.text.TextComponent
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -97,7 +101,8 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             val world = Lib.translateWorldSpecifier(args[1])!!
 
             sender.sendMessage("§8【§a${world.name}§8】 §eのデータ")
-            world.fixedData.forEach {
+            val lore = world.iconItem?.itemMeta?.lore()?.map {(it as TextComponent).content()}
+            lore?.forEach {
                 sender.sendMessage(it)
             }
 
