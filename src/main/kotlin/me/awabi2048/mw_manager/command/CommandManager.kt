@@ -1,5 +1,6 @@
 package me.awabi2048.mw_manager.command
 
+import me.awabi2048.mw_manager.Main
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.command.Option.*
 import me.awabi2048.mw_manager.command.command_executor.*
@@ -32,7 +33,7 @@ object CommandManager {
     }
 
     fun hasCorrectPermission(sender: CommandSender, executor: CommandExecutor): Boolean {
-        if (sender is ConsoleCommandSender) return false
+        if (sender is ConsoleCommandSender) return true
 
         return if (sender is Player) {
             when (executor) {

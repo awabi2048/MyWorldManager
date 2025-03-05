@@ -25,7 +25,7 @@ class AdminWorldInfoUI(val player: Player, private val worlds: Set<MyWorld>, pri
 
         if (event.slot !in 9..44) return
         if (event.currentItem?.itemMeta?.isHideTooltip == true) return
-        val uuid = (event.currentItem!!.itemMeta.lore()!![11] as TextComponent).content().substringAfter("UUID §b")
+        val uuid = (event.currentItem?.itemMeta?.lore()?.get(11) as TextComponent?)?.content()?.substringAfter("UUID §b")?: return
 
         val world = MyWorld(uuid)
         val player = event.whoClicked as Player

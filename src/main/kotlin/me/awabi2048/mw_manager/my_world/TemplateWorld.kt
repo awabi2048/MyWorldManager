@@ -50,6 +50,16 @@ class TemplateWorld(val worldId: String) {
             return Material.valueOf(dataSection?.getString("icon")?: return null)
         }
 
+    val previewTime: Long?
+        get() {
+            return dataSection?.getInt("preview_time")?.toLong()
+        }
+
+    val previewWeather: WeatherType?
+        get() {
+            return WeatherType.valueOf(dataSection?.getString("preview_weather")?.uppercase()?: return null)
+        }
+
     fun preview(player: Player) {
         // プレイヤーが帰ってこられるよう
         val returnLocation = player.location
@@ -73,17 +83,19 @@ class TemplateWorld(val worldId: String) {
         val previewTimeSec = 12
         val delay = 8L
 
-        player.teleport(originLocation) // spectateでディメンションを跨ぐと、観察状態が強制的に解除される（バグ？）
+        player.teleport(originLocation) // spectateでディメンションを跨ぐと、観察状態が強制的に解除される（バグ？）ので、テレポートしてからspectate
+
+        // preview_setting.yml から時刻と天候をセット
+        cbWorld!!.time = previewTime!!
+        cbWorld!!.setStorm(previewWeather == WeatherType.DOWNFALL)
 
         // Multiverseの野郎のおかげで、同tickで処理すると上書きされる
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
-//                println("PLAYER START PREVIEW PROCESS")
                 player.gameMode = GameMode.SPECTATOR
                 player.spectatorTarget = previewEntity
 
-//                println("start spectate: ${player.spectatorTarget}, preview: $previewEntity")
             }, delay
         )
 
@@ -91,8 +103,7 @@ class TemplateWorld(val worldId: String) {
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
-//                println("PLAYER END PREVIEW PROCESS")
-                // ここの解除で発火しないように
+                // 解除で脱出が発火しないように
                 previewEntity.removeScoreboardTag("mwm.template_preview")
 
                 // スペクテイター解除
@@ -110,13 +121,11 @@ class TemplateWorld(val worldId: String) {
         // ぐるっと一周
         object : BukkitRunnable() {
             override fun run() {
-//                println("PREVIEW PROCESS")
                 val location = previewEntity.location.apply {
                     yaw += 1.5f
                 }
 
                 previewEntity.teleport(location)
-//                println("player spectator target: ${player.spectatorTarget}")
 
                 // 何かしらでワールドを抜けたら (終了時も含む)
                 if (player.world != cbWorld) {

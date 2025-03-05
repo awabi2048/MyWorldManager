@@ -23,3 +23,7 @@ template_1:
 
   # スポーン座標（初期スポーン位置）
   origin_location: "(12, 75, -102)"
+
+  # プレビュー時の時刻・天気設定
+  preview_time: 1000
+  preview_weather: clear

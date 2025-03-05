@@ -6,15 +6,14 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.invitationCodeMap
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.recruitmentCodeMap
-import me.awabi2048.mw_manager.Main.Companion.worldDeletionQueue
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.macro_executor.MacroExecutor
 import me.awabi2048.mw_manager.macro_executor.MacroFlag
-import me.awabi2048.mw_manager.my_world.world_property.ExpandMethod.*
-import me.awabi2048.mw_manager.my_world.world_property.MemberRole.OWNER
 import me.awabi2048.mw_manager.my_world.world_property.ExpandMethod
+import me.awabi2048.mw_manager.my_world.world_property.ExpandMethod.*
 import me.awabi2048.mw_manager.my_world.world_property.MemberRole
+import me.awabi2048.mw_manager.my_world.world_property.MemberRole.OWNER
 import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.portal.WorldPortal
@@ -416,7 +415,7 @@ class MyWorld(val uuid: String) {
             }
 
             val index =
-                MyWorldManager.registeredMyWorld.filter { it.name == registerWorldName }.size + 1
+                MyWorldManager.registeredMyWorld.count { it.name!!.startsWith(temporalWorldName) } + 1
 
             val worldName = when(worldNameDuped) {
                 true -> "${temporalWorldName}_$index"
@@ -609,6 +608,7 @@ class MyWorld(val uuid: String) {
 
     fun delete(): Boolean {
         if (isRegistered) {
+            // ワールドのディレクトリの位置をアーカイブ状態に応じて取得
             val worldFolder: File
             if (activityState == WorldActivityState.ACTIVE) {
                 worldFolder = vanillaWorld!!.worldFolder
@@ -617,16 +617,24 @@ class MyWorld(val uuid: String) {
                 worldFolder = File(Bukkit.getWorldContainer().path + File.separator + "my_world.$uuid")
             }
 
-            FileUtils.deleteFolder(worldFolder)
-
-            DataFiles.worldData.set(uuid, null)
-            DataFiles.portalData.getKeys(false).filter { !(WorldPortal(it).isAvailable) }.forEach {
-                DataFiles.portalData.set(it, null)
-            }
-            DataFiles.save()
-
+            // mv 設定から除外等
             mvWorldManager.removePlayersFromWorld("my_world.$uuid")
             mvWorldManager.removeWorldFromConfig("my_world.$uuid")
+
+            // 即座に削除するとワールドのアンロードが間に合わずエラーが出る
+            Bukkit.getScheduler().runTaskLater(
+                instance,
+                Runnable {
+                    FileUtils.deleteFolder(worldFolder)
+
+                    DataFiles.worldData.set(uuid, null)
+                    DataFiles.portalData.getKeys(false).filter { !(WorldPortal(it).isAvailable) }.forEach {
+                        DataFiles.portalData.set(it, null)
+                    }
+                    DataFiles.save()
+                },
+                10L
+            )
 
             return true
 
