@@ -1,10 +1,7 @@
 package me.awabi2048.mw_manager.my_world
 
-import com.onarandombox.MultiverseCore.api.MultiverseWorld
 import me.awabi2048.mw_manager.Lib
-import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
-import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.ui.children.TemplateSelectUI
 import org.bukkit.*
@@ -28,11 +25,6 @@ class TemplateWorld(val worldId: String) {
     val cbWorld: World?
         get() {
             return Bukkit.getWorld(worldId)
-        }
-
-    val mvWorld: MultiverseWorld?
-        get() {
-            return mvWorldManager.mvWorlds.find { it.cbWorld == cbWorld }
         }
 
     val originLocation: Location
@@ -135,7 +127,6 @@ class TemplateWorld(val worldId: String) {
                 if (!player.isOnline) {
                     previewEntity.remove()
                     cancel()
-                    creationDataSet.removeIf { it.player == player }
                 }
             }
         }.runTaskTimer(instance, delay + 1, 0L)

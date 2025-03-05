@@ -3,11 +3,14 @@ package me.awabi2048.mw_manager.listener
 import com.destroystokyo.paper.event.player.PlayerStopSpectatingEntityEvent
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.data_file.Config
-import me.awabi2048.mw_manager.my_world.world_create.CreationStage.WORLD_NAME
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_create.CreationStage.WORLD_NAME
 import me.awabi2048.mw_manager.ui.children.ConfirmationUI
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
+import org.bukkit.Location
 import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -32,7 +35,7 @@ object WorldCreationSessionListener : Listener {
             // キャンセル
             if (registerWorldName == Config.cancelFlag) {
                 event.player.sendMessage("§c作成をキャンセルしました。")
-                creationDataSet.removeIf {it.player == event.player}
+                creationDataSet.removeIf { it.player == event.player }
                 return
             }
 
@@ -51,11 +54,11 @@ object WorldCreationSessionListener : Listener {
     }
 
     @EventHandler
-    fun onInventoryClose (event: InventoryCloseEvent) {
-        if (creationDataSet.any {it.player == event.player} && event.reason == Reason.PLAYER && event.inventory.type == InventoryType.CHEST) {
+    fun onInventoryClose(event: InventoryCloseEvent) {
+        if (creationDataSet.any { it.player == event.player } && event.reason == Reason.PLAYER && event.inventory.type == InventoryType.CHEST) {
             val player = event.player as Player
 
-            creationDataSet.removeIf {it.player == player}
+            creationDataSet.removeIf { it.player == player }
             player.sendMessage("§cメニューを閉じたため、作成をキャンセルしました。")
             player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 0.5f)
         }
@@ -72,12 +75,32 @@ object WorldCreationSessionListener : Listener {
     @EventHandler
     fun onPlayerLogin(event: PlayerLoginEvent) {
         // テンプレートワールドの中にいたら追い出す
-        if (MyWorldManager.registeredTemplateWorld.any {it.cbWorld == event.player.world}) {
-            val escapeLocation = Config.escapeLocation?: return
+        Bukkit.getScheduler().runTaskLater( // ログイン後すぐに処理すると座標が取得されない
+            instance,
+            Runnable {
+                val escapeLocation: Location
 
-            event.player.teleport(escapeLocation)
-            if (event.player.gameMode == GameMode.SPECTATOR) event.player.gameMode = event.player.previousGameMode?: GameMode.SURVIVAL
-            event.player.playSound(event.player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
-        }
+
+
+                if (MyWorldManager.registeredTemplateWorld.any { it.cbWorld!!.name == event.player.world.name }) {
+
+                    if (creationDataSet.any { it.player.uniqueId == event.player.uniqueId }) { // 作成途中のデータがあれば
+
+                        val data = creationDataSet.find {it.player.uniqueId == event.player.uniqueId}!!
+                        escapeLocation = data.escapeLocation
+
+                    } else { // なければデフォルトのワールドに戻す
+
+                        escapeLocation = Config.escapeLocation!!
+                    }
+
+                    event.player.teleport(escapeLocation)
+                    if (event.player.gameMode == GameMode.SPECTATOR) event.player.gameMode =
+                        event.player.previousGameMode ?: GameMode.SURVIVAL
+                    event.player.playSound(event.player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
+                }
+            },
+            20
+        )
     }
 }

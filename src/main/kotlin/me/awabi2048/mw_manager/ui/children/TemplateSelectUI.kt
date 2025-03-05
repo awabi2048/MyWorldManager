@@ -22,13 +22,13 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
     override fun onClick(event: InventoryClickEvent) {
         event.isCancelled = true
 
-        val templateId = (event.currentItem?.itemMeta?.lore()?.get(4) as TextComponent?)?.content()?.substringAfter("§7Id ")?: return
+        val templateId = (event.currentItem?.itemMeta?.lore()?.get(1) as TextComponent?)?.content()?.substringAfter("§8")?: return
         val templateWorld = TemplateWorld(templateId)
 
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
 
         // プレビュー開始
-        if (event.isLeftClick && !event.isShiftClick) {
+        if (event.click.isLeftClick) {
             // TODO: プレビュー時に読み込みが挟まないようにしたい
             templateWorld.preview(player)
             player.closeInventory()
@@ -37,7 +37,7 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
         }
 
         // 選択
-        if (event.isLeftClick && event.isShiftClick) {
+        if (event.click.isRightClick) {
             // 作成途中データに設定
             creationDataSet.find {it.player == player}!!.templateId = templateId
 
@@ -55,9 +55,11 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
     }
 
     override fun construct(): Inventory {
-        val menu = createTemplate(5, "§8§lTemplate Selection")!!
+        val menu = createTemplate(5, "§8§lテンプレートを選択")!!
 
-        MyWorldManager.registeredTemplateWorld.forEach { templateWorld ->
+        MyWorldManager.registeredTemplateWorld.map{it.worldId}.forEach { worldId ->
+
+            val templateWorld = TemplateWorld(worldId)
 
             val name = templateWorld.name?: return@forEach
             val description = templateWorld.description?: return@forEach
@@ -73,15 +75,18 @@ class TemplateSelectUI(private val player: Player) : AbstractInteractiveUI(playe
                 it.itemName(Component.text(name))
                 it.lore(listOf(
                     Component.text(bar),
-                    Component.text(description),
-                    Component.text(unlockState),
+                    Component.text("§8$worldId"),
                     Component.text(bar),
-                    Component.text("§7Id ${templateWorld.worldId}"),
+                    Component.text("$index $description"),
+                    Component.text("$index $unlockState"),
+                    Component.text(bar),
+                    Component.text("$index §e左クリック §bプレビュー§fを行います！"),
+                    Component.text("$index §e右クリック §fテンプレートをこのワールドに決定します！"),
                     Component.text(bar),
                 ))
             }
 
-            val slot = MyWorldManager.registeredTemplateWorld.indexOf(templateWorld) + 9
+            val slot = MyWorldManager.registeredTemplateWorld.map{it.worldId}.indexOf(worldId) + 9
             menu.setItem(slot, icon)
         }
 

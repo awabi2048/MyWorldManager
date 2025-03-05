@@ -2,7 +2,6 @@ package me.awabi2048.mw_manager.ui.top_level
 
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
-import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
 import net.kyori.adventure.text.Component
 import org.bukkit.Sound
@@ -12,6 +11,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 
 class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title: String) : AbstractInteractiveUI(player) {
+
+    private val availableWorlds = MyWorldManager.registeredMyWorld.filter {player in it.players!!}
+
     override fun onClick(event: InventoryClickEvent) {
         if (!(event.slot >= 9 && event.slot % 9 in 1..7)) {
             event.isCancelled = true
@@ -19,7 +21,7 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
         }
 
         val index = (event.slot / 9 - 1) * 7 + (event.slot % 9 - 1)
-        val myWorld = MyWorldManager.registeredMyWorld[index]
+        val myWorld = availableWorlds[index]
 
         if (event.click.isLeftClick) {
             myWorld.warpPlayer(player, true)
@@ -31,8 +33,7 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
     }
 
     override fun construct(): Inventory {
-        val unlockedWorldSlot = PlayerData(player).unlockedWorldSlot
-        val uiRow = (unlockedWorldSlot - 1) / 7 + 3
+        val uiRow = (availableWorlds.size - 1) / 7 + 3
 
         val ui = createTemplate(uiRow, title)!!
 

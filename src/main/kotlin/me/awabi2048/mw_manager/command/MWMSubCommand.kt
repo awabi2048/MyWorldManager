@@ -14,6 +14,7 @@ import me.awabi2048.mw_manager.my_world.world_create.CreationStage
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.ui.top_level.AdminWorldInfoUI
 import net.kyori.adventure.text.TextComponent
+import org.bukkit.Bukkit
 import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -186,29 +187,39 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     }
 
     fun startCreationSession() {
-        if (sender is Player) {
-            if (creationDataSet.any { it.player == sender }) creationDataSet.removeIf { it.player == sender }
+        if (args.size != 2) {
+            sender.sendMessage("$PREFIX §c無効なコマンドです。")
+            return
+        }
 
-            val creationData = CreationData(sender, null, null, CreationStage.WORLD_NAME)
-            creationDataSet += creationData
+        val targetPlayer = Bukkit.getPlayer(args[1])
+        if (targetPlayer == null) {
+            sender.sendMessage("$PREFIX §cプレイヤーが見つかりませんでした。")
+            return
+        }
 
-            // 最初 → ワールド名設定
-            sender.sendMessage("$PREFIX §eワールド名§7を入力してください！")
-            sender.playSound(sender, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
+        creationDataSet.removeIf { it.player.uniqueId == targetPlayer.uniqueId }
 
-            // タイムアウト判定
-            object : BukkitRunnable() {
-                override fun run() {
-                    // まだ作成手続き中ならキャンセル（5分）
-                    if (creationDataSet.any { it.player == sender }) {
-                        creationDataSet.removeIf { it.player == sender }
-                        sender.sendMessage("§cセッションがタイムアウトしました。")
-                        sender.closeInventory()
-                    } else cancel()
-                }
-            }.runTaskLater(instance, 300 * 20)
+        val sessionUUID = UUID.randomUUID()
 
-        } else return
+        val creationData = CreationData(targetPlayer, null, null, CreationStage.WORLD_NAME, sessionUUID, targetPlayer.location)
+        creationDataSet += creationData
+
+        // 最初 → ワールド名設定
+        targetPlayer.sendMessage("$PREFIX §eワールド名§7を入力してください！")
+        targetPlayer.playSound(targetPlayer, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
+
+        // タイムアウト判定
+        object : BukkitRunnable() {
+            override fun run() {
+                // まだ作成手続き中ならキャンセル（5分）
+                if (creationDataSet.any { it.player == sender && it.uuid == sessionUUID}) {
+                    creationDataSet.removeIf { it.player == targetPlayer }
+                    sender.sendMessage("§cセッションがタイムアウトしました。")
+                    targetPlayer.closeInventory()
+                } else cancel()
+            }
+        }.runTaskLater(instance, 300 * 20)
     }
 
     fun getItem() {
