@@ -9,4 +9,5 @@ enum class Option {
     START_CREATION_SESSION,
     RELOAD,
     GET_ITEM,
+    PLAYER_DATA
 }

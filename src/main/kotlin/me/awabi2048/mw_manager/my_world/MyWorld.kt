@@ -394,7 +394,7 @@ class MyWorld(val uuid: String) {
             return !(Bukkit.getWorld("my_world.$uuid") == null && !File(instance.server.worldContainer.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid").exists())
         }
 
-    fun initiate(templateWorldName: String, owner: Player, registerWorldName: String?): Boolean {
+    fun initiate(templateWorldName: String, owner: Player, registerWorldName: String): Boolean {
         if (DataFiles.templateSetting.getKeys(false).contains(templateWorldName)) {
             // clone world
             mvWorldManager.cloneWorld(templateWorldName, "my_world.$uuid")

@@ -3,10 +3,12 @@ package me.awabi2048.mw_manager.player_data
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
+import org.bukkit.OfflinePlayer
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 
-data class PlayerData(private val player: Player) {
+data class PlayerData(private val player: OfflinePlayer) {
     private val uuid = player.uniqueId.toString()
 
     init {
@@ -50,7 +52,7 @@ data class PlayerData(private val player: Player) {
             return section.getInt("unlocked_world_slot")
         }
         set(value) {
-            DataFiles.playerData.set("$uuid.unlocked_world_slot", value.coerceAtLeast(0))
+            DataFiles.playerData.set("$uuid.unlocked_world_slot", value.coerceAtLeast(1))
             DataFiles.save()
         }
 
@@ -63,5 +65,10 @@ data class PlayerData(private val player: Player) {
 
             DataFiles.playerData.set("$uuid.warp_shortcuts", uuidList)
             DataFiles.save()
+        }
+
+    val createdWorlds: Set<MyWorld>
+        get() {
+            return MyWorldManager.registeredMyWorld.filter {it.owner?.uniqueId == player.uniqueId}.toSet()
         }
 }

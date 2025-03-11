@@ -6,12 +6,14 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.custom_item.CustomItem
+import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.extension.notify
 import me.awabi2048.mw_manager.my_world.world_create.CreationData
 import me.awabi2048.mw_manager.my_world.world_create.CreationStage
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
+import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.ui.top_level.AdminWorldInfoUI
 import net.kyori.adventure.text.TextComponent
 import org.bukkit.Bukkit
@@ -30,7 +32,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     }
 
     fun create() {
-        if (args.size !in 3..4) {
+        if (args.size != 4) {
             sender.notify("§c無効なコマンドです。", null)
             return
         }
@@ -38,20 +40,22 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         //
         val ownerSpecifier = args[1]
         val sourceWorldName = args[2]
-        val worldName = if (args.size == 4) {
-            args[3]
-        } else null
-
+        val worldName = args[3]
         val owner = Lib.translatePlayerSpecifier(ownerSpecifier)
         val uuid = UUID.randomUUID().toString()
 
         if (owner == null) {
-            sender.notify("§c指定されたプレイヤーが見つかりません。", null)
+            sender.notify("$PREFIX §c指定されたプレイヤーが見つかりません。", null)
             return
         }
 
         if (!mvWorldManager.mvWorlds.any { it.name == sourceWorldName }) {
-            sender.notify("§c指定されーたワールドが見つかりません。", null)
+            sender.notify("$PREFIX §c指定されたワールドが見つかりません。", null)
+            return
+        }
+
+        if (!Lib.checkWorldNameAvailable(worldName, owner)) {
+            sender.sendMessage("$PREFIX §cそのワールド名は使用できません。")
             return
         }
 
@@ -102,7 +106,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             val world = Lib.translateWorldSpecifier(args[1])!!
 
             sender.sendMessage("§8【§a${world.name}§8】 §eのデータ")
-            val lore = world.iconItem?.itemMeta?.lore()?.map {(it as TextComponent).content()}
+            val lore = world.iconItem?.itemMeta?.lore()?.map { (it as TextComponent).content() }
             lore?.forEach {
                 sender.sendMessage(it)
             }
@@ -198,11 +202,24 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        creationDataSet.removeIf { it.player.uniqueId == targetPlayer.uniqueId }
+        if (creationDataSet.any { it.player.uniqueId == targetPlayer.uniqueId }) {
+            targetPlayer.sendMessage("§c既にワールドを作成中です！")
+            targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
+            return
+        }
+
+        val playerData = PlayerData(targetPlayer)
+
+        if (playerData.createdWorlds.size >= playerData.unlockedWorldSlot) {
+            targetPlayer.sendMessage("§c既にワールドの作成数上限に達しています！ §7(${playerData.unlockedWorldSlot} 個中 ${playerData.createdWorlds} 個作成済み)")
+            targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
+            return
+        }
 
         val sessionUUID = UUID.randomUUID()
 
-        val creationData = CreationData(targetPlayer, null, null, CreationStage.WORLD_NAME, sessionUUID, targetPlayer.location)
+        val creationData =
+            CreationData(targetPlayer, null, null, CreationStage.WORLD_NAME, sessionUUID, targetPlayer.location)
         creationDataSet += creationData
 
         // 最初 → ワールド名設定
@@ -213,7 +230,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         object : BukkitRunnable() {
             override fun run() {
                 // まだ作成手続き中ならキャンセル（5分）
-                if (creationDataSet.any { it.player == sender && it.uuid == sessionUUID}) {
+                if (creationDataSet.any { it.player == sender && it.uuid == sessionUUID }) {
                     creationDataSet.removeIf { it.player == targetPlayer }
                     sender.sendMessage("§cセッションがタイムアウトしました。")
                     targetPlayer.closeInventory()
@@ -233,12 +250,72 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        if (args[1] !in CustomItem.entries.map {it.name}) {
+        if (args[1] !in CustomItem.entries.map { it.name }) {
             sender.sendMessage("$PREFIX §c無効なアイテムIdです。")
             return
         }
 
         val item = CustomItem.valueOf(args[1])
         item.give(sender)
+    }
+
+    fun modifyPlayerData() {
+        // /mwm player_data <player> <operation> <path> [value]
+        if (args.size !in 4..5) {
+            sender.sendMessage("$PREFIX §c無効なコマンドです。")
+            return
+        }
+
+        val player = Lib.translatePlayerSpecifier(args[1])
+        val operation = args[2]
+        val path = args[3]
+        val value = if (args.size == 5) args[3].toIntOrNull() else null
+
+        val availablePaths = listOf(
+            "unlocked_world_slot",
+            "unlocked_warp_slot",
+            "world_point",
+        )
+
+        if (player == null) {
+            sender.sendMessage("$PREFIX §cプレイヤーが見つかりませんでした。")
+            return
+        }
+
+        if (operation !in listOf("add", "get", "subtract", "set")) {
+            sender.sendMessage("$PREFIX §c無効なオプションです。")
+            return
+        }
+
+        if (path !in availablePaths) {
+            sender.sendMessage("$PREFIX §c無効なパスの指定です。")
+            return
+        }
+
+        if (operation != "get" && (value == null || value < 0)) {
+            sender.sendMessage("$PREFIX §c無効な値の指定です。この値は0以上である必要があります。")
+            return
+        }
+
+        val playerData = PlayerData(player)
+
+        if (operation == "get") {
+            val returnValue = when (path) {
+                "unlocked_world_slot" -> playerData.unlockedWorldSlot
+                "unlocked_warp_slot" -> playerData.unlockedWarpSlot
+                "world_point" -> playerData.worldPoint
+                else -> null
+            }
+
+            sender.sendMessage("$PREFIX §e${player} §7はデータ §a${path} §7は §b${returnValue} です。")
+        } else {
+            when (path) {
+                "unlocked_world_slot" -> playerData.unlockedWorldSlot = value!!
+                "unlocked_warp_slot" -> playerData.unlockedWarpSlot = value!!
+                "world_point" -> playerData.worldPoint = value!!
+            }
+
+            sender.sendMessage("$PREFIX §e${player} §7のデータ §a${path} §7を §f${value} §7に変更しました。")
+        }
     }
 }

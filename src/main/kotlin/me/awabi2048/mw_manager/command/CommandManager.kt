@@ -81,7 +81,7 @@ object CommandManager {
 
         if (executor == VisitCommand) {
             if (size == 1) {
-                return Bukkit.getOnlinePlayers().map {it.name}.toMutableList()
+                return Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
             }
         }
 
@@ -152,7 +152,14 @@ object CommandManager {
 
                 RELOAD -> mutableListOf()
 
-
+                PLAYER_DATA -> {
+                    when (size) {
+                        2 -> playerSpecifier(args[1])
+                        3 -> mutableListOf("add", "set", "subtract", "get")
+                        4 -> mutableListOf("unlocked_world_slot", "unlocked_warp_slot", "world_point")
+                        else -> mutableListOf()
+                    }
+                }
             }
         }
 
