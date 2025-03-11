@@ -1,5 +1,6 @@
 package me.awabi2048.mw_manager.my_world
 
+import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.portal.WorldPortal
@@ -35,7 +36,13 @@ object MyWorldManager {
             try {
                 templateWorld.cbWorld!!.entities.filter { it.scoreboardTags.contains("mwm.template_preview") }
                     .forEach { it.remove() }
+
+                val mvWorld = mvWorldManager.getMVWorld(templateWorld.cbWorld)
+                val mvSpawnLocation = mvWorld.spawnLocation
+                templateWorld.originLocation = mvSpawnLocation
+
             } catch (e: NullPointerException) {
+                instance.logger.severe("template_setting.yml に記載されたテンプレートワールドが見つかりませんでした。(${templateWorld.worldId})")
                 throw IllegalStateException("Template world data not found: ${templateWorld.worldId}")
             }
         }

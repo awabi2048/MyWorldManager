@@ -27,12 +27,18 @@ class TemplateWorld(val worldId: String) {
             return Bukkit.getWorld(worldId)
         }
 
-    val originLocation: Location
+    var originLocation: Location
         get() {
             return Lib.stringToBlockLocation(
                 cbWorld!!,
                 DataFiles.templateSetting.getString("$worldId.origin_location")!!
             )
+        }
+
+        set(value) {
+            val locationString = Lib.locationToString(value)
+            DataFiles.templateSetting.set("$worldId.origin_location", locationString)
+            DataFiles.save()
         }
 
     val name: String?
