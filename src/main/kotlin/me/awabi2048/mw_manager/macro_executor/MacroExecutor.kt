@@ -6,8 +6,8 @@ import me.awabi2048.mw_manager.macro_executor.MacroFlag.*
 
 class MacroExecutor(private val flag: MacroFlag) {
     private fun resolvePlaceholder(input: String): String {
-        return when(flag) {
-            is OnWorldCreate -> input
+        return when (flag) {
+            is OnWorldCreated -> input
                 .replace("%owner%", flag.owner.name)
                 .replace("%world_uuid%", flag.world.uuid)
 
@@ -22,15 +22,17 @@ class MacroExecutor(private val flag: MacroFlag) {
             is OnWorldMemberRemoved -> input
                 .replace("%player%", flag.removedPlayer.name!!)
                 .replace("%world_uuid%", flag.world.uuid)
+
+            is OnWorldRemoved -> input
+                .replace("%world_uuid%", flag.world.uuid)
         }
     }
 
     fun run() {
-
         // 登録されたコマンドからプレースホルダーを置換
         val key = flag.key
         val commands = DataFiles.macroSetting.getStringList(key)
-            .map {resolvePlaceholder(it)}
+            .map { resolvePlaceholder(it) }
 
         // 実行
         commands.forEach {

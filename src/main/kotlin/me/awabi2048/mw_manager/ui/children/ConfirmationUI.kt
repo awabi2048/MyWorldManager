@@ -100,7 +100,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
                 Bukkit.getScheduler().runTaskLater( // 同 tick で処理すると、インベントリ閉じるまでの時間が出る
                     instance,
                     Runnable {
-                        uiData.world.delete()
+                        uiData.world.remove()
                     },
                     5L
                 )

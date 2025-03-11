@@ -407,21 +407,6 @@ class MyWorld(val uuid: String) {
 
             val expireIn = Config.defaultExpireDays
 
-            // デフォルトのワールド名の場合はインデックス
-            val worldNameDuped = MyWorldManager.registeredMyWorld.any { it.name!!.startsWith("my_world.${owner.name}") }
-            val temporalWorldName = when(registerWorldName == null) {
-                true -> "my_world.${owner.name}"
-                false -> registerWorldName
-            }
-
-            val index =
-                MyWorldManager.registeredMyWorld.count { it.name!!.startsWith(temporalWorldName) } + 1
-
-            val worldName = when(worldNameDuped) {
-                true -> "${temporalWorldName}_$index"
-                false -> temporalWorldName
-            }
-
             // template
             val sourceWorldOrigin = Lib.locationToString(TemplateWorld(templateWorldName).originLocation)
 
@@ -432,7 +417,7 @@ class MyWorld(val uuid: String) {
 
             // register
             val map = mapOf(
-                "name" to worldName,
+                "name" to registerWorldName,
                 "description" to "${owner.name}のワールド",
                 "icon" to Material.GRASS_BLOCK.toString(),
                 "source_world" to templateWorldName,
@@ -458,7 +443,7 @@ class MyWorld(val uuid: String) {
             )
 
             // macro execution
-            val macroExecutor = MacroExecutor(MacroFlag.OnWorldCreate(this, owner))
+            val macroExecutor = MacroExecutor(MacroFlag.OnWorldCreated(this, owner))
             macroExecutor.run()
 
             return true
@@ -606,7 +591,7 @@ class MyWorld(val uuid: String) {
         target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
     }
 
-    fun delete(): Boolean {
+    fun remove(): Boolean {
         if (isRegistered) {
             // ワールドのディレクトリの位置をアーカイブ状態に応じて取得
             val worldFolder: File
@@ -614,8 +599,10 @@ class MyWorld(val uuid: String) {
                 worldFolder = vanillaWorld!!.worldFolder
                 Bukkit.unloadWorld(vanillaWorld!!, false)
             } else {
-                worldFolder = File(Bukkit.getWorldContainer().path + File.separator + "my_world.$uuid")
+                worldFolder = File(Bukkit.getWorldContainer().parentFile.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
             }
+
+            println("DEBUG: path: ${worldFolder.path}, exists:${worldFolder.exists()}")
 
             // mv 設定から除外等
             mvWorldManager.removePlayersFromWorld("my_world.$uuid")
@@ -633,8 +620,11 @@ class MyWorld(val uuid: String) {
                     }
                     DataFiles.save()
                 },
-                10L
+                20L
             )
+
+            // マクロ実行
+            MacroExecutor(MacroFlag.OnWorldRemoved(this)).run()
 
             return true
 
