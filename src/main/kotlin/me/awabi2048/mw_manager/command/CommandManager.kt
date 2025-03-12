@@ -1,6 +1,5 @@
 package me.awabi2048.mw_manager.command
 
-import me.awabi2048.mw_manager.Main
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.command.Option.*
 import me.awabi2048.mw_manager.command.command_executor.*
@@ -26,7 +25,7 @@ object CommandManager {
         instance.getCommand("mwm_invite_accept")?.setExecutor(InviteAcceptCommand)
         instance.getCommand("mwm_recruit_accept")?.setExecutor(RecruitAcceptCommand)
 
-        instance.getCommand("worldmenu")?.setExecutor(OpenWorldUICommand)
+        instance.getCommand("worldmenu")?.setExecutor(WorldMenuCommand)
         instance.getCommand("worldwarp")?.setExecutor(WarpCommand)
         instance.getCommand("myworld")?.setExecutor(MyWorldCommand)
 
@@ -44,7 +43,7 @@ object CommandManager {
                 WorldPointCommand -> sender.hasPermission("mw_manager.command.worldpoint")
                 InviteAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_invite_accept")
                 RecruitAcceptCommand -> sender.hasPermission("mw_manager.command.mwm_recruit_accept")
-                OpenWorldUICommand -> sender.hasPermission("mw_manager.command.worldmenu")
+                WorldMenuCommand -> sender.hasPermission("mw_manager.command.worldmenu")
                 WarpCommand -> sender.hasPermission("mw_manager.command.worldwarp")
                 HelpCommand -> sender.hasPermission("mw_manager.command.mwm_help")
                 else -> false

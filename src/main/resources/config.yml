@@ -26,9 +26,8 @@ min_world_name_length: 3,
 max_world_name_length: 10,
 
 command_help:
-  invite: "§fほかのプレイヤーをワールドに招待します。 §7/invite <プレイヤー> [ワールド]"
-  visit: "§fほかのプレイヤーのワールドを訪れます。 §7/visit <プレイヤー>"
+  invite: "§fほかのプレイヤーをワールドに招待します。 §7/invite <プレイヤー名> [ワールド名]"
+  visit: "§fほかのプレイヤーのワールドを訪れます。 §7/visit <プレイヤー名>"
   mwm: "§ワールドの管理を行います。 §7/mwm <オプション>"
-  worldmenu: "§fワールドの設定メニューを開きます。 §7/worldmenu <ワールド>"
+  worldmenu: "§fワールドの設定メニューを開きます。 §7/worldmenu"
   worldwarp: "§fワールドのワープメニューを開きます。 §7/worldwarp"
-  worldpoint: "ワールドポイントの設定を行います。 §7/worldpoint <プレイヤー> <操作> [値]"
