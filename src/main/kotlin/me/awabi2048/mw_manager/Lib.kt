@@ -50,7 +50,7 @@ object Lib {
     fun translateWorldSpecifier(specifier: String): MyWorld? {
         if (specifier.startsWith("uuid:")) {
             val worldUUID = specifier.substringAfter("uuid:")
-            val myWorld = MyWorldManager.registeredMyWorld.find { it.uuid == worldUUID }
+            val myWorld = MyWorldManager.registeredMyWorlds.find { it.uuid == worldUUID }
 
             return myWorld
         } else {
@@ -58,7 +58,7 @@ object Lib {
                 val ownerName = specifier.substringBefore(":")
                 val worldName = specifier.substringAfter(":")
 
-                val myWorld = MyWorldManager.registeredMyWorld.find {it.owner?.name == ownerName && it.name == worldName}
+                val myWorld = MyWorldManager.registeredMyWorlds.find {it.owner?.name == ownerName && it.name == worldName}
                 return myWorld
 
             } catch (e: Exception) {
@@ -125,12 +125,19 @@ object Lib {
         }
 
         // 重複: それぞれプレイヤーにつき同じ名前のワールドはひとつのみ所有できる
-        if (MyWorldManager.registeredMyWorld.filter {it.owner == player}.any {it.name == name}) {
+        if (MyWorldManager.registeredMyWorlds.filter {it.owner == player}.any {it.name == name}) {
             player.sendMessage("§c既に同じ名前のワールドを作成しています。再度入力してください。")
             return false
         }
 
         // 上記いずれにも引っ掛からなければ通ってヨシ
         return true
+    }
+
+    fun escapePlayers(players: Set<Player>) {
+        players.forEach {
+            it.teleport(Config.escapeLocation!!)
+            it.playSound(it, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
+        }
     }
 }

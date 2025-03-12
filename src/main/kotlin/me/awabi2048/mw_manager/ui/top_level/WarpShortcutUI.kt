@@ -35,7 +35,7 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
         if (event.isLeftClick && !event.isShiftClick) {// 新規登録
             if (itemName == "§b未登録") {
-                val world = MyWorldManager.registeredMyWorld.find{it.vanillaWorld == player.world}
+                val world = MyWorldManager.registeredMyWorlds.find{it.vanillaWorld == player.world}
                 if (world == null) {
 
                     player.sendMessage("§cこのワールドではワープを設定できません。")

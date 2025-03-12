@@ -18,7 +18,7 @@ object EventListener : Listener {
 
         // ワールドの情報とファイル上のデータの同期
         if (world.name.startsWith("my_world.")) {
-            val myWorld = MyWorldManager.registeredMyWorld.find {it.vanillaWorld == world}?: return
+            val myWorld = MyWorldManager.registeredMyWorlds.find {it.vanillaWorld == world}?: return
             myWorld.sync()
         }
     }

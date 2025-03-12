@@ -31,12 +31,12 @@ object VisitCommand: CommandExecutor, TabCompleter {
 
         //
         val player = Bukkit.getOfflinePlayer(p3[0])
-        if (!MyWorldManager.registeredMyWorld.any {player in it.players!!}) {
+        if (!MyWorldManager.registeredMyWorlds.any {player in it.players!!}) {
             p0.sendMessage("§cプレイヤーが見つからないか、無効です。")
             return true
         }
 
-        val worlds = MyWorldManager.registeredMyWorld.filter {player in it.players!! && it.publishLevel != PublishLevel.PRIVATE}
+        val worlds = MyWorldManager.registeredMyWorlds.filter {player in it.players!! && it.publishLevel != PublishLevel.PRIVATE}
 
         if (worlds.isEmpty()) {
             p0.sendMessage("§7表示できるワールドがありませんでした。")

@@ -6,7 +6,6 @@ import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.OfflinePlayer
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.entity.Player
 
 data class PlayerData(private val player: OfflinePlayer) {
     private val uuid = player.uniqueId.toString()
@@ -43,7 +42,7 @@ data class PlayerData(private val player: OfflinePlayer) {
             return section.getInt("unlocked_warp_slot")
         }
         set(value) {
-            DataFiles.playerData.set("$uuid.unlocked_warp_slot", value.coerceAtLeast(0))
+            DataFiles.playerData.set("$uuid.unlocked_warp_slot", value.coerceAtLeast(0).coerceAtMost(Config.playerWarpSlotMax))
             DataFiles.save()
         }
 
@@ -52,7 +51,7 @@ data class PlayerData(private val player: OfflinePlayer) {
             return section.getInt("unlocked_world_slot")
         }
         set(value) {
-            DataFiles.playerData.set("$uuid.unlocked_world_slot", value.coerceAtLeast(1))
+            DataFiles.playerData.set("$uuid.unlocked_world_slot", value.coerceAtLeast(1).coerceAtMost(Config.playerWorldSlotMax))
             DataFiles.save()
         }
 
@@ -69,6 +68,6 @@ data class PlayerData(private val player: OfflinePlayer) {
 
     val createdWorlds: Set<MyWorld>
         get() {
-            return MyWorldManager.registeredMyWorld.filter {it.owner?.uniqueId == player.uniqueId}.toSet()
+            return MyWorldManager.registeredMyWorlds.filter {it.owner?.uniqueId == player.uniqueId}.toSet()
         }
 }

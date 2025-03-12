@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.command.Option.*
 import me.awabi2048.mw_manager.command.command_executor.*
 import me.awabi2048.mw_manager.custom_item.CustomItem
+import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandExecutor
@@ -53,24 +54,24 @@ object CommandManager {
 
     // size → 確定したもの + 入力中のもの　(デフォルトで1からスタート)
     fun getTabCompletion(sender: CommandSender, args: List<String>?, executor: CommandExecutor): MutableList<String> {
-        fun worldSpecifier(arg: String): MutableList<String> {
+        fun worldSpecifier(arg: String, availablePlayers: Set<Player>, availableWorlds: Set<MyWorld>): MutableList<String> {
             if (!arg.contains(":")) {
-                return Bukkit.getOnlinePlayers().map { "${it.name}:" }.toMutableList()
+                return availablePlayers.map { "${it.name}:" }.toMutableList()
             } else {
                 val playerName = arg.substringBefore(":")
                 val playerUUID = Bukkit.getPlayer(playerName)?.uniqueId ?: return mutableListOf()
-                return MyWorldManager.registeredMyWorld.filter { it.owner!!.uniqueId == playerUUID }
+                return availableWorlds.filter { it.owner!!.uniqueId == playerUUID }
                     .map { "$playerName:${it.name!!}" }.toMutableList()
             }
         }
 
-        fun playerSpecifier(arg: String): MutableList<String> {
+        fun playerSpecifier(arg: String, availablePlayers: Set<Player>): MutableList<String> {
             if (!arg.contains(":")) {
                 return mutableListOf("player:", "uuid:")
             } else {
-                if (arg.contains("player:")) return Bukkit.getOnlinePlayers().map { "player:${it.name}" }
+                if (arg.contains("player:")) return availablePlayers.map { "player:${it.name}" }
                     .toMutableList()
-                if (arg.contains("uuid:")) return Bukkit.getOnlinePlayers().map { "uuid:${it.uniqueId}" }
+                if (arg.contains("uuid:")) return availablePlayers.map { "uuid:${it.uniqueId}" }
                     .toMutableList()
             }
 
@@ -78,23 +79,23 @@ object CommandManager {
         }
 
         val size = args?.size ?: return mutableListOf()
+        val onlinePlayers = Bukkit.getOnlinePlayers().toSet()
+        val registeredWorlds = MyWorldManager.registeredMyWorlds.toSet()
 
         if (executor == VisitCommand) {
+            if (sender !is Player) return mutableListOf()
+
             if (size == 1) {
                 return Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
             }
         }
 
         if (executor == InviteCommand) {
-            if (size == 1) {
-                return Bukkit.getOnlinePlayers().filter { it != sender }.map { it.name }.toMutableList()
-            }
-        }
+            if (sender !is Player) return mutableListOf()
 
-        if (executor == WorldPointCommand) {
-            return when (size) {
-                1 -> Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
-                2 -> mutableListOf("add", "subtract", "set", "get")
+            return when(size) {
+                1 -> Bukkit.getOnlinePlayers().filter { it != sender }.map { it.name }.toMutableList()
+                2 -> MyWorldManager.registeredMyWorlds.filter {it.players?.contains(sender) == true}.map {it.name!!}.toMutableList()
                 else -> mutableListOf()
             }
         }
@@ -107,7 +108,7 @@ object CommandManager {
             return when (option) {
                 CREATE -> {
                     when (size) {
-                        2 -> playerSpecifier(args[1])
+                        2 -> playerSpecifier(args[1], onlinePlayers)
                         3 -> MyWorldManager.registeredTemplateWorld.map { it.worldId }.toMutableList()
                         4 -> mutableListOf()
                         else -> mutableListOf()
@@ -115,25 +116,25 @@ object CommandManager {
                 }
 
                 INFO -> {
-                    if (size == 2) playerSpecifier(args[1]) else mutableListOf()
+                    if (size == 2) playerSpecifier(args[1], onlinePlayers) else mutableListOf()
                 }
 
                 ARCHIVE -> {
                     when (size) {
-                        2 -> worldSpecifier(args[1])
+                        2 -> worldSpecifier(args[1], onlinePlayers, registeredWorlds)
                         else -> mutableListOf()
                     }
                 }
 
                 ACTIVATE -> {
                     when (size) {
-                        2 -> worldSpecifier(args[1])
+                        2 -> worldSpecifier(args[1], onlinePlayers, registeredWorlds)
                         else -> mutableListOf()
                     }
                 }
 
                 UPDATE -> {
-                    if (size == 2) worldSpecifier(args[1]) else mutableListOf()
+                    if (size == 2) worldSpecifier(args[1], onlinePlayers, registeredWorlds) else mutableListOf()
                 }
 
                 START_CREATION_SESSION -> {
@@ -154,7 +155,7 @@ object CommandManager {
 
                 PLAYER_DATA -> {
                     when (size) {
-                        2 -> playerSpecifier(args[1])
+                        2 -> playerSpecifier(args[1], onlinePlayers)
                         3 -> mutableListOf("add", "set", "subtract", "get")
                         4 -> mutableListOf("unlocked_world_slot", "unlocked_warp_slot", "world_point")
                         else -> mutableListOf()

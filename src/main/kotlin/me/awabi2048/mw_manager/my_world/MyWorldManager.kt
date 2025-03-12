@@ -8,7 +8,7 @@ import org.bukkit.Bukkit
 import org.bukkit.WorldCreator
 
 object MyWorldManager {
-    val registeredMyWorld: List<MyWorld>
+    val registeredMyWorlds: List<MyWorld>
         get() {
 //            println(DataFiles.worldData.getKeys(false))
 

@@ -26,7 +26,7 @@ object OpenWorldUICommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        val world = MyWorldManager.registeredMyWorld.find { it.vanillaWorld == p0.world }
+        val world = MyWorldManager.registeredMyWorlds.find { it.vanillaWorld == p0.world }
         if (world == null) {
             p0.sendMessage("§cこのワールドでは使用できないコマンドです。")
             return true

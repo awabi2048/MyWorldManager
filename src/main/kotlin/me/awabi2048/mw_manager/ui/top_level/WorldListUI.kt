@@ -12,7 +12,7 @@ import org.bukkit.inventory.Inventory
 
 class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title: String) : AbstractInteractiveUI(player) {
 
-    private val availableWorlds = MyWorldManager.registeredMyWorld.filter {player in it.players!!}
+    private val availableWorlds = MyWorldManager.registeredMyWorlds.filter {player in it.players!!}
 
     override fun onClick(event: InventoryClickEvent) {
         if (!(event.slot >= 9 && event.slot % 9 in 1..7)) {

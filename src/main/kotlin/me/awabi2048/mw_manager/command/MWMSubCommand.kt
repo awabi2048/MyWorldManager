@@ -28,6 +28,9 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         DataFiles.copy()
         DataFiles.loadAll()
 
+        MyWorldManager.loadTemplateWorlds()
+        MyWorldManager.updateData()
+
         sender.sendMessage("$PREFIX §aデータファイルをリロードしました。")
     }
 
@@ -83,21 +86,21 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         // /mwm info
         if (args.size == 1) {
-            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorld.toSet(), 1)
+            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorlds.toSet(), 1)
             ui.open(true)
         }
 
         // /mwm info %page%
         if (args.size == 2 && args[1].toIntOrNull() != null) {
             val page = args[1].toInt()
-            val pageRange = 1..MyWorldManager.registeredMyWorld.size / 36 + 1
+            val pageRange = 1..MyWorldManager.registeredMyWorlds.size / 36 + 1
 
             if (page !in pageRange) {
                 sender.sendMessage("§c無効なページの指定です。")
                 return
             }
 
-            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorld.toSet(), page)
+            val ui = AdminWorldInfoUI(sender, MyWorldManager.registeredMyWorlds.toSet(), page)
             ui.open(true)
         }
 
@@ -120,7 +123,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
             val ui = AdminWorldInfoUI(
                 sender,
-                MyWorldManager.registeredMyWorld.filter { it.players!!.contains(player) }.toSet(),
+                MyWorldManager.registeredMyWorlds.filter { it.players!!.contains(player) }.toSet(),
                 1
             )
             ui.open(true)
@@ -131,7 +134,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             val player = Lib.translatePlayerSpecifier(args[1])!!
             val page = args[2].toInt()
 
-            val pageRange = 1..MyWorldManager.registeredMyWorld.size / 36 + 1
+            val pageRange = 1..MyWorldManager.registeredMyWorlds.size / 36 + 1
 
             if (page !in pageRange) {
                 sender.sendMessage("§c無効なページの指定です。")
@@ -140,7 +143,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
             val ui = AdminWorldInfoUI(
                 sender,
-                MyWorldManager.registeredMyWorld.filter { it.players!!.contains(player) }.toSet(),
+                MyWorldManager.registeredMyWorlds.filter { it.players!!.contains(player) }.toSet(),
                 page
             )
             ui.open(true)
@@ -210,9 +213,18 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         val playerData = PlayerData(targetPlayer)
 
+        // 個人の作成上限
         if (playerData.createdWorlds.size >= playerData.unlockedWorldSlot) {
-            targetPlayer.sendMessage("§c既にワールドの作成数上限に達しています！ §7(${playerData.unlockedWorldSlot} 個中 ${playerData.createdWorlds} 個作成済み)")
+            targetPlayer.sendMessage("§c既にワールドの作成数上限に達しています！ §7(${playerData.unlockedWorldSlot} 個中 ${playerData.createdWorlds.size} 個作成済み)")
             targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
+            return
+        }
+
+        // グローバル作成上限
+        if (MyWorldManager.registeredMyWorlds.size >= Config.globalWorldCountMax) {
+            targetPlayer.sendMessage("§cワールド数上限に達したため、新規作成は現在行えません。§c§nスタッフに連絡してください。")
+            targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
+            targetPlayer.playSound(targetPlayer, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 0.5f)
             return
         }
 
@@ -269,7 +281,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         val player = Lib.translatePlayerSpecifier(args[1])
         val operation = args[2]
         val path = args[3]
-        val value = if (args.size == 5) args[3].toIntOrNull() else null
+        val value = if (args.size == 5) args[4].toIntOrNull() else null
 
         val availablePaths = listOf(
             "unlocked_world_slot",
@@ -298,24 +310,31 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         }
 
         val playerData = PlayerData(player)
+        val baseValue = when (path) {
+            "unlocked_world_slot" -> playerData.unlockedWorldSlot
+            "unlocked_warp_slot" -> playerData.unlockedWarpSlot
+            "world_point" -> playerData.worldPoint
+            else -> null
+        }?: return
 
         if (operation == "get") {
-            val returnValue = when (path) {
-                "unlocked_world_slot" -> playerData.unlockedWorldSlot
-                "unlocked_warp_slot" -> playerData.unlockedWarpSlot
-                "world_point" -> playerData.worldPoint
-                else -> null
-            }
-
-            sender.sendMessage("$PREFIX §e${player} §7はデータ §a${path} §7は §b${returnValue} です。")
+            sender.sendMessage("$PREFIX §e${player.name} §7はデータ §a${path} §7は §b${baseValue} です。")
         } else {
+
+            val modifiedValue = when(operation) {
+                "add" -> baseValue + value!!
+                "subtract" -> baseValue - value!!
+                "set" -> value!!
+                else -> null
+            }?: return
+
             when (path) {
-                "unlocked_world_slot" -> playerData.unlockedWorldSlot = value!!
-                "unlocked_warp_slot" -> playerData.unlockedWarpSlot = value!!
-                "world_point" -> playerData.worldPoint = value!!
+                "unlocked_world_slot" -> playerData.unlockedWorldSlot = modifiedValue
+                "unlocked_warp_slot" -> playerData.unlockedWarpSlot = modifiedValue
+                "world_point" -> playerData.worldPoint = modifiedValue
             }
 
-            sender.sendMessage("$PREFIX §e${player} §7のデータ §a${path} §7を §f${value} §7に変更しました。")
+            sender.sendMessage("$PREFIX §e${player.name} §7のデータ §a${path} §7を §f${modifiedValue} §7に変更しました。")
         }
     }
 }

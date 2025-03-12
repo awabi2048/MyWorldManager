@@ -61,6 +61,7 @@ class MyWorld(val uuid: String) {
         set(value) {
             if (value != null && isRegistered) {
                 DataFiles.worldData.set("$uuid.name", value)
+                mvWorldManager.getMVWorld(vanillaWorld).alias = value
                 DataFiles.save()
             }
         }
@@ -368,19 +369,26 @@ class MyWorld(val uuid: String) {
 
                     WorldActivityState.ARCHIVED -> {
 
-                        mvWorldManager.removePlayersFromWorld("my_world.$uuid")
+                        Lib.escapePlayers(vanillaWorld!!.players.toSet())
 
                         // コピー後、削除（アーカイブ　→　ワールド）
-                        FileUtils.copyFolder(worldDataFile, archivedDataFile)
-//                        mvWorldManager.removeWorldFromConfig("my_world.$uuid")
+                        // mvWorldManager.removeWorldFromConfig("my_world.$uuid")
 
                         Bukkit.unloadWorld("my_world.$uuid", true)
+
+                        Bukkit.getScheduler().runTaskLater(
+                            instance,
+                            Runnable {
+                                FileUtils.copyFolder(worldDataFile, archivedDataFile)
+                            }, 10L
+                        )
+
                         Bukkit.getScheduler().runTaskLater(
                             instance,
                             Runnable {
                                 FileUtils.deleteFolder(worldDataFile)
                                 System.gc()
-                            }, 10L
+                            }, 20L
                         )
 
                         instance.logger.info("World archived. UUID: $uuid")
@@ -599,13 +607,12 @@ class MyWorld(val uuid: String) {
                 worldFolder = vanillaWorld!!.worldFolder
                 Bukkit.unloadWorld(vanillaWorld!!, false)
             } else {
-                worldFolder = File(Bukkit.getWorldContainer().parentFile.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
+                worldFolder =
+                    File(Bukkit.getWorldContainer().path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
             }
 
-            println("DEBUG: path: ${worldFolder.path}, exists:${worldFolder.exists()}")
-
             // mv 設定から除外等
-            mvWorldManager.removePlayersFromWorld("my_world.$uuid")
+            Lib.escapePlayers(vanillaWorld!!.players.toSet())
             mvWorldManager.removeWorldFromConfig("my_world.$uuid")
 
             // 即座に削除するとワールドのアンロードが間に合わずエラーが出る
@@ -625,6 +632,11 @@ class MyWorld(val uuid: String) {
 
             // マクロ実行
             MacroExecutor(MacroFlag.OnWorldRemoved(this)).run()
+
+            players?.forEach {
+                val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
+                macroExecutor.run()
+            }
 
             return true
 

@@ -30,7 +30,7 @@ class WorldPortal(private val uuid: String) {
 //            println(portalData.contains(uuid))
 //            println("-----------------")
 
-            return MyWorldManager.registeredMyWorld.any { it.uuid == destinationWorld.uuid } && DataFiles.portalData.contains(
+            return MyWorldManager.registeredMyWorlds.any { it.uuid == destinationWorld.uuid } && DataFiles.portalData.contains(
                 uuid
             )
         }
