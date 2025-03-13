@@ -601,6 +601,10 @@ class MyWorld(val uuid: String) {
 
     fun remove(): Boolean {
         if (isRegistered) {
+
+            // プレイヤーを避難
+            if (activityState == WorldActivityState.ACTIVE) Lib.escapePlayers(vanillaWorld!!.players.toSet())
+
             // ワールドのディレクトリの位置をアーカイブ状態に応じて取得
             val worldFolder: File
             if (activityState == WorldActivityState.ACTIVE) {
@@ -612,7 +616,6 @@ class MyWorld(val uuid: String) {
             }
 
             // mv 設定から除外等
-            Lib.escapePlayers(vanillaWorld!!.players.toSet())
             mvWorldManager.removeWorldFromConfig("my_world.$uuid")
 
             // 即座に削除するとワールドのアンロードが間に合わずエラーが出る

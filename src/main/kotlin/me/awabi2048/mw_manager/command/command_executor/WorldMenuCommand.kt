@@ -23,7 +23,7 @@ object WorldMenuCommand : CommandExecutor, TabCompleter {
         }
 
         if (!p3.isNullOrEmpty()) {
-            p0.sendMessage("§c無効なコマンドです。")
+            p0.sendMessage("§c無効なコマンドです。 /worldmenu")
             return true
         }
 

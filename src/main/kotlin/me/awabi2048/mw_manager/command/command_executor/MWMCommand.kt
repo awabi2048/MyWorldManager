@@ -19,7 +19,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
         }
 
         if (args.isEmpty() || args[0] !in Option.entries.map { it.toString().lowercase() }) {
-            sender.notify("§c無効なコマンドです。", null)
+            sender.notify("§c無効なコマンドです。 /mwm <オプション>", null)
             return true
         }
 

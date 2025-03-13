@@ -12,8 +12,6 @@ import org.bukkit.inventory.Inventory
 
 class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title: String) : AbstractInteractiveUI(player) {
 
-    private val availableWorlds = MyWorldManager.registeredMyWorlds.filter {player in it.players!!}
-
     override fun onClick(event: InventoryClickEvent) {
         if (!(event.slot >= 9 && event.slot % 9 in 1..7)) {
             event.isCancelled = true
@@ -21,7 +19,7 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
         }
 
         val index = (event.slot / 9 - 1) * 7 + (event.slot % 9 - 1)
-        val myWorld = availableWorlds[index]
+        val myWorld = worlds.toList()[index]
 
         if (event.click.isLeftClick) {
             myWorld.warpPlayer(player, true)
@@ -33,7 +31,7 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
     }
 
     override fun construct(): Inventory {
-        val uiRow = (availableWorlds.size - 1) / 7 + 3
+        val uiRow = (worlds.size - 1) / 7 + 3
 
         val ui = createTemplate(uiRow, title)!!
 

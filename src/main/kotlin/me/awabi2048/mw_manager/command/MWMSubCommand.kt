@@ -36,7 +36,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun create() {
         if (args.size != 4) {
-            sender.notify("§c無効なコマンドです。", null)
+            sender.notify("§c無効なコマンドです。 /mwm create <プレイヤー> <テンプレート> <ワールド名>", null)
             return
         }
 
@@ -154,7 +154,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun update() {
         if (args.size != 2) {
-            sender.notify("§c無効なコマンドです。", null)
+            sender.notify("§c無効なコマンドです。 /mwm update <ワールド>", null)
             return
         }
 
@@ -172,7 +172,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     fun setWorldState(state: WorldActivityState) {
         // コマンド有効判定
         if (args.size != 2) {
-            sender.sendMessage("$PREFIX §c無効なコマンドです。")
+            sender.sendMessage("$PREFIX §c無効なコマンドです。 </mwm activate|archive <ワールド>")
             return
         }
 
@@ -195,7 +195,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
     fun startCreationSession() {
         if (args.size != 2) {
-            sender.sendMessage("$PREFIX §c無効なコマンドです。")
+            sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm start_creation_session <プレイヤー名>")
             return
         }
 
@@ -274,7 +274,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     fun modifyPlayerData() {
         // /mwm player_data <player> <operation> <path> [value]
         if (args.size !in 4..5) {
-            sender.sendMessage("$PREFIX §c無効なコマンドです。")
+            sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm player_data <プレイヤー> <操作> <パス> [値]")
             return
         }
 
@@ -334,7 +334,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
                 "world_point" -> playerData.worldPoint = modifiedValue
             }
 
-            sender.sendMessage("$PREFIX §e${player.name} §7のデータ §a${path} §7を §f${modifiedValue} §7に変更しました。")
+            sender.sendMessage("$PREFIX §e${player.name} §7のデータ §a${path} §7を変更しました。")
         }
     }
 }

@@ -35,7 +35,7 @@ object WarpCommand : CommandExecutor, TabCompleter {
                 val shortcutIndex = p3[0].toIntOrNull()?.minus(1)
 
                 if (shortcutIndex == null) {
-                    p0.sendMessage("§c無効なコマンドです。")
+                    p0.sendMessage("§c無効なコマンドです。 /worldwarp [スロット]")
                     return true
                 }
 
@@ -59,7 +59,7 @@ object WarpCommand : CommandExecutor, TabCompleter {
             }
 
             else -> {
-                p0.sendMessage("§c無効なコマンドです。")
+                p0.sendMessage("§c無効なコマンドです。 /worldwarp [スロット]")
                 return true
             }
         }

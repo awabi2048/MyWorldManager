@@ -55,7 +55,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
                 .find {it.name == p3[1]}
 
         } else {
-            p0.sendMessage("§c無効なコマンドです。")
+            p0.sendMessage("§c無効なコマンドです。 /invite <プレイヤー> [ワールド]")
             return true
         }
 

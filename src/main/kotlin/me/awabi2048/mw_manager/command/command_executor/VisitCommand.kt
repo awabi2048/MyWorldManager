@@ -25,13 +25,13 @@ object VisitCommand: CommandExecutor, TabCompleter {
         }
 
         if (p3?.size != 1) {
-            p0.sendMessage("§c無効なコマンドです。")
+            p0.sendMessage("§c無効なコマンドです。 /visit <プレイヤー名>")
             return true
         }
 
         //
         val player = Bukkit.getOfflinePlayer(p3[0])
-        if (!MyWorldManager.registeredMyWorlds.any {player in it.players!!}) {
+        if (!player.hasPlayedBefore()) {
             p0.sendMessage("§cプレイヤーが見つからないか、無効です。")
             return true
         }

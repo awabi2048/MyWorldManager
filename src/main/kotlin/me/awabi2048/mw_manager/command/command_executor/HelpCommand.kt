@@ -9,7 +9,7 @@ import org.bukkit.command.CommandSender
 object HelpCommand : CommandExecutor {
     override fun onCommand(p0: CommandSender, p1: Command, p2: String, p3: Array<out String>?): Boolean {
         if (!p3.isNullOrEmpty()) {
-            p0.sendMessage("§c無効なコマンドです。")
+            p0.sendMessage("§c無効なコマンドです。 /mwm help")
             return true
         }
 
