@@ -7,6 +7,7 @@ import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.my_world.world_create.CreationStage
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.MemberRole
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
@@ -34,6 +35,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
         data class WorldMemberInvite(val player: Player, val world: MyWorld) : UIData()
         data class WorldMemberRemove(val player: OfflinePlayer, val world: MyWorld) : UIData()
+        data class WorldOwnerTransfer(val player: OfflinePlayer, val world: MyWorld) : UIData()
     }
 
     override fun update() {
@@ -134,10 +136,22 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
             is UIData.WorldMemberRemove -> {
                 player.sendMessage("§c${uiData.player.name} をワールドメンバーから追放しました。")
-                uiData.world.players = uiData.world.players?.minus(uiData.player)
+                uiData.world.members?.remove(uiData.player)
 
                 player.playSound(player, Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 1.0f)
                 player.playSound(player, Sound.ENTITY_PLAYER_DEATH, 1.0f, 0.5f)
+
+                player.closeInventory()
+            }
+
+            is UIData.WorldOwnerTransfer -> {
+                player.sendMessage("§d${uiData.player.name} にオーナー権限を移譲しました。")
+
+                println(uiData.world.members)
+                uiData.world.members = uiData.world.members!!.plus(Pair(uiData.player, MemberRole.OWNER)).toMutableMap()
+                uiData.world.members = uiData.world.members!!.plus(Pair(uiData.world.owner!!, MemberRole.MODERATOR)).toMutableMap()
+
+                player.playSound(player, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1.0f, 1.0f)
 
                 player.closeInventory()
             }
@@ -188,6 +202,11 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             }
 
             is UIData.WorldMemberRemove -> {
+                val memberUI = MemberUI(player, uiData.world)
+                memberUI.open(false)
+            }
+
+            is UIData.WorldOwnerTransfer -> {
                 val memberUI = MemberUI(player, uiData.world)
                 memberUI.open(false)
             }
@@ -244,6 +263,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
 
             is UIData.WorldMemberInvite -> "§e${uiData.player.name}§7を§bワールドメンバーとして招待§7する"
             is UIData.WorldMemberRemove -> "§c${uiData.player.name}をワールドメンバーから追放する"
+            is UIData.WorldOwnerTransfer -> "§c${uiData.player.name}にオーナー権限を移譲する"
         }
 
         val contentInfo = when (uiData) {
@@ -256,6 +276,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             is UIData.WorldAdminToggleActivity -> "§cワールドデータが移動されます。"
             is UIData.WorldMemberInvite -> ""
             is UIData.WorldMemberRemove -> ""
+            is UIData.WorldOwnerTransfer -> "§c権限の移管後、あなたの権限は§6モデレーター§cに変更されます。"
         }
 
         val contentIcon = ItemStack(Material.REDSTONE_TORCH)

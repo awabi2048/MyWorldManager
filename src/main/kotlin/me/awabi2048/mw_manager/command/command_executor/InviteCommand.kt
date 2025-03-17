@@ -38,7 +38,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
             val world = MyWorld(worldUUID)
 
             // 自分のワールドだけ
-            if (world.players?.contains(p0) == false) {
+            if (world.members?.contains(p0) == false) {
                 p0.sendMessage("§c自分以外のワールドには招待できません。")
                 p0.playSound(p0, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
                 return true
@@ -51,7 +51,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
 
             targetPlayer = Bukkit.getPlayer(p3[0])
             targetWorld = MyWorldManager.registeredMyWorlds
-                .filter {it.players?.contains(p0) == true}
+                .filter {it.members?.contains(p0) == true}
                 .find {it.name == p3[1]}
 
         } else {

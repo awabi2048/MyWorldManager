@@ -8,10 +8,10 @@ import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
-import me.awabi2048.mw_manager.ui.children.MemberUI
-import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
-import me.awabi2048.mw_manager.ui.children.WorldExpandUI
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
+import me.awabi2048.mw_manager.ui.children.MemberUI
+import me.awabi2048.mw_manager.ui.children.WorldExpandUI
+import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor.AQUA
@@ -367,19 +367,20 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         val memberIcon = ItemStack(Material.PLAYER_HEAD)
         memberIcon.itemMeta = memberIcon.itemMeta.apply {
 
-            val memberList = world.players!!.map {
-                when (it) {
-                    world.owner -> "§e${it.name} §f(§cオーナー§f)"
-                    in world.moderators -> "§e${it.name} §f(§b管理者§f)"
-                    else -> "§e${it.name}"
+            val memberList = world.members!!.map {
+                val onlineState = when (it.key.isOnline) {
+                    true -> "§a§l"
+                    false -> "§c"
                 }
+
+                "§8［${it.value.japaneseName}§8］ ${onlineState}${it.key.name}"
             }
 
             itemName(Component.text("§bメンバー"))
             lore(
                 (listOf(
                     bar,
-                    "§fクリックしてほかのプレイヤーを§eメンバーに招待§fします。",
+                    "§fクリックして§6メンバーの管理§fを行います。",
                     bar,
                 ) + memberList + listOf(
                     bar

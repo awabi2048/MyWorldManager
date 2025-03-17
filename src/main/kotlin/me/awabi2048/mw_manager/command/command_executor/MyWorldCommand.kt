@@ -22,13 +22,13 @@ object MyWorldCommand: CommandExecutor, TabCompleter {
             return true
         }
 
-        if (!MyWorldManager.registeredMyWorlds.any {p0 in it.players!!}) {
+        if (!MyWorldManager.registeredMyWorlds.any {p0 in it.members!!}) {
             p0.sendMessage("§7表示できるワールドがありませんでした。")
             p0.playSound(p0, Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f)
             return true
         }
 
-        val worlds = MyWorldManager.registeredMyWorlds.filter {p0 in it.players!!}
+        val worlds = MyWorldManager.registeredMyWorlds.filter {p0 in it.members!!}
         val ui = WorldListUI(p0, worlds, "§8§lあなたのワールド")
         ui.open(true)
         return true

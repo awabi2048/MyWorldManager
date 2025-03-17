@@ -94,7 +94,7 @@ object CommandManager {
 
             return when(size) {
                 1 -> Bukkit.getOnlinePlayers().filter { it != sender }.map { it.name }.toMutableList()
-                2 -> MyWorldManager.registeredMyWorlds.filter {it.players?.contains(sender) == true}.map {it.name!!}.toMutableList()
+                2 -> MyWorldManager.registeredMyWorlds.filter {it.members?.contains(sender) == true}.map {it.name!!}.toMutableList()
                 else -> mutableListOf()
             }
         }

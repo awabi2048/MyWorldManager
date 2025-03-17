@@ -95,62 +95,88 @@ class MyWorld(val uuid: String) {
             } else null
         }
 
-    var players: Set<OfflinePlayer>?
+//    var players: Set<OfflinePlayer>?
+//        get() {
+//            return if (isRegistered) {
+//                dataSection!!.getConfigurationSection("member")!!.getKeys(false)
+//                    .map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
+//            } else null
+//        }
+//        set(value) {
+//            if (value != null && isRegistered) {
+//                // マクロ呼び出し
+//                if (value.size > players!!.size) {
+//                    (value - players!!).forEach {
+//                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberAdded(this, it))
+//                        macroExecutor.run()
+//                    }
+//                }
+//
+//                // マクロ呼び出し
+//                if (value.size < players!!.size) {
+//                    (players!! - value).forEach {
+//                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
+//                        macroExecutor.run()
+//                    }
+//                }
+//
+//                val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
+//                    this[owner!!] = "OWNER"
+//                    filter { it.key in moderators }.keys.forEach { moderator ->
+//                        this[moderator] = "MODERATOR"
+//                    }
+//                }
+//
+//                DataFiles.worldData.set("$uuid.member", map.mapKeys { it.key.uniqueId.toString() })
+//                DataFiles.save()
+//                DataFiles.loadAll()
+//            }
+//        }
+
+    var members: MutableMap<OfflinePlayer, MemberRole>? = null
         get() {
             return if (isRegistered) {
                 dataSection!!.getConfigurationSection("member")!!.getKeys(false)
-                    .map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
+                    .associate {
+                        Bukkit.getOfflinePlayer(UUID.fromString(it)) to MemberRole.valueOf(dataSection!!.getString("member.$it")!!)
+                    }.toMutableMap()
             } else null
         }
         set(value) {
             if (value != null && isRegistered) {
-                // マクロ呼び出し
-                if (value.size > players!!.size) {
-                    (value - players!!).forEach {
-                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberAdded(this, it))
-                        macroExecutor.run()
-                    }
+                val removedMembers =
+                    if (members!!.keys.containsAll(value.keys)) members!!.keys - value.keys else null // field → 旧値
+
+                val addedMembers =
+                    if (value.keys.containsAll(members!!.keys)) value.keys - members!!.keys else null // field → 旧値
+
+                // メンバー追放時マクロ
+                removedMembers?.forEach {
+                    val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
+                    macroExecutor.run()
                 }
 
-                // マクロ呼び出し
-                if (value.size < players!!.size) {
-                    (players!! - value).forEach {
-                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
-                        macroExecutor.run()
-                    }
+                // メンバー追加時マクロ
+                addedMembers?.forEach {
+                    val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberAdded(this, it))
+                    macroExecutor.run()
                 }
 
-                val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
-                    this[owner!!] = "OWNER"
-                    filter { it.key in moderators }.keys.forEach { moderator ->
-                        this[moderator] = "MODERATOR"
-                    }
+                // データファイルに書き込み
+                value.forEach {
+                    DataFiles.worldData.set("$uuid.member.${it.key.uniqueId}", it.value.name)
                 }
-
-                DataFiles.worldData.set("$uuid.member", map.mapKeys { it.key.uniqueId.toString() })
                 DataFiles.save()
                 DataFiles.loadAll()
             }
+
+            field = value
         }
 
-    val members: Set<OfflinePlayer>?
-        get() {
-            return players?.filter {
-                dataSection?.getString("member.${it.uniqueId}") == "MEMBER"
-            }?.toSet()
-        }
-
-    val moderators: Set<OfflinePlayer>
-        get() {
-            return players?.filter {
-                dataSection?.getString("member.${it.uniqueId}") == "MODERATOR"
-            }!!.toSet() + owner!!
-        }
-
-    val templateWorldName: String?
-        get() {
-            return DataFiles.worldData.getString("$uuid.source_world")
-        }
+//    val templateWorldName: String?
+//        get() {
+//            return DataFiles.worldData.getString("$uuid.source_world")
+//        }
 
     val lastUpdated: LocalDate?
         get() {
@@ -221,7 +247,7 @@ class MyWorld(val uuid: String) {
                     bar,
                     "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
                     expireState,
-                    "$index §7メンバー §e${players!!.size}人 §7(オンライン: §a${players!!.filter { it.isOnline }.size}人§7)",
+                    "$index §7メンバー §e${members!!.size}人 §7(オンライン: §a${members!!.count { it.key.isOnline }}人§7)",
                     "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
                     bar,
                 )
@@ -328,72 +354,16 @@ class MyWorld(val uuid: String) {
         }
         set(value) {
             if (value != null && isRegistered && value != activityState) { // ※ すでのその状態の場合は処理中断する
-                // データファイルに書き込み
-                DataFiles.worldData.set("$uuid.activity_state", value.toString())
-                DataFiles.save()
 
-                // データの移動
-                val worldContainerFile = instance.server.worldContainer
-                val worldDataFile = File(worldContainerFile.path + File.separator + "my_world.$uuid")
-                val archivedDataFile =
-                    File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
-
-                File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator).mkdir()
-                archivedDataFile.mkdir()
-
-//                println("$worldDataFile, $worldContainerFile, $archivedDataFile")
-
-                when (value) {
-                    WorldActivityState.ACTIVE -> {
-                        // コピー後、削除（アーカイブ　→　ワールド）
-                        Bukkit.getScheduler().runTaskAsynchronously(
-                            instance,
-                            Runnable {
-                                FileUtils.copyFolder(archivedDataFile, worldDataFile)
-                                FileUtils.deleteFolder(archivedDataFile)
-                            }
-                        )
-
-                        Bukkit.getScheduler().runTaskLater(
-                            instance,
-                            Runnable {
-                                Bukkit.createWorld(WorldCreator("my_world.$uuid")) // 同一 tick で処理すると生成されてしまう
-                                mvWorldManager.loadWorld("my_world.$uuid")
-//                                mvWorldManager.addWorld("my_world.$uuid", World.Environment.NORMAL, null, WorldType.NORMAL, false, null)
-                            },
-                            10L
-                        )
-
-                        instance.logger.info("World activated. UUID: $uuid")
-                    }
-
-                    WorldActivityState.ARCHIVED -> {
-
-                        Lib.escapePlayers(vanillaWorld!!.players.toSet())
-
-                        // コピー後、削除（アーカイブ　→　ワールド）
-                        // mvWorldManager.removeWorldFromConfig("my_world.$uuid")
-
-                        Bukkit.unloadWorld("my_world.$uuid", true)
-
-                        Bukkit.getScheduler().runTaskLater(
-                            instance,
-                            Runnable {
-                                FileUtils.copyFolder(worldDataFile, archivedDataFile)
-                            }, 10L
-                        )
-
-                        Bukkit.getScheduler().runTaskLater(
-                            instance,
-                            Runnable {
-                                FileUtils.deleteFolder(worldDataFile)
-                                System.gc()
-                            }, 20L
-                        )
-
-                        instance.logger.info("World archived. UUID: $uuid")
+                // アクティベート → ワールド数がグローバルの最大値を超えそうなら止める
+                if (value == WorldActivityState.ACTIVE) {
+                    if (MyWorldManager.registeredMyWorlds.filter { it.activityState == WorldActivityState.ACTIVE }.size + 1 > Config.globalWorldCountMax) {
+                        throw IllegalStateException("Failed to activate archived MyWorld. Out of Storage. $uuid")
                     }
                 }
+
+                // 状態をセット
+                changeActivityState(value)
             }
         }
 
@@ -458,29 +428,100 @@ class MyWorld(val uuid: String) {
         } else return false
     }
 
-    fun update(): Boolean {
-        if (DataFiles.worldData.getKeys(false).contains(uuid))
+    private fun changeActivityState(state: WorldActivityState) {
+        // データファイルに書き込み
+        DataFiles.worldData.set("$uuid.activity_state", state.toString())
+        DataFiles.save()
 
+        // データの移動
+        val worldContainerFile = instance.server.worldContainer
+        val worldDataFile = File(worldContainerFile.path + File.separator + "my_world.$uuid")
+        val archivedDataFile =
+            File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid")
+
+        // アーカイブデータのメインディレクトリを作成
+        File(worldContainerFile.path + File.separator + "archived_worlds" + File.separator).mkdir()
+
+//         println("$worldDataFile, $worldContainerFile, $archivedDataFile")
+
+        when (state) {
+            WorldActivityState.ACTIVE -> {
+                // コピー後、削除（アーカイブ　→　ワールド）
+                Bukkit.getScheduler().runTaskAsynchronously(
+                    instance,
+                    Runnable {
+                        FileUtils.copyFolder(archivedDataFile, worldDataFile)
+                        FileUtils.deleteFolder(archivedDataFile)
+                    }
+                )
+
+                Bukkit.getScheduler().runTaskLater(
+                    instance,
+                    Runnable {
+                        Bukkit.createWorld(WorldCreator("my_world.$uuid")) // 同一 tick で処理すると生成されてしまう
+                        mvWorldManager.loadWorld("my_world.$uuid")
+//                                mvWorldManager.addWorld("my_world.$uuid", World.Environment.NORMAL, null, WorldType.NORMAL, false, null)
+                    },
+                    10L
+                )
+
+                instance.logger.info("World activated. UUID: $uuid")
+            }
+
+            WorldActivityState.ARCHIVED -> {
+                // アーカイブされるワールドデータのディレクトリを作成
+                archivedDataFile.mkdir()
+
+                Lib.escapePlayers(vanillaWorld!!.players.toSet())
+
+                // コピー後、削除（アーカイブ　→　ワールド）
+                // mvWorldManager.removeWorldFromConfig("my_world.$uuid")
+                Bukkit.unloadWorld("my_world.$uuid", true)
+
+                Bukkit.getScheduler().runTaskLater(
+                    instance,
+                    Runnable {
+                        FileUtils.copyFolder(worldDataFile, archivedDataFile)
+                    }, 10L
+                )
+
+                Bukkit.getScheduler().runTaskLater(
+                    instance,
+                    Runnable {
+                        FileUtils.deleteFolder(worldDataFile)
+                        System.gc()
+                    }, 20L
+                )
+
+                instance.logger.info("World archived. UUID: $uuid")
+            }
+        }
+    }
+
+    fun update(): Boolean {
+        if (isRegistered) {
+
+            // 最終更新を現在日時に変更
             DataFiles.worldData.set(
                 "$uuid.last_updated",
                 LocalDate.now().toString()
             )
+            DataFiles.save()
 
-        Lib.YamlUtil.save("world_data.yml", DataFiles.worldData)
-        return true
+            return true
+        } else return false
     }
 
-    fun registerPlayer(player: Player, role: MemberRole): Boolean {
+    fun registerPlayer(joinedPlayer: Player, role: MemberRole): Boolean {
         if (isRegistered && activityState == WorldActivityState.ACTIVE) {
-            if (role == OWNER) {
-                return false
-            } else {
-                players = players?.plus(player)
-            }
+//            members!![joinedPlayer] = role
+            members = members!!.plus(Pair(joinedPlayer, role)).toMutableMap()
 
-            players!!.filter { it.isOnline }.forEach {
-                it.player!!.sendMessage("§a${player.name} さんがワールドメンバーになりました！")
-                it.player!!.playSound(it.player!!, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
+            members!!.forEach {
+                val player = it.key.player
+
+                player?.sendMessage("§a${player.name} さんがワールドメンバーになりました！")
+                player?.playSound(it.key.player!!, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             }
 
             return true
@@ -494,7 +535,7 @@ class MyWorld(val uuid: String) {
             }
 
             val warpLocation = when (player) {
-                in players!! -> memberSpawnLocation!!
+                in members!! -> memberSpawnLocation!!
                 else -> guestSpawnLocation!!
             }
 
@@ -504,9 +545,9 @@ class MyWorld(val uuid: String) {
             player.sendMessage("§8【§a${name}§8】§7にワープしました。")
 
             if (sendNotification) {
-                players?.filterIsInstance<Player>()?.filter { it != player }?.forEach {
-                    it.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
-                    it.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+                members?.keys?.filter { it.player?.isOnline == true }?.map { it.player }?.forEach {
+                    it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
+                    it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                 }
             }
 
@@ -547,6 +588,7 @@ class MyWorld(val uuid: String) {
             vanillaWorld!!.worldBorder.apply {
                 setCenter(newBorderCenterLocation.blockX.toDouble(), newBorderCenterLocation.blockZ.toDouble())
                 setSize(borderSize!!, 0L)
+                warningDistance = 0
             }
 
             return true
@@ -583,20 +625,32 @@ class MyWorld(val uuid: String) {
         target.playSound(target, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
     }
 
-    fun recruitPlayer(inviter: Player, target: Player) {
+    fun recruitPlayer(inviter: Player, invitee: Player) {
         // 招待コードを生成、登録
         val recruitmentCode = UUID.randomUUID().toString()
         recruitmentCodeMap[recruitmentCode] = uuid
 
-        val text = Component.text("§b${inviter.name}さん§7があなたを§bワールドメンバーに招待§7しました！")
-            .append(
-                Component.text("§7«§eクリックして承認§7»")
-                    .hoverEvent(HoverEvent.showText(Component.text("")))
-                    .clickEvent(ClickEvent.runCommand("/mwm_recruit_accept $recruitmentCode"))
-            )
+        invitee.sendMessage("§b${inviter.name}さん§7があなたを§bワールドメンバーに招待§7しました！")
 
-        target.sendMessage(text)
-        target.playSound(target, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
+        invitee.sendMessage(
+            Component.text("§7«§eクリックして承認§7»")
+                .hoverEvent(HoverEvent.showText(Component.text("§aクリックしてメンバーの招待を受け入れます")))
+                .clickEvent(ClickEvent.runCommand("/mwm_recruit_accept $recruitmentCode"))
+        )
+
+        invitee.playSound(invitee, Sound.ENTITY_CAT_AMBIENT, 1.0f, 2.0f)
+
+        // タイムアウト処理（3分後）
+        Bukkit.getScheduler().runTaskLater(
+            instance,
+            Runnable {
+                inviter.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
+                invitee.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
+
+                recruitmentCodeMap.remove(recruitmentCode)
+            },
+            3 * 60 * 20L
+        )
     }
 
     fun remove(): Boolean {
@@ -636,8 +690,8 @@ class MyWorld(val uuid: String) {
             // マクロ実行
             MacroExecutor(MacroFlag.OnWorldRemoved(this)).run()
 
-            players?.forEach {
-                val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
+            members?.forEach {
+                val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it.key))
                 macroExecutor.run()
             }
 

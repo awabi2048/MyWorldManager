@@ -46,7 +46,7 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
 
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
         player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
-        player.closeInventory()
+        player.closeInventory(InventoryCloseEvent.Reason.PLAYER)
 
         player.sendMessage("§7おあげちゃんがワールドを拡げてくれています... §6「${Config.oageGanbaruMessage.random()}」")
 

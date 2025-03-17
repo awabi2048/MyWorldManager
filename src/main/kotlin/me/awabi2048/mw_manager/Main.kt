@@ -13,7 +13,6 @@ import me.awabi2048.mw_manager.ui.abstract.AbstractUI
 import me.awabi2048.mw_manager.ui.state_manager.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
 import org.bukkit.Bukkit
-import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -34,8 +33,6 @@ class Main : JavaPlugin() {
 
         var playerUIState: MutableMap<Player, AbstractUI> = mutableMapOf()
 
-        val worldDeletionQueue: MutableList<World> = mutableListOf()
-
         lateinit var protocolManager: ProtocolManager
     }
 
@@ -54,13 +51,13 @@ class Main : JavaPlugin() {
         CommandManager.setExecutor()
 
         // EventListenerバイオーム
-        server.pluginManager.registerEvents(EventListener, instance)
         server.pluginManager.registerEvents(WorldCreationSessionListener, instance)
         server.pluginManager.registerEvents(WorldPortalListener, instance)
         server.pluginManager.registerEvents(VoteListener, instance)
         server.pluginManager.registerEvents(WorldSettingListener, instance)
         server.pluginManager.registerEvents(UIListener, instance)
         server.pluginManager.registerEvents(ChatInputListener, instance)
+        server.pluginManager.registerEvents(MiscListener, instance)
 
         //
         MyWorldManager.loadTemplateWorlds()

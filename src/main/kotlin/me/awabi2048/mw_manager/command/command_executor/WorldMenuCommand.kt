@@ -50,7 +50,7 @@ object WorldMenuCommand : CommandExecutor, TabCompleter {
             return true
         }
 
-        if (p0 !in world.players!!) {
+        if (p0 !in world.members!!) {
             p0.sendMessage("§cメニューを開くには、ワールドのメンバーである必要があります。")
             return true
         }

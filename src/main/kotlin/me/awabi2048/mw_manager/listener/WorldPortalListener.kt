@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.portal.WorldPortal
 import me.awabi2048.mw_manager.ui.top_level.PortalUI
 import net.kyori.adventure.text.Component
@@ -16,9 +17,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerItemHeldEvent
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.util.*
 
@@ -110,6 +109,12 @@ object WorldPortalListener : Listener {
             val portalUUID = UUID.randomUUID().toString()
             val portal = WorldPortal(portalUUID)
             portal.place(location, MyWorld(worldUUID), event.player)
+
+            // 有効なワールドでなければキャンセル
+            if (MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ACTIVE}.any {it.uuid == worldUUID}) {
+                event.player.sendMessage("§cリンク先のワールドが見つかりませんでした。")
+                portal.remove()
+            }
         }
     }
 

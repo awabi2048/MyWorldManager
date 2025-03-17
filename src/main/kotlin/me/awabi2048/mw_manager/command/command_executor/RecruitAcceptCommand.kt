@@ -29,7 +29,7 @@ object RecruitAcceptCommand: CommandExecutor {
         world.registerPlayer(p0, MemberRole.MEMBER)
 
         p0.playSound(p0, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-        p0.sendMessage("§7あなたは§8【${world.name}§8】§7の§bワールドメンバー§7になりました！ようこそ！")
+        p0.sendMessage("§7あなたは§8【§a${world.name}§8】§7の§aワールドメンバー§7になりました！ようこそ！")
 
         // 確定後は待機データを消去
         recruitmentCodeMap.remove(recruitmentCode)

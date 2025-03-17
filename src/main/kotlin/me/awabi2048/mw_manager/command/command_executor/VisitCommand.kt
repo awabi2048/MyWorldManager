@@ -36,7 +36,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
             return true
         }
 
-        val worlds = MyWorldManager.registeredMyWorlds.filter {player in it.players!! && it.publishLevel != PublishLevel.PRIVATE}
+        val worlds = MyWorldManager.registeredMyWorlds.filter {player in it.members!! && it.publishLevel != PublishLevel.PRIVATE}
 
         if (worlds.isEmpty()) {
             p0.sendMessage("§7表示できるワールドがありませんでした。")

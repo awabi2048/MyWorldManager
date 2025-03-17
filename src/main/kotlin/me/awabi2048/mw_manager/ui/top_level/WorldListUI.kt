@@ -1,7 +1,7 @@
 package me.awabi2048.mw_manager.ui.top_level
 
 import me.awabi2048.mw_manager.my_world.MyWorld
-import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
 import net.kyori.adventure.text.Component
 import org.bukkit.Sound
@@ -10,7 +10,8 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 
-class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title: String) : AbstractInteractiveUI(player) {
+class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title: String) :
+    AbstractInteractiveUI(player) {
 
     override fun onClick(event: InventoryClickEvent) {
         if (!(event.slot >= 9 && event.slot % 9 in 1..7)) {
@@ -22,7 +23,13 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
         val myWorld = worlds.toList()[index]
 
         if (event.click.isLeftClick) {
-            myWorld.warpPlayer(player, true)
+            if (myWorld.activityState == WorldActivityState.ACTIVE) {
+                myWorld.warpPlayer(player, true)
+            } else {
+                player.closeInventory(InventoryCloseEvent.Reason.PLAYER)
+                player.sendMessage("§c§nワールドの自動復帰に失敗したため、ワールドがアーカイブされています。復帰するには、スタッフに報告してください。")
+                player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 0.5f)
+            }
         }
     }
 
