@@ -344,22 +344,18 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         // 機能ゾーン: 公開レベル
         val publishLevelIcon = ItemStack(Material.COMPASS)
         publishLevelIcon.itemMeta = publishLevelIcon.itemMeta.apply {
-            val list = PublishLevel.entries.map {
-                if (it == world.publishLevel) "§f▶ ${it.toJapanese()}" else "§7${it.toJapanese().drop(2)}"
-            }
+            val list = PublishLevel.entries
+                .map {if (it == world.publishLevel) "§f▶ ${it.japaneseName}" else "§7${it.japaneseName.drop(2)}"}
+                .map {Component.text(it)}
 
             itemName(Component.text("§bワールド公開レベルの変更"))
             lore(
                 listOf(
                     Component.text(bar),
                     Component.text("§fクリックして§eワールドの公開レベルを変更§fします。"),
-                    Component.text("$index §7現在の設定 §e${world.publishLevel!!.toJapanese()}"),
-                    Component.text(bar),
-                    Component.text(list[0]),
-                    Component.text(list[1]),
-                    Component.text(list[2]),
-                    Component.text(bar),
-                )
+                    Component.text("$index §7現在の設定 §e${world.publishLevel!!.japaneseName}"),
+                    Component.text(bar)
+                ) + list + Component.text(bar)
             )
         }
 

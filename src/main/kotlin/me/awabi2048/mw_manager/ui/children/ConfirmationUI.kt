@@ -116,7 +116,7 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
                 } ?: return
 
                 player.closeInventory()
-                player.sendMessage("$PREFIX §b${uiData.world.name} §7を${activity.toJapanese()}§7に変更しました。")
+                player.sendMessage("$PREFIX §b${uiData.world.name} §7を${activity.japaneseName}§7に変更しました。")
 
                 Bukkit.getScheduler().runTaskLater( // 同 tick で処理すると、インベントリ閉じるまでの時間が出る
                     instance,

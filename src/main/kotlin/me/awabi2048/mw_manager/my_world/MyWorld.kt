@@ -248,7 +248,7 @@ class MyWorld(val uuid: String) {
                     "$index §7最終更新日時 §b${Lib.formatDate(lastUpdated!!)}",
                     expireState,
                     "$index §7メンバー §e${members!!.size}人 §7(オンライン: §a${members!!.count { it.key.isOnline }}人§7)",
-                    "$index §7公開レベル §e${publishLevel!!.toJapanese()}",
+                    "$index §7公開レベル §e${publishLevel!!.japaneseName}",
                     bar,
                 )
 
@@ -528,10 +528,17 @@ class MyWorld(val uuid: String) {
         } else return false
     }
 
-    fun warpPlayer(player: Player, sendNotification: Boolean): Boolean {
+    fun warpPlayer(player: Player): Boolean {
         if (isRegistered && activityState == WorldActivityState.ACTIVE) {
+
+            // ワールドがメモリ上になければ登録
             if (Bukkit.getWorld("my_world.$uuid") == null) {
                 Bukkit.createWorld(WorldCreator("my_world.$uuid"))
+            }
+
+            // 封鎖中のワールドなら中止
+            if (publishLevel == PublishLevel.CLOSED && player !in members!!) {
+                player.sendMessage("§cこのワールドは現在${PublishLevel.CLOSED.japaneseName}です。ワールドメンバー以外はワープできません。")
             }
 
             val warpLocation = when (player) {
@@ -544,8 +551,10 @@ class MyWorld(val uuid: String) {
 
             player.sendMessage("§8【§a${name}§8】§7にワープしました。")
 
+            val sendNotification = player.world != vanillaWorld && player !in members!!.keys
+
             if (sendNotification) {
-                members?.keys?.filter { it.player?.isOnline == true }?.map { it.player }?.forEach {
+                members?.keys?.filter { it.player?.isOnline == true && it.player != player }?.map { it.player }?.forEach {
                     it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
                     it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                 }

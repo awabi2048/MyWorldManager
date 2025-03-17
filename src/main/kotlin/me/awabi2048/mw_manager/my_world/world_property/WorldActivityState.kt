@@ -4,10 +4,11 @@ enum class WorldActivityState {
     ARCHIVED,
     ACTIVE;
 
-    fun toJapanese(): String {
-        return when(this) {
-            ACTIVE -> "§aアクティブ"
-            ARCHIVED -> "§cアーカイブ済み"
+    val japaneseName: String
+        get() {
+            return when(this) {
+                ACTIVE -> "§aアクティブ"
+                ARCHIVED -> "§cアーカイブ済み"
+            }
         }
-    }
 }

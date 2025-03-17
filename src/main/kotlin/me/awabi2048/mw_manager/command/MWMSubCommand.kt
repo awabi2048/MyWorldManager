@@ -183,14 +183,14 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         }
 
         if (world.activityState == state) {
-            sender.sendMessage("§c指定されたワールドは、既に${state.toJapanese()}§c状態です。")
+            sender.sendMessage("§c指定されたワールドは、既に${state.japaneseName}§c状態です。")
             return
         }
 
         // 実行
         world.activityState = state
 
-        sender.sendMessage("$PREFIX §aワールド「${world.name}」を${state.toJapanese()}状態に設定しました。")
+        sender.sendMessage("$PREFIX §aワールド「${world.name}」を${state.japaneseName}状態に設定しました。")
     }
 
     fun startCreationSession() {

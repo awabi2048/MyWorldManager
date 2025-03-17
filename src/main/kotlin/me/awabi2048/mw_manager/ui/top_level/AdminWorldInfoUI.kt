@@ -1,6 +1,5 @@
 package me.awabi2048.mw_manager.ui.top_level
 
-import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
@@ -32,7 +31,7 @@ class AdminWorldInfoUI(val player: Player, private val worlds: Set<MyWorld>, pri
 
         if (event.click.isLeftClick) {
             if (world.activityState == WorldActivityState.ACTIVE) {
-                world.warpPlayer(player, false)
+                world.warpPlayer(player)
             }
             return
         }
@@ -67,7 +66,7 @@ class AdminWorldInfoUI(val player: Player, private val worlds: Set<MyWorld>, pri
 
                 val additionalLore = when(myWorld.activityState) {
                     WorldActivityState.ACTIVE -> listOf(
-                        Component.text("$index ${myWorld.activityState!!.toJapanese()}"),
+                        Component.text("$index ${myWorld.activityState!!.japaneseName}"),
                         Component.text("$index §7UUID §b${myWorld.uuid}"),
                         Component.text(bar),
                         Component.text("$index §e左クリック§7 このワールドに§bワープ§7する"),
@@ -77,7 +76,7 @@ class AdminWorldInfoUI(val player: Player, private val worlds: Set<MyWorld>, pri
                     )
 
                     else -> listOf(
-                        Component.text("$index ${myWorld.activityState!!.toJapanese()}"),
+                        Component.text("$index ${myWorld.activityState!!.japaneseName}"),
                         Component.text("$index §7UUID §b${myWorld.uuid}"),
                         Component.text(bar),
                         Component.text("$index §e右クリック§7 このワールドのアーカイブ状態を切り替える"),

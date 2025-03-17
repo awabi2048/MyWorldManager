@@ -24,7 +24,7 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
 
         if (event.click.isLeftClick) {
             if (myWorld.activityState == WorldActivityState.ACTIVE) {
-                myWorld.warpPlayer(player, true)
+                myWorld.warpPlayer(player)
             } else {
                 player.closeInventory(InventoryCloseEvent.Reason.PLAYER)
                 player.sendMessage("§c§nワールドの自動復帰に失敗したため、ワールドがアーカイブされています。復帰するには、スタッフに報告してください。")

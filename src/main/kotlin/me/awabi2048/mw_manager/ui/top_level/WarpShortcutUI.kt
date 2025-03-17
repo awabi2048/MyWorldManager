@@ -25,7 +25,11 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
     override fun onClick(event: InventoryClickEvent) {
         event.isCancelled = true
-        if (event.currentItem?.type in listOf(Material.GRAY_STAINED_GLASS_PANE, Material.BLACK_STAINED_GLASS_PANE)) return
+        if (event.currentItem?.type in listOf(
+                Material.GRAY_STAINED_GLASS_PANE,
+                Material.BLACK_STAINED_GLASS_PANE
+            )
+        ) return
         if (event.clickedInventory?.type != InventoryType.CHEST) return
 
         val itemName = (event.currentItem!!.itemMeta!!.itemName() as TextComponent).content()
@@ -35,7 +39,7 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
         if (event.isLeftClick && !event.isShiftClick) {// 新規登録
             if (itemName == "§b未登録") {
-                val world = MyWorldManager.registeredMyWorlds.find{it.vanillaWorld == player.world}
+                val world = MyWorldManager.registeredMyWorlds.find { it.vanillaWorld == player.world }
                 if (world == null) {
 
                     player.sendMessage("§cこのワールドではワープを設定できません。")
@@ -61,21 +65,21 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
             } else { // 登録済み: ワープ
 
-                val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID: ") }!!.substringAfter("UUID: ")
+                val uuid = event.currentItem!!.itemMeta!!.lore()!!.map { (it as TextComponent).content() }
+                    .find { it.contains("UUID: ") }!!.substringAfter("UUID: ")
                 val targetWorld = MyWorld(uuid)
 
                 player.sendMessage("§7登録済みのショートカット先へワープします...")
-
-                val isInSameWorld = player.world == targetWorld.vanillaWorld
-
-                targetWorld.warpPlayer(player, !isInSameWorld)
+                targetWorld.warpPlayer(player)
             }
 
             // 右クリック → 削除
         } else if (event.isRightClick && !event.isShiftClick) {
             if (itemName != "§b未登録") {
                 // 確認メニュー
-                val uuid = event.currentItem!!.itemMeta!!.lore!!.find { it.contains("UUID:") }!!.substringAfter("UUID: ")
+                val uuid =
+                    event.currentItem!!.itemMeta!!.lore()!!.map { (it as TextComponent).content() }
+                        .find { it.contains("UUID:") }!!.substringAfter("UUID: ")
                 val world = MyWorld(uuid)
 
                 val confirmationUI = ConfirmationUI(player, ConfirmationUI.UIData.RemoveWarpShortcut(world))
@@ -98,10 +102,12 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
             val icon = world.iconItem!!
             icon.editMeta {
-                it.lore(it.lore()!! + listOf(
-                    Component.text("§7UUID: $uuid"),
-                    Component.text(bar)
-                ))
+                it.lore(
+                    it.lore()!! + listOf(
+                        Component.text("§7UUID: $uuid"),
+                        Component.text(bar)
+                    )
+                )
             }
 
             return icon
@@ -114,21 +120,25 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
         val lockedIcon = ItemStack(Material.TINTED_GLASS)
         lockedIcon.editMeta {
             it.itemName(Component.text("§cロック中"))
-            it.lore(listOf(
-                Component.text(bar),
-                Component.text("§7このスロットはアンロックするまで利用できません。"),
-                Component.text(bar),
-            ))
+            it.lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("§7このスロットはアンロックするまで利用できません。"),
+                    Component.text(bar),
+                )
+            )
         }
 
         val availableIcon = ItemStack(Material.GLASS)
         availableIcon.editMeta {
             it.itemName(Component.text("§b未登録"))
-            it.lore(listOf(
-                Component.text(bar),
-                Component.text("$index §eクリック §7ワープショートカットに現在のワールドを登録します。"),
-                Component.text(bar),
-            ))
+            it.lore(
+                listOf(
+                    Component.text(bar),
+                    Component.text("$index §eクリック §7ワープショートカットに現在のワールドを登録します。"),
+                    Component.text(bar),
+                )
+            )
         }
 
         fun slotOf(index: Int): Int {

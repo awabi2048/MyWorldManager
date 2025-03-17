@@ -4,6 +4,7 @@ import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
@@ -107,9 +108,7 @@ class WorldPortal(private val uuid: String) {
      */
     private fun sendPlayer(player: Player) {
         if (isAvailable) {
-            val isInSameWorld = player.world == destinationWorld.vanillaWorld
-
-            destinationWorld.warpPlayer(player, !isInSameWorld)
+            destinationWorld.warpPlayer(player)
         }
     }
 
@@ -160,6 +159,9 @@ class WorldPortal(private val uuid: String) {
 
     fun tickingProcess() {
         if (isAvailable && isLoaded) {
+            // 封鎖中なら作動しない
+            if (destinationWorld.publishLevel != PublishLevel.CLOSED) return
+
             // パーティクル演出
             val dustOption = Particle.DustOptions(color.colorInstance, 0.5f)
 

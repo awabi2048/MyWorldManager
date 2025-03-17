@@ -54,7 +54,7 @@ object WarpCommand : CommandExecutor, TabCompleter {
                     return true
                 }
 
-                targetWorld.warpPlayer(p0, true)
+                targetWorld.warpPlayer(p0)
                 return true
             }
 
