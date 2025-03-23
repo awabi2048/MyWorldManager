@@ -162,8 +162,11 @@ class MyWorld(val uuid: String) {
                     macroExecutor.run()
                 }
 
-                // データファイルに書き込み
-                value.forEach {
+                // データファイルに書き込み: オーナーが一番上に来るように
+                DataFiles.worldData.set("$uuid.member", null)
+                DataFiles.worldData.set("$uuid.member.${value.entries.find{it.value == OWNER}!!.key.uniqueId}", OWNER.name)
+
+                value.entries.filter {it.value != OWNER}.forEach {
                     DataFiles.worldData.set("$uuid.member.${it.key.uniqueId}", it.value.name)
                 }
                 DataFiles.save()

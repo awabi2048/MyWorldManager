@@ -160,7 +160,7 @@ class WorldPortal(private val uuid: String) {
     fun tickingProcess() {
         if (isAvailable && isLoaded) {
             // 封鎖中なら作動しない
-            if (destinationWorld.publishLevel != PublishLevel.CLOSED) return
+            if (destinationWorld.publishLevel == PublishLevel.CLOSED) return
 
             // パーティクル演出
             val dustOption = Particle.DustOptions(color.colorInstance, 0.5f)

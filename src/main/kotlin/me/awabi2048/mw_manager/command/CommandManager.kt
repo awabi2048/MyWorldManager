@@ -160,6 +160,15 @@ object CommandManager {
                         else -> mutableListOf()
                     }
                 }
+
+                SETUP_TEMPLATE -> {
+                    when(size) {
+                        2 -> mutableListOf("<テンプレートID>")
+                        3 -> mutableListOf("<ワールド名>")
+                        4 -> mutableListOf("<説明>")
+                        else -> mutableListOf()
+                    }
+                }
             }
         }
 

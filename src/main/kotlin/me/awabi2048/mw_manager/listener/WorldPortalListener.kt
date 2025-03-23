@@ -111,7 +111,7 @@ object WorldPortalListener : Listener {
             portal.place(location, MyWorld(worldUUID), event.player)
 
             // 有効なワールドでなければキャンセル
-            if (MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ACTIVE}.any {it.uuid == worldUUID}) {
+            if (!MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ACTIVE}.any {it.uuid == worldUUID}) {
                 event.player.sendMessage("§cリンク先のワールドが見つかりませんでした。")
                 portal.remove()
             }

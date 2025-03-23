@@ -41,30 +41,56 @@ class TemplateWorld(val worldId: String) {
             DataFiles.save()
         }
 
-    val name: String?
+    var name: String?
         get() {
             return dataSection?.getString("name")
         }
 
-    val description: String?
+        set(value) {
+            DataFiles.templateSetting.set("$worldId.name", value)
+            DataFiles.save()
+        }
+
+    var description: String?
         get() {
             return dataSection?.getString("description")
         }
 
-    val icon: Material?
+        set(value) {
+            DataFiles.templateSetting.set("$worldId.description", value)
+            DataFiles.save()
+        }
+
+    var icon: Material?
         get() {
             return Material.valueOf(dataSection?.getString("icon")?: return null)
         }
 
-    val previewTime: Long?
+        set(value) {
+            DataFiles.templateSetting.set("$worldId.icon", value?.name)
+            DataFiles.save()
+        }
+
+    var previewTime: Long?
         get() {
             return dataSection?.getInt("preview_time")?.toLong()
         }
 
-    val previewWeather: WeatherType?
+        set(value) {
+            DataFiles.templateSetting.set("$worldId.preview_time", value)
+            DataFiles.save()
+        }
+
+    var previewWeather: WeatherType?
         get() {
             return WeatherType.valueOf(dataSection?.getString("preview_weather")?.uppercase()?: return null)
         }
+
+        set(value) {
+            DataFiles.templateSetting.set("$worldId.preview_weather", value?.name)
+            DataFiles.save()
+        }
+
 
     fun preview(player: Player) {
         // プレイヤーが帰ってこられるよう
@@ -73,7 +99,6 @@ class TemplateWorld(val worldId: String) {
 
         // プレイヤーに通知
         player.sendMessage("§b「${name}」 §7をプレビュー中...")
-        player.sendMessage("§7${description}")
 
         // プレビューの準備
         originLocation.chunk.load() // チャンクをロードしないとTPできない

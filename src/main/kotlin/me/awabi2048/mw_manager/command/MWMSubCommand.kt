@@ -1,15 +1,17 @@
 package me.awabi2048.mw_manager.command
 
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.Main.Companion.mvWorldManager
-import me.awabi2048.mw_manager.Main.Companion.PREFIX
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.data_file.DataFiles
-import me.awabi2048.mw_manager.my_world.*
 import me.awabi2048.mw_manager.extension.notify
+import me.awabi2048.mw_manager.my_world.MyWorld
+import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.TemplateWorld
 import me.awabi2048.mw_manager.my_world.world_create.CreationData
 import me.awabi2048.mw_manager.my_world.world_create.CreationStage
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
@@ -257,8 +259,8 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        if (args.size == 1) {
-            sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm get_item <アイテムId>")
+        if (args.size !in 2..3) {
+            sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm get_item <アイテムId> [プレイヤー]")
             return
         }
 
@@ -267,8 +269,28 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
-        val item = CustomItem.valueOf(args[1])
-        item.give(sender)
+        // 自分にgive
+        if (args.size == 2) {
+            val item = CustomItem.valueOf(args[1])
+            item.give(sender)
+        }
+
+        if (args.size == 3) {
+            val player = Bukkit.getPlayer(args[2])
+            if (player == null) {
+                sender.sendMessage("$PREFIX §c無効なプレイヤーです。")
+                return
+            }
+
+            val item = CustomItem.valueOf(args[1]).itemStack
+
+            if (player.inventory.firstEmpty() == -1) {
+                val itemEntity =  player.location.world.dropItem(player.location, item)
+                itemEntity.velocity.zero()
+            } else {
+                player.inventory.addItem(item)
+            }
+        }
     }
 
     fun modifyPlayerData() {
@@ -335,6 +357,41 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             }
 
             sender.sendMessage("$PREFIX §e${player.name} §7のデータ §a${path} §7を変更しました。")
+        }
+    }
+
+    fun setupTemplate() {
+        // /mwm setup_template <name> <description> <icon>
+        if (sender !is Player) {
+            sender.sendMessage("$PREFIX このコマンドはプレイヤーからの実行のみ有効です。")
+            return
+        }
+
+        try {
+            if (MyWorldManager.registeredTemplateWorld.any {it.worldId == args[1]}) {
+                sender.sendMessage("$PREFIX §cそのテンプレートIDは既に使用されています。")
+                return
+            }
+
+            if (!args[1].matches("^[a-zA-z0-9]*$".toRegex())) {
+                sender.sendMessage("$PREFIX §cテンプレートIDには半角英数字のみ使用可能です。")
+                return
+            }
+
+            val newTemplateWorld = TemplateWorld(args[1])
+            newTemplateWorld.originLocation = sender.location
+            newTemplateWorld.name = args[2]
+            newTemplateWorld.description = args[3]
+
+            MyWorldManager.loadTemplateWorlds()
+            println(MyWorldManager.registeredTemplateWorld)
+
+            sender.sendMessage("$PREFIX §e新しくテンプレートを登録しました。")
+            sender.playSound(sender, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+
+        } catch (e: Exception) {
+            sender.sendMessage("$PREFIX §c無効なコマンドです。/mwm setup_template <テンプレートID> <ワールド名> <説明>")
+            return
         }
     }
 }

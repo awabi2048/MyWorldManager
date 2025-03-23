@@ -36,6 +36,7 @@ object MWMCommand : CommandExecutor, TabCompleter {
             RELOAD -> subcommandExecutor.reload()
             GET_ITEM -> subcommandExecutor.getItem()
             PLAYER_DATA -> subcommandExecutor.modifyPlayerData()
+            SETUP_TEMPLATE -> subcommandExecutor.setupTemplate()
         }
 
         return true
