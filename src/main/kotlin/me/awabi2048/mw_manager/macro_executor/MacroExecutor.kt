@@ -10,6 +10,8 @@ class MacroExecutor(private val flag: MacroFlag) {
             is OnWorldCreated -> input
                 .replace("%owner%", flag.owner.name)
                 .replace("%world_uuid%", flag.world.uuid)
+                .replace("%world_name%", flag.world.name!!)
+                .replace("%template_name%", flag.world.templateWorldName!!)
 
             is OnWorldWarp -> input
                 .replace("%player%", flag.player.name)

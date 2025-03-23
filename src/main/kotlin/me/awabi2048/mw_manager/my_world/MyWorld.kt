@@ -176,10 +176,10 @@ class MyWorld(val uuid: String) {
             field = value
         }
 
-//    val templateWorldName: String?
-//        get() {
-//            return DataFiles.worldData.getString("$uuid.source_world")
-//        }
+    val templateWorldName: String?
+        get() {
+            return DataFiles.worldData.getString("$uuid.source_world")
+        }
 
     val lastUpdated: LocalDate?
         get() {
