@@ -2,6 +2,7 @@ package me.awabi2048.mw_manager.ui.abstract
 
 import me.awabi2048.mw_manager.Lib
 import me.awabi2048.mw_manager.Main.Companion.playerUIState
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -36,10 +37,12 @@ abstract class AbstractUI(val owner: Player) {
 
     abstract fun update()
 
-    fun createTemplate(row: Int, title: String): Inventory? {
-        if (row !in 1..6) return null
+    fun createTemplate(row: Int, title: String): Inventory {
+        if (row !in 1..6) {
+            throw IllegalArgumentException("row must be in 1..6")
+        }
 
-        val menu = Bukkit.createInventory(null, row * 9, title)
+        val menu = Bukkit.createInventory(null, row * 9, Component.text(title))
         val black = Lib.getVirtualItem(Material.BLACK_STAINED_GLASS_PANE)
         val gray = Lib.getVirtualItem(Material.GRAY_STAINED_GLASS_PANE)
 

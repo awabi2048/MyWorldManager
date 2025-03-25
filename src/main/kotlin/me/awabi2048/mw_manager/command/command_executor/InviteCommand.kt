@@ -70,7 +70,6 @@ object InviteCommand: CommandExecutor, TabCompleter {
         }
 
         // 招待送信
-        p0.sendMessage("§b${targetPlayer.name}さん §7をあなたのワールドに招待しました！")
         targetWorld.invitePlayer(p0, targetPlayer)
 
         return true

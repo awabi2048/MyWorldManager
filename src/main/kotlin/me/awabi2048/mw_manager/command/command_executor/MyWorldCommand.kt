@@ -29,7 +29,7 @@ object MyWorldCommand: CommandExecutor, TabCompleter {
         }
 
         val worlds = MyWorldManager.registeredMyWorlds.filter {p0 in it.members!!}
-        val ui = WorldListUI(p0, worlds, "§8§lあなたのワールド")
+        val ui = WorldListUI(p0, worlds, "§8§lあなたがメンバーのワールド")
         ui.open(true)
         return true
     }

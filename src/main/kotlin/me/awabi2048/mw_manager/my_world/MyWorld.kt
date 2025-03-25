@@ -361,7 +361,8 @@ class MyWorld(val uuid: String) {
                 // アクティベート → ワールド数がグローバルの最大値を超えそうなら止める
                 if (value == WorldActivityState.ACTIVE) {
                     if (MyWorldManager.registeredMyWorlds.filter { it.activityState == WorldActivityState.ACTIVE }.size + 1 > Config.globalWorldCountMax) {
-                        throw IllegalStateException("Failed to activate archived MyWorld. Out of Storage. $uuid")
+//                        println("MAX: ${Config.globalWorldCountMax}, CURRENT: ${MyWorldManager.registeredMyWorlds.filter { it.activityState == WorldActivityState.ACTIVE }}")
+                        instance.logger.info("Failed to activate archived MyWorld: Out of Storage. UUID: $uuid")
                     }
                 }
 
@@ -373,6 +374,11 @@ class MyWorld(val uuid: String) {
     val isRealWorld: Boolean
         get() {
             return !(Bukkit.getWorld("my_world.$uuid") == null && !File(instance.server.worldContainer.path + File.separator + "archived_worlds" + File.separator + "my_world.$uuid").exists())
+        }
+
+    val visitors: Set<Player>?
+        get() {
+            return vanillaWorld?.players?.filter { it !in (members?.keys ?: return null) }?.toSet()
         }
 
     fun initiate(templateWorldName: String, owner: Player, registerWorldName: String): Boolean {
@@ -549,11 +555,6 @@ class MyWorld(val uuid: String) {
                 else -> guestSpawnLocation!!
             }
 
-            player.teleport(warpLocation)
-            player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
-
-            player.sendMessage("§8【§a${name}§8】§7にワープしました。")
-
             val sendNotification = player.world != vanillaWorld && player !in members!!.keys
 
             if (sendNotification) {
@@ -562,6 +563,11 @@ class MyWorld(val uuid: String) {
                     it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                 }
             }
+
+            player.teleport(warpLocation)
+            player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
+
+            player.sendMessage("§8【§a${name}§8】§7にワープしました。")
 
             // macro execution
             val macroExecutor = MacroExecutor(MacroFlag.OnWorldWarp(this, player))
@@ -623,18 +629,26 @@ class MyWorld(val uuid: String) {
         return true
     }
 
-    fun invitePlayer(inviter: Player, target: Player) {
-        // 招待コードを生成、登録
-        val invitationCode = UUID.randomUUID().toString()
-        invitationCodeMap[invitationCode] = uuid
+    fun invitePlayer(inviter: Player, invitee: Player) {
+        if (isRegistered) {
+            if (invitee in visitors!!) {
+                inviter.sendMessage("§cそのプレイヤーはすでにワールドを訪れています。")
+                return
+            }
 
-        val inviteText = Component.text("§b${inviter.name}さん §7があなたをワールドに§e招待§7しました！")
-            .append(Component.text("§7«§eクリックしてワープ§7»"))
-            .hoverEvent(HoverEvent.showText(Component.text("§7クリックして§8【§e${MyWorld(uuid).name}§8】§7にワープします。")))
-            .clickEvent(ClickEvent.runCommand("/mwm_invite_accept $invitationCode"))
+            // 招待コードを生成、登録
+            val invitationCode = UUID.randomUUID().toString()
+            invitationCodeMap[invitationCode] = uuid
 
-        target.sendMessage(inviteText)
-        target.playSound(target, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            inviter.sendMessage("§b${invitee.name} さん §7をあなたのワールドに招待しました！")
+            val inviteText = Component.text("§b${inviter.name}さん §7があなたをワールドに§e招待§7しました！")
+                .append(Component.text("§7«§eクリックしてワープ§7»"))
+                .hoverEvent(HoverEvent.showText(Component.text("§7クリックして§8【§e${MyWorld(uuid).name}§8】§7にワープします。")))
+                .clickEvent(ClickEvent.runCommand("/mwm_invite_accept $invitationCode"))
+
+            invitee.sendMessage(inviteText)
+            invitee.playSound(invitee, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+        }
     }
 
     fun recruitPlayer(inviter: Player, invitee: Player) {
@@ -710,6 +724,22 @@ class MyWorld(val uuid: String) {
             return true
 
         } else return false
+    }
+
+    fun kickPlayer(executor: Player, target: Player): Boolean {
+        if (!isRegistered) return false
+        val visitors = vanillaWorld?.players?.filter {it !in members!!.keys}?: return false
+        if (target !in visitors) {
+            executor.sendMessage("§cそのプレイヤーはワールドを訪れていません。")
+            return false
+        }
+
+        executor.sendMessage("§c${target.name} をワールドからキックしました。")
+        executor.playSound(executor, Sound.BLOCK_ANVIL_LAND, 1.0f, 2.0f)
+
+        target.teleport(Config.escapeLocation!!)
+        target.playSound(target, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
+        return true
     }
 }
 

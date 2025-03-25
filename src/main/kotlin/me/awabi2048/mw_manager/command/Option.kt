@@ -10,5 +10,5 @@ enum class Option {
     RELOAD,
     GET_ITEM,
     PLAYER_DATA,
-    SETUP_TEMPLATE
+//    SETUP_TEMPLATE
 }

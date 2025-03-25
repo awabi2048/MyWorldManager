@@ -36,7 +36,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
             return true
         }
 
-        val worlds = MyWorldManager.registeredMyWorlds.filter {player in it.members!! && it.publishLevel != PublishLevel.PRIVATE}
+        val worlds = MyWorldManager.registeredMyWorlds.filter {player in it.members!! && (it.publishLevel == PublishLevel.PUBLIC || it.publishLevel == PublishLevel.OPEN)}
 
         if (worlds.isEmpty()) {
             p0.sendMessage("§7表示できるワールドがありませんでした。")
@@ -44,7 +44,7 @@ object VisitCommand: CommandExecutor, TabCompleter {
             return true
         }
 
-        val ui = WorldListUI(p0, worlds, "§8§l${player.name} のワールド")
+        val ui = WorldListUI(p0, worlds, "§8§l${player.name} がメンバーのワールド")
         ui.open(true)
 
         return true

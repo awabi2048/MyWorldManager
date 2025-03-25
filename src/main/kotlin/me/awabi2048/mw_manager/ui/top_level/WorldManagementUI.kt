@@ -9,7 +9,9 @@ import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
+import me.awabi2048.mw_manager.ui.abstract.ChatInputInterface
 import me.awabi2048.mw_manager.ui.children.MemberUI
+import me.awabi2048.mw_manager.ui.children.VisitorUI
 import me.awabi2048.mw_manager.ui.children.WorldExpandUI
 import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
 import net.kyori.adventure.text.Component
@@ -25,7 +27,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent.Reason
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 
-class WorldManagementUI(private val player: Player, private val world: MyWorld) : AbstractInteractiveUI(player) {
+class WorldManagementUI(private val player: Player, private val world: MyWorld) : AbstractInteractiveUI(player), ChatInputInterface {
     init {
         if (!world.isRegistered) {
             throw IllegalStateException("Unregistered world given.")
@@ -51,15 +53,15 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         return
     }
 
-    fun setByChatInput(content: String) {
+    override fun onChatInput(text: String) {
         val state = worldSettingState[player] ?: return
 
         // ワールド名変更
         if (state == PlayerWorldSettingState.CHANGE_NAME) {
-            if (!Lib.checkWorldNameAvailable(content, player)) return
+            if (!Lib.checkWorldNameAvailable(text, player)) return
 
-            world.name = content
-            player.sendMessage("§eワールドの名前が §6${content} §eに変更されました！")
+            world.name = text
+            player.sendMessage("§eワールドの名前が §6${text} §eに変更されました！")
             player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             update()
         }
@@ -67,13 +69,13 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         // 説明欄変更
         if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
             // ブラックリスト判定
-            if (Lib.checkIfContainsBlacklisted(content)) {
+            if (Lib.checkIfContainsBlacklisted(text)) {
                 player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
                 return
             }
 
-            world.description = content
-            player.sendMessage("§eワールドの説明が §6${content} §eに変更されました！")
+            world.description = text
+            player.sendMessage("§eワールドの説明が §6${text} §eに変更されました！")
             player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             update()
         }
@@ -115,6 +117,8 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
             worldSettingState.remove(player)
         }
 
+        if (event.rawSlot >= 45) return
+
         // アイコン設定中 → 設定する
         if (
             worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON
@@ -137,14 +141,14 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
             23 -> "expand"
             24 -> "change_publish_level"
             25 -> "add_member"
+            42 -> "visitor"
             else -> return
         }
 
-        //
-        player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-
         // チャット入力を監視
         if (option == "change_display") {
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+
             if (event.click.isLeftClick) {
                 worldSettingState[player] = PlayerWorldSettingState.CHANGE_NAME
                 player.sendMessage("§7チャット欄に入力して、§bワールド名の変更§7を行います！")
@@ -156,7 +160,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
 
             player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
 
-            player.closeInventory()
+            player.closeInventory(Reason.PLUGIN)
         }
 
         // スポーン位置変更
@@ -171,21 +175,23 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
                 player.sendMessage("§7ブロックをクリックして、§bゲストのスポーン位置の変更§7を行います！")
             }
 
-
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
 
-            player.closeInventory()
+            player.closeInventory(Reason.PLUGIN)
         }
 
         // アイコン変更
         if (option == "change_icon") {
             worldSettingState[player] = PlayerWorldSettingState.CHANGE_ICON
             player.sendMessage("§7インベントリ内のアイテムをクリックして、アイコンを設定します。")
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             player.playSound(player, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.5f)
         }
 
         // 拡張
         if (option == "expand") {
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             val canExpand = PlayerData(player).worldPoint >= world.expandCost!!
 
             if (canExpand) {
@@ -202,6 +208,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
 
         // 公開レベル変更
         if (option == "change_publish_level") {
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
             val currentOptionIndex = PublishLevel.entries.indexOf(world.publishLevel!!)
             val changedIndex = if (event.isLeftClick) (currentOptionIndex + 1).coerceIn(PublishLevel.entries.indices)
             else (currentOptionIndex - 1).coerceIn(PublishLevel.entries.indices)
@@ -216,8 +223,15 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
 
         // メンバーを招待
         if (option == "add_member") {
-            val memberUI = MemberUI(player, world)
-            memberUI.open(false)
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            val ui = MemberUI(player, world)
+            ui.open(true)
+        }
+
+        if (option == "visitor") {
+            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
+            val ui = VisitorUI(player, world)
+            ui.open(true)
         }
 
         // タイムアウト判定　切り替えのみ即座の設定だから除外
@@ -243,7 +257,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
     }
 
     override fun construct(): Inventory {
-        val menu = createTemplate(5, "§8§lWorld Management")!!
+        val menu = createTemplate(5, "§8§lWorld Management")
 
         val playerData = PlayerData(player)
 
@@ -383,6 +397,15 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
                 )).map { Component.text(it) })
         }
 
+        // 訪問者管理
+        val visitorIcon = ItemStack(Material.TROPICAL_FISH_BUCKET)
+        visitorIcon.editMeta {
+            it.itemName(Component.text("§eワールドを訪れているプレイヤー"))
+            it.lore(listOf(
+                Component.text("§7クリックして確認")
+            ))
+        }
+
         // set
         menu.setItem(19, changeDisplayIcon)
         menu.setItem(20, changeSpawnIcon)
@@ -391,6 +414,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         menu.setItem(24, publishLevelIcon)
         menu.setItem(25, memberIcon)
         menu.setItem(40, infoIcon)
+        menu.setItem(42, visitorIcon)
 
         return menu
     }

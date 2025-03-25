@@ -11,13 +11,11 @@ import org.bukkit.event.player.PlayerLoginEvent
 import java.time.LocalDate
 
 object MiscListener : Listener {
-    // MyWorldははじめロードしないように
     private fun updateTask(world: World) {
         // データファイルのアップデート
         MyWorldManager.updateData()
 
         // 無人ワールドのアンロード
-
 
         // ワールドの情報とファイル上のデータの同期
         if (world.name.startsWith("my_world.")) {
@@ -42,10 +40,11 @@ object MiscListener : Listener {
         // アーカイブされたものがあれば、復元を試みる
         if (MyWorldManager.registeredMyWorlds.filter { player in it.members!! } .any { it.activityState == WorldActivityState.ARCHIVED }) {
 
-            val archivedWorld = MyWorldManager.registeredMyWorlds.filter { player in it.members!! }
+            val archivedWorlds = MyWorldManager.registeredMyWorlds
+                .filter { player in it.members!! }
                 .filter { it.activityState == WorldActivityState.ARCHIVED }
 
-            archivedWorld.forEach { world ->
+            archivedWorlds.forEach { world ->
                 world.activityState = WorldActivityState.ACTIVE
             }
         }
