@@ -253,11 +253,6 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
     }
 
     fun getItem() {
-        if (sender !is Player) {
-            sender.sendMessage("$PREFIX §cこのコマンドはプレイヤーからのみ実行可能です。")
-            return
-        }
-
         if (args.size !in 2..3) {
             sender.sendMessage("$PREFIX §c無効なコマンドです。 /mwm get_item <アイテムId> [プレイヤー]")
             return
@@ -270,6 +265,11 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         // 自分にgive
         if (args.size == 2) {
+            if (sender !is Player) {
+                sender.sendMessage("$PREFIX §cこのコマンドはプレイヤーからのみ実行可能です。")
+                return
+            }
+
             val item = CustomItem.valueOf(args[1])
             item.give(sender)
         }

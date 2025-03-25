@@ -474,6 +474,8 @@ class MyWorld(val uuid: String) {
                     10L
                 )
 
+                publishLevel = PublishLevel.CLOSED
+
                 instance.logger.info("World activated. UUID: $uuid")
             }
 
