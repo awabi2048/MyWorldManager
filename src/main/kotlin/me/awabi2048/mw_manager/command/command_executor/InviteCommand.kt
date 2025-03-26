@@ -1,11 +1,10 @@
 package me.awabi2048.mw_manager.command.command_executor
 
 import me.awabi2048.mw_manager.command.CommandManager
-import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.extension.notify
+import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import org.bukkit.Bukkit
-import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -25,7 +24,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
         }
 
         if (p3.isNullOrEmpty()) {
-            p0.notify("§c引数を入力してください。", null)
+            p0.notify("§c無効なコマンドです。/invite <プレイヤー> [ワールド]", null)
             return true
         }
 
@@ -34,13 +33,16 @@ object InviteCommand: CommandExecutor, TabCompleter {
 
         // ワールド引数なし: 現在いるワールドに招待
         if (p3.size == 1) {
+            if (!MyWorldManager.registeredMyWorlds.any {it.vanillaWorld == p0.world}) {
+                p0.sendMessage("§cこのワールドでは使えないコマンドです。")
+            }
+
             val worldUUID = p0.world.name.substringAfter("my_world.")
             val world = MyWorld(worldUUID)
 
             // 自分のワールドだけ
             if (world.members?.contains(p0) == false) {
                 p0.sendMessage("§c自分以外のワールドには招待できません。")
-                p0.playSound(p0, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
                 return true
             }
 
@@ -55,7 +57,7 @@ object InviteCommand: CommandExecutor, TabCompleter {
                 .find {it.name == p3[1]}
 
         } else {
-            p0.sendMessage("§c無効なコマンドです。 /invite <プレイヤー> [ワールド]")
+            p0.sendMessage("§c無効なコマンドです。/invite <プレイヤー> [ワールド]")
             return true
         }
 

@@ -2,6 +2,8 @@
 on_world_create:
 #  - "say CREATE %owner%, %world_uuid%, %world_name%, %template_name%"
   -
+on_world_removed:
+  -
 
 # プレイヤーがMyWorldへワープする際に呼び出し
 on_world_warp:
