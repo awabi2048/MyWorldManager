@@ -1,5 +1,5 @@
 # MyWorldが作成されたときに呼び出し。ワールド作成処理が終了したあと実行される
-on_world_create:
+on_world_created:
 #  - "say CREATE %owner%, %world_uuid%, %world_name%, %template_name%"
   -
 on_world_removed:

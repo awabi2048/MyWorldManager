@@ -95,44 +95,6 @@ class MyWorld(val uuid: String) {
             } else null
         }
 
-//    var players: Set<OfflinePlayer>?
-//        get() {
-//            return if (isRegistered) {
-//                dataSection!!.getConfigurationSection("member")!!.getKeys(false)
-//                    .map { Bukkit.getOfflinePlayer(UUID.fromString(it)) }.toSet()
-//            } else null
-//        }
-//        set(value) {
-//            if (value != null && isRegistered) {
-//                // マクロ呼び出し
-//                if (value.size > players!!.size) {
-//                    (value - players!!).forEach {
-//                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberAdded(this, it))
-//                        macroExecutor.run()
-//                    }
-//                }
-//
-//                // マクロ呼び出し
-//                if (value.size < players!!.size) {
-//                    (players!! - value).forEach {
-//                        val macroExecutor = MacroExecutor(MacroFlag.OnWorldMemberRemoved(this, it))
-//                        macroExecutor.run()
-//                    }
-//                }
-//
-//                val map = value.associateWith { "MEMBER" }.toMutableMap().apply {
-//                    this[owner!!] = "OWNER"
-//                    filter { it.key in moderators }.keys.forEach { moderator ->
-//                        this[moderator] = "MODERATOR"
-//                    }
-//                }
-//
-//                DataFiles.worldData.set("$uuid.member", map.mapKeys { it.key.uniqueId.toString() })
-//                DataFiles.save()
-//                DataFiles.loadAll()
-//            }
-//        }
-
     var members: MutableMap<OfflinePlayer, MemberRole>? = null
         get() {
             return if (isRegistered) {
@@ -164,9 +126,12 @@ class MyWorld(val uuid: String) {
 
                 // データファイルに書き込み: オーナーが一番上に来るように
                 DataFiles.worldData.set("$uuid.member", null)
-                DataFiles.worldData.set("$uuid.member.${value.entries.find{it.value == OWNER}!!.key.uniqueId}", OWNER.name)
+                DataFiles.worldData.set(
+                    "$uuid.member.${value.entries.find { it.value == OWNER }!!.key.uniqueId}",
+                    OWNER.name
+                )
 
-                value.entries.filter {it.value != OWNER}.forEach {
+                value.entries.filter { it.value != OWNER }.forEach {
                     DataFiles.worldData.set("$uuid.member.${it.key.uniqueId}", it.value.name)
                 }
                 DataFiles.save()
@@ -388,7 +353,10 @@ class MyWorld(val uuid: String) {
 
             Bukkit.getScheduler().runTaskLater(
                 instance,
-                Runnable { Bukkit.createWorld(WorldCreator("my_world.$uuid")) },
+                Runnable {
+                    Bukkit.createWorld(WorldCreator("my_world.$uuid"))
+                    vanillaWorld!!.worldBorder.warningDistance = 0
+                },
                 5L
             )
 
@@ -429,7 +397,7 @@ class MyWorld(val uuid: String) {
                 } (Expires in $expireIn days)"
             )
 
-            // macro execution
+            // マクロ実行
             val macroExecutor = MacroExecutor(MacroFlag.OnWorldCreated(this, owner))
             macroExecutor.run()
 
@@ -526,14 +494,14 @@ class MyWorld(val uuid: String) {
     fun registerPlayer(joinedPlayer: Player, role: MemberRole): Boolean {
         if (isRegistered && activityState == WorldActivityState.ACTIVE) {
 //            members!![joinedPlayer] = role
-            members = members!!.plus(Pair(joinedPlayer, role)).toMutableMap()
-
             members!!.forEach {
                 val player = it.key.player
 
-                player?.sendMessage("§a${player.name} さんがワールドメンバーになりました！")
+                player?.sendMessage("§a${joinedPlayer.name} さんがワールドメンバーになりました！")
                 player?.playSound(it.key.player!!, Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 2.0f)
             }
+
+            members = members!!.plus(Pair(joinedPlayer, role)).toMutableMap()
 
             return true
         } else return false
@@ -560,10 +528,11 @@ class MyWorld(val uuid: String) {
             val sendNotification = player.world != vanillaWorld && player !in members!!.keys
 
             if (sendNotification) {
-                members?.keys?.filter { it.player?.isOnline == true && it.player != player }?.map { it.player }?.forEach {
-                    it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
-                    it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
-                }
+                members?.keys?.filter { it.player?.isOnline == true && it.player != player }?.map { it.player }
+                    ?.forEach {
+                        it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
+                        it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
+                    }
             }
 
             player.teleport(warpLocation)
@@ -672,10 +641,12 @@ class MyWorld(val uuid: String) {
         Bukkit.getScheduler().runTaskLater(
             instance,
             Runnable {
-                inviter.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
-                invitee.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
+                if (recruitmentCodeMap.contains(recruitmentCode)) {
+                    inviter.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
+                    invitee.sendMessage("§c一定時間が経過したため、招待がキャンセルされました。")
 
-                recruitmentCodeMap.remove(recruitmentCode)
+                    recruitmentCodeMap.remove(recruitmentCode)
+                }
             },
             3 * 60 * 20L
         )
@@ -730,7 +701,7 @@ class MyWorld(val uuid: String) {
 
     fun kickPlayer(executor: Player, target: Player): Boolean {
         if (!isRegistered) return false
-        val visitors = vanillaWorld?.players?.filter {it !in members!!.keys}?: return false
+        val visitors = vanillaWorld?.players?.filter { it !in members!!.keys } ?: return false
         if (target !in visitors) {
             executor.sendMessage("§cそのプレイヤーはワールドを訪れていません。")
             return false
