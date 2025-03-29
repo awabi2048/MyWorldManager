@@ -19,6 +19,8 @@ class WorldListUI(val player: Player, val worlds: Collection<MyWorld>, val title
             return
         }
 
+        if (event.currentItem?.itemMeta?.isHideTooltip == true) return
+
         val index = (event.slot / 9 - 1) * 7 + (event.slot % 9 - 1)
         val myWorld = worlds.toList()[index]
 

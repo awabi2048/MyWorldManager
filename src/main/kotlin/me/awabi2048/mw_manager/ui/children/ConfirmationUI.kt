@@ -137,6 +137,10 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             is UIData.WorldMemberRemove -> {
                 player.sendMessage("§c${uiData.player.name} をワールドメンバーから追放しました。")
                 uiData.world.members?.remove(uiData.player)
+                val newMember = uiData.world.members!!
+                newMember.remove(uiData.player)
+
+                uiData.world.members = newMember
 
                 player.playSound(player, Sound.BLOCK_BEACON_DEACTIVATE, 1.0f, 1.0f)
                 player.playSound(player, Sound.ENTITY_PLAYER_DEATH, 1.0f, 0.5f)
@@ -147,9 +151,13 @@ class ConfirmationUI(val player: Player, private val uiData: UIData) : AbstractI
             is UIData.WorldOwnerTransfer -> {
                 player.sendMessage("§d${uiData.player.name} にオーナー権限を移譲しました。")
 
-                println(uiData.world.members)
-                uiData.world.members = uiData.world.members!!.plus(Pair(uiData.player, MemberRole.OWNER)).toMutableMap()
-                uiData.world.members = uiData.world.members!!.plus(Pair(uiData.world.owner!!, MemberRole.MODERATOR)).toMutableMap()
+//                println(uiData.world.members)
+
+                val newMembers = uiData.world.members!!
+                    .plus(Pair(uiData.player, MemberRole.OWNER))
+                    .plus(Pair(uiData.world.owner!!, MemberRole.MODERATOR))
+
+                uiData.world.members = newMembers.toMutableMap()
 
                 player.playSound(player, Sound.ENTITY_ILLUSIONER_MIRROR_MOVE, 1.0f, 1.0f)
 

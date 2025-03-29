@@ -22,8 +22,8 @@ escape_pos: "(0, 0, 0)"
 
 cancel_flag: "_cancel"
 
-min_world_name_length: 3,
-max_world_name_length: 10,
+min_world_name_length: 3
+max_world_name_length: 10
 
 command_help:
   invite: "§fほかのプレイヤーをワールドに招待します。 §7/invite <プレイヤー名> [ワールド名]"

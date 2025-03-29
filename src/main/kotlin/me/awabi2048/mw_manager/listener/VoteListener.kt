@@ -7,13 +7,13 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 
 object VoteListener: Listener {
-    @EventHandler
-    fun onPlayerVote(event: PlayerVoteEvent) {
-        val player = Bukkit.getOfflinePlayer(event.player).player?: return
-
-        val playerData = PlayerData(player)
-        playerData.worldPoint += 1
-
-        println("voted!")
-    }
+//    @EventHandler
+//    fun onPlayerVote(event: PlayerVoteEvent) {
+//        val player = Bukkit.getOfflinePlayer(event.player).player?: return
+//
+//        val playerData = PlayerData(player)
+//        playerData.worldPoint += 1
+//
+//        println("voted!")
+//    }
 }

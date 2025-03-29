@@ -64,10 +64,16 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
     }
 
     override fun preOpenProcess(firstOpen: Boolean) {
+        if (firstOpen) {
+            val newLocation = player.location
+            newLocation.yaw = 180f
+            newLocation.pitch = 0f
+            player.teleport(newLocation)
+        }
     }
 
     override fun construct(): Inventory {
-        val ui = createTemplate(3, "§8§lワールドの拡張")!!
+        val ui = createTemplate(3, "§8§lワールドの拡張")
 
         // 中央
 
@@ -93,7 +99,7 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         // 左下
         val methodLeftDown = ItemStack(Material.CHEST)
         methodLeftDown.editMeta {
-            it.itemName(Component.text("左上に拡張").color(AQUA))
+            it.itemName(Component.text("左下に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
@@ -111,11 +117,11 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         // 右下
         val methodRightDown = ItemStack(Material.CHEST)
         methodRightDown.editMeta {
-            it.itemName(Component.text("左上に拡張").color(AQUA))
+            it.itemName(Component.text("右上に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを右下(南東)方向に拡張します。"),
+                    Component.text("§7ワールドを右上(北東)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§b█§7█"),
                     Component.text("§7██"),
@@ -129,11 +135,11 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         // 右上
         val methodRightUp = ItemStack(Material.CHEST)
         methodRightUp.editMeta {
-            it.itemName(Component.text("右上に拡張").color(AQUA))
+            it.itemName(Component.text("右下に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを右上(北東)方向に拡張します。"),
+                    Component.text("§7ワールドを右下(南東)方向に拡張します。"),
                     Component.text(bar),
                     Component.text("§7██"),
                     Component.text("§b█§7█"),

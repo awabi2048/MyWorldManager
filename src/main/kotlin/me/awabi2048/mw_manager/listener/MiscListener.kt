@@ -1,6 +1,8 @@
 package me.awabi2048.mw_manager.listener
 
+import me.awabi2048.mw_manager.Main
 import me.awabi2048.mw_manager.Main.Companion.PREFIX
+import me.awabi2048.mw_manager.Main.Companion.creationDataSet
 import me.awabi2048.mw_manager.my_world.MyWorldManager
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import org.bukkit.World
@@ -49,7 +51,10 @@ object MiscListener : Listener {
             }
         }
 
-        //
+        // ワールド作成中ならデータ消去
+        if (creationDataSet.any {it.player == event.player}) {
+            creationDataSet.removeIf {it.player == event.player}
+        }
     }
 
     @EventHandler
