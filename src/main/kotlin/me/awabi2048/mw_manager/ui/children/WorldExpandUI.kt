@@ -37,14 +37,14 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
             9 -> ExpandMethod.CENTER
             11 -> ExpandMethod.NORTH_WEST
             13 -> ExpandMethod.SOUTH_WEST
-            15 -> ExpandMethod.NORTH_EAST
-            17 -> ExpandMethod.SOUTH_EAST
+            15 -> ExpandMethod.SOUTH_EAST
+            17 -> ExpandMethod.NORTH_EAST
             else -> return
         }
 
         // ポイント処理
         val playerData = PlayerData(player)
-        playerData.worldPoint -= world.expandCost!!
+        playerData.worldPoint -= world.expandCost
 
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
         player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
@@ -64,12 +64,6 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
     }
 
     override fun preOpenProcess(firstOpen: Boolean) {
-        val location = player.location.apply {
-            yaw = 0f
-            pitch = 0f
-        }
-
-        player.teleport(location)
     }
 
     override fun construct(): Inventory {

@@ -13,6 +13,8 @@ player_warp_slot_max: 10
 player_world_slot_max: 3
 
 global_world_count_max: 40
+  
+base_world_expand_cost: 5
 
 oage_ganbaru_message:
   - よいしょ！
@@ -22,8 +24,8 @@ escape_pos: "(0, 0, 0)"
 
 cancel_flag: "_cancel"
 
-min_world_name_length: 3,
-max_world_name_length: 10,
+min_world_name_length: 3
+max_world_name_length: 10
 
 command_help:
   invite: "§fほかのプレイヤーをワールドに招待します。 §7/invite <プレイヤー名> [ワールド名]"

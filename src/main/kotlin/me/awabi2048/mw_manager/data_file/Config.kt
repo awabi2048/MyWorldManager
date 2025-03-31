@@ -157,4 +157,13 @@ object Config {
                 section.set("command_help.${it.key}", it.value)
             }
         }
+
+    var baseWorldExpandCost: Int
+        get() {
+            return section.getInt("base_world_expand_cost", 5)
+        }
+        set(value) {
+            DataFiles.config.set("base_world_expand_cost", value.coerceAtLeast(1))
+            DataFiles.save()
+        }
 }

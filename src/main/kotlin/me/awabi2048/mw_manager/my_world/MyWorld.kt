@@ -243,11 +243,12 @@ class MyWorld(val uuid: String) {
         }
         set(value) {
             DataFiles.worldData.set("$uuid.border_expansion_level", value)
+            DataFiles.save()
         }
 
-    val expandCost: Int?
+    val expandCost: Int
         get() {
-            return borderExpansionLevel?.plus(1)?.times(10)
+            return Config.baseWorldExpandCost.toDouble().pow(borderExpansionLevel!!.toDouble()).toInt()
         }
 
     private val borderSize: Double?
