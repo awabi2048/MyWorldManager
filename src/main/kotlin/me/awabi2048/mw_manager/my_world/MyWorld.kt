@@ -24,6 +24,7 @@ import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import java.io.File
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -555,10 +556,10 @@ class MyWorld(val uuid: String) {
             val centerPos = borderCenter!!
             val newBorderCenterLocation = when (method) {
                 CENTER -> centerPos
-                LEFT_UP -> centerPos.add(-borderSize!! / 2, 0.0, -borderSize!! / 2)
-                LEFT_DOWN -> centerPos.add(-borderSize!! / 2, 0.0, borderSize!! / 2)
-                RIGHT_UP -> centerPos.add(borderSize!! / 2, 0.0, borderSize!! / 2)
-                RIGHT_DOWN -> centerPos.add(+borderSize!! / 2, 0.0, -borderSize!! / 2)
+                NORTH_WEST -> centerPos.add(Vector(-borderSize!!.toInt() / 2, 0, -borderSize!!.toInt() / 2))
+                SOUTH_WEST -> centerPos.add(Vector(-borderSize!!.toInt() / 2, 0, borderSize!!.toInt() / 2))
+                NORTH_EAST -> centerPos.add(Vector(borderSize!!.toInt() / 2, 0, -borderSize!!.toInt() / 2))
+                SOUTH_EAST -> centerPos.add(Vector(borderSize!!.toInt() / 2, 0, borderSize!!.toInt() / 2))
             }
 
             // データファイルへの書き込み

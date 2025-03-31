@@ -2,8 +2,8 @@ package me.awabi2048.mw_manager.my_world.world_property
 
 enum class ExpandMethod {
     CENTER,
-    LEFT_UP,
-    LEFT_DOWN,
-    RIGHT_UP,
-    RIGHT_DOWN,
+    NORTH_WEST,
+    SOUTH_WEST,
+    NORTH_EAST,
+    SOUTH_EAST,
 }

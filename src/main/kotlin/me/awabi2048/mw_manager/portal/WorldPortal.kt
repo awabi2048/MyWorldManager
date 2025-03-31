@@ -1,5 +1,7 @@
 package me.awabi2048.mw_manager.portal
 
+import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.Main.Companion.playersInPortalCooldown
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorld
@@ -38,7 +40,7 @@ class WorldPortal(private val uuid: String) {
 
     val isLoaded: Boolean
         get() {
-            return location?.getNearbyPlayers(10.0)?.isNotEmpty()?: false
+            return location?.getNearbyPlayers(10.0)?.isNotEmpty() ?: false
         }
 
     var owner: OfflinePlayer
@@ -184,11 +186,18 @@ class WorldPortal(private val uuid: String) {
                 it.location.toBlockLocation().blockX == location!!.toBlockLocation().blockX &&
                         it.location.toBlockLocation().blockY in (location!!.toBlockLocation().blockY..location!!.toBlockLocation().blockY + 3) &&
                         it.location.toBlockLocation().blockZ == location!!.toBlockLocation().blockZ
-            }
+            }.forEach {
+                playersInPortalCooldown += it
+                sendPlayer(it)
 
-                .forEach {
-                    sendPlayer(it)
-                }
+                Bukkit.getScheduler().runTaskLater(
+                    instance,
+                    Runnable {
+                        playersInPortalCooldown -= it
+                    },
+                    100L
+                )
+            }
         }
     }
 }
