@@ -5,6 +5,9 @@ string_blacklist:
 border_size_base: 10
 border_expansion_max: 6
 
+base_world_expand_cost: 5
+world_expand_cost_index: 3
+
 # プレイヤーデータ
 default_unlocked_warp_slot: 3
 default_unlocked_world_slot: 2
@@ -13,6 +16,7 @@ player_warp_slot_max: 10
 player_world_slot_max: 3
 
 global_world_count_max: 40
+
 
 oage_ganbaru_message:
   - よいしょ！

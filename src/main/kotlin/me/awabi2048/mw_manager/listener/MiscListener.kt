@@ -16,14 +16,6 @@ object MiscListener : Listener {
     private fun updateTask(world: World) {
         // データファイルのアップデート
         MyWorldManager.updateData()
-
-        // 無人ワールドのアンロード
-
-        // ワールドの情報とファイル上のデータの同期
-        if (world.name.startsWith("my_world.")) {
-            val myWorld = MyWorldManager.registeredMyWorlds.find { it.vanillaWorld == world } ?: return
-            myWorld.sync()
-        }
     }
 
     @EventHandler
@@ -63,7 +55,7 @@ object MiscListener : Listener {
         updateTask(event.player.world)
 
         // 移動先が MyWorld なら日時を更新する
-        if ((event.player.world) in MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ARCHIVED} .map {it.vanillaWorld}) {
+        if (MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ACTIVE}.any {it.vanillaWorld == event.player.world}) {
             val myWorld = MyWorldManager.registeredMyWorlds.find {it.vanillaWorld == event.player.world}?: return
             myWorld.update()
         }

@@ -117,6 +117,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
             worldSettingState.remove(player)
         }
 
+        if (!worldSettingState.contains(event.whoClicked) && event.rawSlot >= 45) return
         // アイコン設定中 → 設定する
         if (
             worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON
@@ -130,8 +131,6 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
 
         event.isCancelled = true
         val slot = event.slot
-
-        if (event.rawSlot >= 45) return
 
         //
         val option = when (slot) {
@@ -192,7 +191,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         // 拡張
         if (option == "expand") {
             player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
-            val canExpand = PlayerData(player).worldPoint >= world.expandCost!!
+            val canExpand = PlayerData(player).worldPoint >= world.expandCost
 
             if (canExpand) {
                 val expandUI = WorldExpandUI(player, world)
@@ -313,7 +312,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         expandIcon.itemMeta = expandIcon.itemMeta.apply {
             // 拡張可能かで中行の表示を変える
             val maxExpanded = world.borderExpansionLevel == Config.borderExpansionMax
-            val hasEnoughPoint = playerData.worldPoint >= world.expandCost!!
+            val hasEnoughPoint = playerData.worldPoint >= world.expandCost
             val costDisplay = when (hasEnoughPoint) {
                 true -> "$index §7コスト ${EmojiIcon.WORLD_POINT} §e${world.expandCost}" +
                         " §7(" +
@@ -329,7 +328,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
                         " §f➡ " +
                         "§e§l${
                             world.borderExpansionLevel?.plus(1)
-                        }§7) §cポイントが§n${world.expandCost!! - playerData.worldPoint}§c不足しています。"
+                        }§7) §cポイントが§n${world.expandCost - playerData.worldPoint}§c不足しています。"
             }
 
             val info = when (maxExpanded) {

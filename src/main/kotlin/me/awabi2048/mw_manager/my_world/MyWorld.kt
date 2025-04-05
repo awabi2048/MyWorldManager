@@ -24,6 +24,7 @@ import org.bukkit.*
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import java.io.File
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -242,11 +243,12 @@ class MyWorld(val uuid: String) {
         }
         set(value) {
             DataFiles.worldData.set("$uuid.border_expansion_level", value)
+            DataFiles.save()
         }
 
-    val expandCost: Int?
+    val expandCost: Int
         get() {
-            return borderExpansionLevel?.plus(1)?.times(10)
+            return Config.baseWorldExpandCost * Config.worldExpandCostIndex.toDouble().pow(borderExpansionLevel!!.toDouble()).toInt()
         }
 
     private val borderSize: Double?
@@ -555,10 +557,10 @@ class MyWorld(val uuid: String) {
             val centerPos = borderCenter!!
             val newBorderCenterLocation = when (method) {
                 CENTER -> centerPos
-                LEFT_UP -> centerPos.add(-borderSize!! / 2, 0.0, -borderSize!! / 2)
-                LEFT_DOWN -> centerPos.add(-borderSize!! / 2, 0.0, borderSize!! / 2)
-                RIGHT_UP -> centerPos.add(borderSize!! / 2, 0.0, borderSize!! / 2)
-                RIGHT_DOWN -> centerPos.add(+borderSize!! / 2, 0.0, -borderSize!! / 2)
+                NORTH_WEST -> centerPos.add(Vector(-borderSize!!.toInt() / 2, 0, -borderSize!!.toInt() / 2))
+                SOUTH_WEST -> centerPos.add(Vector(-borderSize!!.toInt() / 2, 0, borderSize!!.toInt() / 2))
+                NORTH_EAST -> centerPos.add(Vector(borderSize!!.toInt() / 2, 0, -borderSize!!.toInt() / 2))
+                SOUTH_EAST -> centerPos.add(Vector(borderSize!!.toInt() / 2, 0, borderSize!!.toInt() / 2))
             }
 
             // データファイルへの書き込み
@@ -582,22 +584,6 @@ class MyWorld(val uuid: String) {
 
             return true
         } else return false
-    }
-
-    // ワールドロード時に実行
-    fun sync(): Boolean {
-        if (isRegistered && activityState == WorldActivityState.ACTIVE) {
-            // world border
-            vanillaWorld!!.worldBorder.center = borderCenter!!
-            vanillaWorld!!.worldBorder.size = borderSize!!
-
-            vanillaWorld!!.setGameRule(GameRule.KEEP_INVENTORY, true)
-            vanillaWorld!!.setGameRule(GameRule.DO_PATROL_SPAWNING, false)
-            vanillaWorld!!.setGameRule(GameRule.DO_TRADER_SPAWNING, false)
-            vanillaWorld!!.setGameRule(GameRule.MOB_GRIEFING, false)
-        }
-
-        return true
     }
 
     fun invitePlayer(inviter: Player, invitee: Player) {

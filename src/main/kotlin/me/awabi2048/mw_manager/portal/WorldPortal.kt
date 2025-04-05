@@ -1,5 +1,7 @@
 package me.awabi2048.mw_manager.portal
 
+import me.awabi2048.mw_manager.Main.Companion.instance
+import me.awabi2048.mw_manager.Main.Companion.playersInPortalCooldown
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.my_world.MyWorld
@@ -38,7 +40,7 @@ class WorldPortal(private val uuid: String) {
 
     val isLoaded: Boolean
         get() {
-            return location?.getNearbyPlayers(10.0)?.isNotEmpty()?: false
+            return location?.getNearbyPlayers(10.0)?.isNotEmpty() ?: false
         }
 
     var owner: OfflinePlayer
@@ -115,7 +117,7 @@ class WorldPortal(private val uuid: String) {
     /**
      * ポータルを撤去します。
      */
-    fun remove() {
+    fun remove(giveBackItem: Boolean) {
         if (location == null) return
 
         // ブロックを更新
@@ -128,7 +130,7 @@ class WorldPortal(private val uuid: String) {
         }
 
         // アイテムをgive
-        if (owner.isOnline) {
+        if (owner.isOnline && giveBackItem) {
             // いっぱいならその場にドロップ
             if (owner.player!!.inventory.firstEmpty() == -1) {
                 location!!.world.dropItemNaturally(location!!, CustomItem.WORLD_PORTAL.itemStack)
@@ -159,6 +161,11 @@ class WorldPortal(private val uuid: String) {
 
     fun tickingProcess() {
         if (isAvailable && isLoaded) {
+            // ポータルブロックがない！
+            if (location!!.block.type != Material.END_PORTAL_FRAME) {
+                remove(false)
+            }
+
             // 封鎖中なら作動しない
             if (destinationWorld.publishLevel == PublishLevel.CLOSED) return
 
@@ -181,14 +188,22 @@ class WorldPortal(private val uuid: String) {
 
             // 判定内のプレイヤーを転送
             location!!.getNearbyPlayers(5.0).filter {
+                !playersInPortalCooldown.contains(it) &&
                 it.location.toBlockLocation().blockX == location!!.toBlockLocation().blockX &&
                         it.location.toBlockLocation().blockY in (location!!.toBlockLocation().blockY..location!!.toBlockLocation().blockY + 3) &&
                         it.location.toBlockLocation().blockZ == location!!.toBlockLocation().blockZ
-            }
+            }.forEach {
+                playersInPortalCooldown += it
+                sendPlayer(it)
 
-                .forEach {
-                    sendPlayer(it)
-                }
+                Bukkit.getScheduler().runTaskLater(
+                    instance,
+                    Runnable {
+                        playersInPortalCooldown -= it
+                    },
+                    100L
+                )
+            }
         }
     }
 }

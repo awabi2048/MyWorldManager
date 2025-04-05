@@ -31,18 +31,20 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
     }
 
     override fun onClick(event: InventoryClickEvent) {
-        if (event.slot !in listOf(10, 12, 14, 16)) return
+        if (event.slot !in listOf(9, 11, 13, 15, 17)) return
 
         val expandMethod = when (event.slot) {
-            10 -> ExpandMethod.LEFT_UP
-            12 -> ExpandMethod.LEFT_DOWN
-            14 -> ExpandMethod.RIGHT_DOWN
-            16 -> ExpandMethod.RIGHT_UP
+            9 -> ExpandMethod.CENTER
+            11 -> ExpandMethod.NORTH_WEST
+            13 -> ExpandMethod.SOUTH_WEST
+            15 -> ExpandMethod.SOUTH_EAST
+            17 -> ExpandMethod.NORTH_EAST
             else -> return
         }
 
         // ポイント処理
         val playerData = PlayerData(player)
+        playerData.worldPoint -= world.expandCost
 
         player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 2.0f)
         player.playSound(player, Sound.BLOCK_ANVIL_USE, 1.0f, 0.5f)
@@ -55,8 +57,6 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
             instance,
             Runnable {
                 world.expand(expandMethod)
-                playerData.worldPoint -= world.expandCost!!
-
                 player.sendMessage("§dワールドが拡張されました！§8【§7${world.borderExpansionLevel!! - 1}§8】§f▶§8【§e§l${world.borderExpansionLevel}§8】 §7(残りポイント ${EmojiIcon.WORLD_POINT} §e${playerData.worldPoint}§7)")
             },
             40L
@@ -76,7 +76,17 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         val ui = createTemplate(3, "§8§lワールドの拡張")
 
         // 中央
-
+        val methodCenter = ItemStack(Material.CHEST)
+        methodCenter.editMeta {
+            it.itemName(Component.text("中心から拡張").color(AQUA))
+            it.lore(
+                mutableListOf(
+                    Component.text(bar),
+                    Component.text("§7ワールドの中心を変えずに拡張します。"),
+                    Component.text(bar),
+                )
+            )
+        }
 
         // 左上
         val methodLeftUp = ItemStack(Material.CHEST)
@@ -117,7 +127,7 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         // 右下
         val methodRightDown = ItemStack(Material.CHEST)
         methodRightDown.editMeta {
-            it.itemName(Component.text("右上に拡張").color(AQUA))
+            it.itemName(Component.text("右下に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
@@ -151,14 +161,16 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
         }
 
         // set
-        ui.setItem(10, methodLeftUp)
-        ui.setItem(12, methodLeftDown)
-        ui.setItem(14, methodRightDown)
-        ui.setItem(16, methodRightUp)
+        ui.setItem(9, methodCenter)
+        ui.setItem(11, methodLeftUp)
+        ui.setItem(13, methodLeftDown)
+        ui.setItem(15, methodRightDown)
+        ui.setItem(17, methodRightUp)
 
         return ui
     }
 
     override fun onClose(reason: InventoryCloseEvent.Reason) {
+
     }
 }

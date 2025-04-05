@@ -1,14 +1,12 @@
 package me.awabi2048.mw_manager
 
-import com.comphenix.protocol.ProtocolLibrary
-import com.comphenix.protocol.ProtocolManager
 import com.onarandombox.MultiverseCore.MultiverseCore
 import com.onarandombox.MultiverseCore.api.MVWorldManager
 import me.awabi2048.mw_manager.command.CommandManager
 import me.awabi2048.mw_manager.data_file.DataFiles
 import me.awabi2048.mw_manager.listener.*
-import me.awabi2048.mw_manager.my_world.world_create.CreationData
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_create.CreationData
 import me.awabi2048.mw_manager.ui.abstract.AbstractUI
 import me.awabi2048.mw_manager.ui.state_manager.ConfirmationTracker
 import me.awabi2048.mw_manager.ui.state_manager.PlayerWorldSettingState
@@ -33,12 +31,11 @@ class Main : JavaPlugin() {
 
         var playerUIState: MutableMap<Player, AbstractUI> = mutableMapOf()
 
-        lateinit var protocolManager: ProtocolManager
+        var playersInPortalCooldown: Set<Player> = mutableSetOf()
     }
 
     override fun onEnable() {
         instance = this
-        protocolManager = ProtocolLibrary.getProtocolManager()
 
         DataFiles.copy()
         DataFiles.loadAll()
