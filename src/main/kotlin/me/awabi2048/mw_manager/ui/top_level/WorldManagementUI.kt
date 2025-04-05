@@ -70,7 +70,7 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         if (state == PlayerWorldSettingState.CHANGE_DESCRIPTION) {
             // ブラックリスト判定
             if (Lib.checkIfContainsBlacklisted(text)) {
-                player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
+                player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。(${Config.cancelFlag}でキャンセル)")
                 return
             }
 
@@ -118,7 +118,6 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
         }
 
         if (!worldSettingState.contains(event.whoClicked) && event.rawSlot >= 45) return
-
         // アイコン設定中 → 設定する
         if (
             worldSettingState[event.whoClicked] == PlayerWorldSettingState.CHANGE_ICON

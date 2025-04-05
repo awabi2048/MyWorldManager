@@ -70,10 +70,12 @@ class MemberUI(val player: Player, val world: MyWorld) : AbstractInteractiveUI(p
 
             // Shift + 右 → 追放
             if (event.click.isRightClick && event.click.isShiftClick) {
+                println((event.currentItem?.itemMeta as? SkullMeta?)?.owningPlayer)
+
                 // オーナー以外は変更不可
                 if (world.members!![player] != MemberRole.OWNER) return
 
-                val targetPlayer = (event.currentItem?.itemMeta as SkullMeta?)?.owningPlayer ?: return
+                val targetPlayer = (event.currentItem?.itemMeta as? SkullMeta?)?.owningPlayer ?: return
 
                 val confirmationUI =
                     ConfirmationUI(player, ConfirmationUI.UIData.WorldMemberRemove(targetPlayer, world))
@@ -186,13 +188,13 @@ class MemberUI(val player: Player, val world: MyWorld) : AbstractInteractiveUI(p
         }
 
         if (!targetPlayer.isOnline) {
-            player.sendMessage("§cプレイヤーがオフラインであるか、存在しません。再度入力してください。")
+            player.sendMessage("§cプレイヤーがオフラインであるか、存在しません。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             player.closeInventory()
             return
         }
 
         if (targetPlayer in world.members!!) {
-            player.sendMessage("§cそのプレイヤーはすでにメンバーです。再度入力してください。")
+            player.sendMessage("§cそのプレイヤーはすでにメンバーです。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             player.closeInventory()
             return
         }

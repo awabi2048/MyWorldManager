@@ -108,25 +108,25 @@ object Lib {
     fun checkWorldNameAvailable(name: String, player: Player): Boolean {
         // ブラックリスト判定
         if (checkIfContainsBlacklisted(name)) {
-            player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。")
+            player.sendMessage("§c使用できない文字列が含まれています。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             return false
         }
 
         // 文字種判定
         if (!name.matches("^[a-zA-z0-9]*$".toRegex())) {
-            player.sendMessage("§cワールド名には半角英数字のみ使用可能です。再度入力してください。")
+            player.sendMessage("§cワールド名には半角英数字のみ使用可能です。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             return false
         }
 
         // 文字長
-        if (name.length in Config.availableWorldNameLength) {
-            player.sendMessage("§cワールド名は§n${Config.availableWorldNameLength.min()}文字以上${Config.availableWorldNameLength.max()}文字以下§cである必要があります。再度入力してください。")
+        if (name.length !in Config.availableWorldNameLength) {
+            player.sendMessage("§cワールド名は§n${Config.availableWorldNameLength.min()}文字以上${Config.availableWorldNameLength.max()}文字以下§cである必要があります。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             return false
         }
 
         // 重複: それぞれプレイヤーにつき同じ名前のワールドはひとつのみ所有できる
         if (MyWorldManager.registeredMyWorlds.filter {it.owner == player}.any {it.name == name}) {
-            player.sendMessage("§c既に同じ名前のワールドを作成しています。再度入力してください。")
+            player.sendMessage("§c既に同じ名前のワールドを作成しています。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             return false
         }
 

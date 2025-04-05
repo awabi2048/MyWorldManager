@@ -236,7 +236,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         creationDataSet += creationData
 
         // 最初 → ワールド名設定
-        targetPlayer.sendMessage("$PREFIX §eワールド名§7を入力してください！")
+        targetPlayer.sendMessage("$PREFIX §eワールド名§7を入力してください！半角英数字が利用可能です。")
         targetPlayer.playSound(targetPlayer, Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 2.0f)
 
         // タイムアウト判定
