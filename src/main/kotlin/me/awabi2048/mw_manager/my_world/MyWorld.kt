@@ -248,7 +248,7 @@ class MyWorld(val uuid: String) {
 
     val expandCost: Int
         get() {
-            return Config.baseWorldExpandCost.toDouble().pow(borderExpansionLevel!!.toDouble()).toInt()
+            return Config.baseWorldExpandCost * Config.worldExpandCostIndex.toDouble().pow(borderExpansionLevel!!.toDouble()).toInt()
         }
 
     private val borderSize: Double?
@@ -584,22 +584,6 @@ class MyWorld(val uuid: String) {
 
             return true
         } else return false
-    }
-
-    // ワールドロード時に実行
-    fun sync(): Boolean {
-        if (isRegistered && activityState == WorldActivityState.ACTIVE) {
-            // world border
-            vanillaWorld!!.worldBorder.center = borderCenter!!
-            vanillaWorld!!.worldBorder.size = borderSize!!
-
-            vanillaWorld!!.setGameRule(GameRule.KEEP_INVENTORY, true)
-            vanillaWorld!!.setGameRule(GameRule.DO_PATROL_SPAWNING, false)
-            vanillaWorld!!.setGameRule(GameRule.DO_TRADER_SPAWNING, false)
-            vanillaWorld!!.setGameRule(GameRule.MOB_GRIEFING, false)
-        }
-
-        return true
     }
 
     fun invitePlayer(inviter: Player, invitee: Player) {

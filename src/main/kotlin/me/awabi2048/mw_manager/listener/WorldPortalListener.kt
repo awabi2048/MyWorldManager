@@ -126,7 +126,7 @@ object WorldPortalListener : Listener {
         val portal = MyWorldManager.registeredPortal.find { it.location == blockLocation } ?: return
 
         if (event.player != portal.owner && !event.player.hasPermission("mw_manager.admin")) return // オーナーか権限バイパス時のみ
-        if (event.hand != EquipmentSlot.HAND) return // 片手のみ判定しないと二重に処理されてしまう
+        if (event.hand != EquipmentSlot.HAND) return // 片手のみ判定しないと二重に処理される
 
         val ui = PortalUI(event.player, portal)
         ui.open(true)

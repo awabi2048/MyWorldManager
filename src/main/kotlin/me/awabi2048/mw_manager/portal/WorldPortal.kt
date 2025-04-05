@@ -183,6 +183,7 @@ class WorldPortal(private val uuid: String) {
 
             // 判定内のプレイヤーを転送
             location!!.getNearbyPlayers(5.0).filter {
+                !playersInPortalCooldown.contains(it) &&
                 it.location.toBlockLocation().blockX == location!!.toBlockLocation().blockX &&
                         it.location.toBlockLocation().blockY in (location!!.toBlockLocation().blockY..location!!.toBlockLocation().blockY + 3) &&
                         it.location.toBlockLocation().blockZ == location!!.toBlockLocation().blockZ

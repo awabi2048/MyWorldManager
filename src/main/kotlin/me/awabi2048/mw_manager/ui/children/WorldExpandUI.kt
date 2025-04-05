@@ -165,5 +165,6 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
     }
 
     override fun onClose(reason: InventoryCloseEvent.Reason) {
+
     }
 }

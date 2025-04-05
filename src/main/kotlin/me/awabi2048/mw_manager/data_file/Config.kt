@@ -1,6 +1,7 @@
 package me.awabi2048.mw_manager.data_file
 
 import me.awabi2048.mw_manager.Lib
+import me.awabi2048.mw_manager.Main.Companion.instance
 import org.bukkit.Bukkit
 import org.bukkit.Location
 
@@ -160,10 +161,27 @@ object Config {
 
     var baseWorldExpandCost: Int
         get() {
+            if (!section.contains("base_world_expand_cost")) {
+                DataFiles.config.set("base_world_expand_cost", 5)
+                instance.saveConfig()
+            }
             return section.getInt("base_world_expand_cost", 5)
         }
         set(value) {
             DataFiles.config.set("base_world_expand_cost", value.coerceAtLeast(1))
+            DataFiles.save()
+        }
+
+    var worldExpandCostIndex: Int
+        get() {
+            if (!section.contains("world_expand_cost_index")) {
+                DataFiles.config.set("world_expand_cost_index", 3)
+                instance.saveConfig()
+            }
+            return section.getInt("world_expand_cost_index", 3)
+        }
+        set(value) {
+            DataFiles.config.set("world_expand_cost_index", value.coerceAtLeast(1))
             DataFiles.save()
         }
 }
