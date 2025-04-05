@@ -47,7 +47,7 @@ class PortalUI(private val player: Player, private val portal: WorldPortal) : Ab
         // 撤去
         if (slot == 15) {
             player.closeInventory(InventoryCloseEvent.Reason.CANT_USE)
-            portal.remove()
+            portal.remove(true)
         }
     }
 
@@ -58,7 +58,7 @@ class PortalUI(private val player: Player, private val portal: WorldPortal) : Ab
     }
 
     override fun construct(): Inventory {
-        val ui = createTemplate(3, "$titleBar §8§lポータルの管理 $titleBar")!!
+        val ui = createTemplate(3, "$titleBar §8§lポータルの管理 $titleBar")
 
         // テキスト表示の切り替え
         val textToggleIcon = ItemStack(Material.NAME_TAG)

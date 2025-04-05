@@ -117,7 +117,7 @@ class WorldPortal(private val uuid: String) {
     /**
      * ポータルを撤去します。
      */
-    fun remove() {
+    fun remove(giveBackItem: Boolean) {
         if (location == null) return
 
         // ブロックを更新
@@ -130,7 +130,7 @@ class WorldPortal(private val uuid: String) {
         }
 
         // アイテムをgive
-        if (owner.isOnline) {
+        if (owner.isOnline && giveBackItem) {
             // いっぱいならその場にドロップ
             if (owner.player!!.inventory.firstEmpty() == -1) {
                 location!!.world.dropItemNaturally(location!!, CustomItem.WORLD_PORTAL.itemStack)
@@ -161,6 +161,11 @@ class WorldPortal(private val uuid: String) {
 
     fun tickingProcess() {
         if (isAvailable && isLoaded) {
+            // ポータルブロックがない！
+            if (location!!.block.type != Material.END_PORTAL_FRAME) {
+                remove(false)
+            }
+
             // 封鎖中なら作動しない
             if (destinationWorld.publishLevel == PublishLevel.CLOSED) return
 

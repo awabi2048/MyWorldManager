@@ -5,6 +5,7 @@ import me.awabi2048.mw_manager.Main.Companion.instance
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import me.awabi2048.mw_manager.my_world.world_property.WorldActivityState
 import me.awabi2048.mw_manager.portal.WorldPortal
 import me.awabi2048.mw_manager.ui.top_level.PortalUI
@@ -43,6 +44,13 @@ object WorldPortalListener : Listener {
                 val myWorld = MyWorld(currentWorld.name.substringAfter("my_world."))
 
                 if (myWorld.isRegistered) {
+                    // ワールドの公開状態をチェック
+                    if (myWorld.publishLevel != PublishLevel.PUBLIC) {
+                        player.sendMessage("§cこのワールドは公開ワールドでないため、ポータルの登録を行えません。")
+                        player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 0.5f)
+                        return
+                    }
+
                     event.item!!.editMeta {
                         // PDCに登録
                         it.persistentDataContainer.set(
@@ -113,7 +121,7 @@ object WorldPortalListener : Listener {
             // 有効なワールドでなければキャンセル
             if (!MyWorldManager.registeredMyWorlds.filter {it.activityState == WorldActivityState.ACTIVE}.any {it.uuid == worldUUID}) {
                 event.player.sendMessage("§cリンク先のワールドが見つかりませんでした。")
-                portal.remove()
+                portal.remove(true)
             }
         }
     }

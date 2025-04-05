@@ -3,6 +3,7 @@ package me.awabi2048.mw_manager.ui.top_level
 import me.awabi2048.mw_manager.data_file.Config
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import me.awabi2048.mw_manager.player_data.PlayerData
 import me.awabi2048.mw_manager.ui.abstract.AbstractInteractiveUI
 import me.awabi2048.mw_manager.ui.children.ConfirmationUI
@@ -41,11 +42,17 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
             if (itemName == "§b未登録") {
                 val world = MyWorldManager.registeredMyWorlds.find { it.vanillaWorld == player.world }
                 if (world == null) {
-
                     player.sendMessage("§cこのワールドではワープを設定できません。")
                     player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
 
                     player.closeInventory()
+                    return
+                }
+
+                // ワールドの公開状態をチェック
+                if (world.publishLevel != PublishLevel.PUBLIC) {
+                    player.sendMessage("§cこのワールドは公開ワールドでないため、ポータルの登録を行えません。")
+                    player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
                     return
                 }
 
@@ -113,7 +120,7 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
             return icon
         }
 
-        val menu = createTemplate(4, "§8§lワープショートカット")!!
+        val menu = createTemplate(4, "§8§lワープショートカット")
 
         val playerData = PlayerData(player)
 
