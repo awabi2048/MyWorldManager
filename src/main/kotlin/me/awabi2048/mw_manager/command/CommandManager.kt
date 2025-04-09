@@ -6,6 +6,7 @@ import me.awabi2048.mw_manager.command.command_executor.*
 import me.awabi2048.mw_manager.custom_item.CustomItem
 import me.awabi2048.mw_manager.my_world.MyWorld
 import me.awabi2048.mw_manager.my_world.MyWorldManager
+import me.awabi2048.mw_manager.my_world.world_property.PublishLevel
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -85,7 +86,12 @@ object CommandManager {
             if (sender !is Player) return mutableListOf()
 
             if (size == 1) {
-                return Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
+                return Bukkit.getOnlinePlayers()
+                    .filter {player ->
+                        MyWorldManager.registeredMyWorlds.any {
+                            player in it.members!!.keys && it.publishLevel == PublishLevel.PUBLIC // 自分のワールドで公開のものがあるプレイヤー
+                        }
+                    }.map {it.name}.toMutableList()
             }
         }
 

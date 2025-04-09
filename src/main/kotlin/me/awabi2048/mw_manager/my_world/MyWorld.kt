@@ -532,7 +532,7 @@ class MyWorld(val uuid: String) {
             if (sendNotification) {
                 members?.keys?.filter { it.player?.isOnline == true && it.player != player }?.map { it.player }
                     ?.forEach {
-                        it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！")
+                        it?.sendMessage("§e${player.name}さん§7があなたのワールドを訪れました！§8【§a${name}§8】")
                         it?.playSound(it, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 2.0f)
                     }
             }
