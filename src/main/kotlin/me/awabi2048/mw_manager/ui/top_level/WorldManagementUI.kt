@@ -56,6 +56,11 @@ class WorldManagementUI(private val player: Player, private val world: MyWorld) 
     override fun onChatInput(text: String) {
         val state = worldSettingState[player] ?: return
 
+        if (text == Config.cancelFlag) {
+            player.sendMessage("§c変更をキャンセルしました。")
+            return
+        }
+
         // ワールド名変更
         if (state == PlayerWorldSettingState.CHANGE_NAME) {
             if (!Lib.checkWorldNameAvailable(text, player)) return

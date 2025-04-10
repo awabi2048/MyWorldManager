@@ -53,19 +53,24 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
             return
         }
 
+        if (!owner.isOnline) {
+            sender.notify("$PREFIX §c指定されたプレイヤーはオフラインです。", null)
+            return
+        }
+
         if (!mvWorldManager.mvWorlds.any { it.name == sourceWorldName }) {
             sender.notify("$PREFIX §c指定されたワールドが見つかりません。", null)
             return
         }
 
-        if (!Lib.checkWorldNameAvailable(worldName, owner)) {
+        if (!Lib.checkWorldNameAvailable(worldName, owner.player!!)) {
             sender.sendMessage("$PREFIX §cそのワールド名は使用できません。")
             return
         }
 
         // register
         val myWorld = MyWorld(uuid)
-        val initiated = myWorld.initiate(sourceWorldName, owner, worldName)
+        val initiated = myWorld.initiate(sourceWorldName, owner.player!!, worldName)
 
         if (initiated) {
             sender.notify(

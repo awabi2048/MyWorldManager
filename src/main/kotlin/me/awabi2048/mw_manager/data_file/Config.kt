@@ -134,7 +134,7 @@ object Config {
     var availableWorldNameLength: IntRange
         get() {
             val minLength = section.getInt("min_world_name_length").coerceAtLeast(1)
-            val maxLength = section.getInt("min_world_name_length").coerceAtLeast(minLength)
+            val maxLength = section.getInt("max_world_name_length").coerceAtLeast(minLength)
 
             return minLength..maxLength
         }

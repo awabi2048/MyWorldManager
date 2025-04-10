@@ -537,6 +537,7 @@ class MyWorld(val uuid: String) {
                     }
             }
 
+
             player.teleport(warpLocation)
             player.playSound(player, Sound.ENTITY_PLAYER_TELEPORT, 1.0f, 2.0f)
 

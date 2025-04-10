@@ -37,10 +37,10 @@ object Lib {
         }
     }
 
-    fun translatePlayerSpecifier(specifier: String): Player? {
+    fun translatePlayerSpecifier(specifier: String): OfflinePlayer? {
         val player = when (specifier.split(":")[0]) {
-            "player" -> Bukkit.getPlayer(specifier.split(":")[1])
-            "uuid" -> Bukkit.getPlayer(UUID.fromString(specifier.split(":")[1]))
+            "player" -> Bukkit.getOfflinePlayer(specifier.split(":")[1])
+            "uuid" -> Bukkit.getOfflinePlayer(UUID.fromString(specifier.split(":")[1]))
             else -> null
         }
 
