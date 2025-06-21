@@ -50,7 +50,7 @@ object WarpCommand : CommandExecutor, TabCompleter {
 
                 // もういるよ！！
                 if (p0.world == targetWorld.vanillaWorld) {
-                    p0.sendMessage("§c既にこのワールドにいます。")
+                    p0.sendMessage("§cすでにこのワールドにいます。")
                     return true
                 }
 

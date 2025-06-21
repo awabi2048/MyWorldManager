@@ -230,7 +230,7 @@ class MyWorld(val uuid: String) {
                 }
 
                 return icon
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 return null
             }
         }
@@ -357,7 +357,10 @@ class MyWorld(val uuid: String) {
                 instance,
                 Runnable {
                     Bukkit.createWorld(WorldCreator("my_world.$uuid"))
-                    vanillaWorld!!.worldBorder.warningDistance = 0
+                    vanillaWorld!!.worldBorder.apply {
+                        warningDistance = 0
+                        size = Config.borderSizeBase.toDouble()
+                    }
                 },
                 5L
             )

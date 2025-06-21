@@ -31,7 +31,7 @@ object Lib {
                 yamlSection.save(settingDataFile)
 
                 return true
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 return false
             }
         }
@@ -61,7 +61,7 @@ object Lib {
                 val myWorld = MyWorldManager.registeredMyWorlds.find {it.owner?.name == ownerName && it.name == worldName}
                 return myWorld
 
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 return null
             }
         }
@@ -126,7 +126,7 @@ object Lib {
 
         // 重複: それぞれプレイヤーにつき同じ名前のワールドはひとつのみ所有できる
         if (MyWorldManager.registeredMyWorlds.filter {it.owner == player}.any {it.name == name}) {
-            player.sendMessage("§c既に同じ名前のワールドを作成しています。再度入力してください。(${Config.cancelFlag}でキャンセル)")
+            player.sendMessage("§cすでに同じ名前のワールドを作成しています。再度入力してください。(${Config.cancelFlag}でキャンセル)")
             return false
         }
 

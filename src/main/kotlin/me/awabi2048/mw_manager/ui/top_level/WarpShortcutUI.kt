@@ -61,7 +61,7 @@ class WarpShortcutUI(private val player: Player) : AbstractInteractiveUI(player)
 
                 // 登録済
                 if (uuid in playerData.warpShortcuts) {
-                    player.sendMessage("§c既にこのワールドを登録しています。")
+                    player.sendMessage("§cすでにこのワールドを登録しています。")
                     player.playSound(player, Sound.ENTITY_SHULKER_HURT, 1.0f, 1.0f)
                     return
                 }

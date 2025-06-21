@@ -37,8 +37,8 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
             9 -> ExpandMethod.CENTER
             11 -> ExpandMethod.NORTH_WEST
             13 -> ExpandMethod.SOUTH_WEST
-            15 -> ExpandMethod.SOUTH_EAST
-            17 -> ExpandMethod.NORTH_EAST
+            15 -> ExpandMethod.NORTH_EAST
+            17 -> ExpandMethod.SOUTH_EAST
             else -> return
         }
 
@@ -88,73 +88,53 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
             )
         }
 
-        // 左上
-        val methodLeftUp = ItemStack(Material.CHEST)
-        methodLeftUp.editMeta {
-            it.itemName(Component.text("左上に拡張").color(AQUA))
+        // 北西
+        val methodNorthWest = ItemStack(Material.CHEST)
+        methodNorthWest.editMeta {
+            it.itemName(Component.text("北西に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを左上(北西)方向に拡張します。"),
-                    Component.text(bar),
-                    Component.text("§7██"),
-                    Component.text("§7█§b█"),
-                    Component.text("$index §7灰色: 拡張されるエリア"),
-                    Component.text("$index §7水色: 現在のエリア"),
+                    Component.text("§7ワールドを北西方向に拡張します。"),
                     Component.text(bar),
                 )
             )
         }
 
-        // 左下
-        val methodLeftDown = ItemStack(Material.CHEST)
-        methodLeftDown.editMeta {
-            it.itemName(Component.text("左下に拡張").color(AQUA))
+        // 南西
+        val methodSouthWest = ItemStack(Material.CHEST)
+        methodSouthWest.editMeta {
+            it.itemName(Component.text("南西に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを左下(南西)方向に拡張します。"),
-                    Component.text(bar),
-                    Component.text("§7█§b█"),
-                    Component.text("§7██"),
-                    Component.text("$index §7灰色: 拡張されるエリア"),
-                    Component.text("$index §7水色: 現在のエリア"),
+                    Component.text("§7ワールドを南西方向に拡張します。"),
                     Component.text(bar),
                 )
             )
         }
 
-        // 右下
-        val methodRightDown = ItemStack(Material.CHEST)
-        methodRightDown.editMeta {
-            it.itemName(Component.text("右下に拡張").color(AQUA))
+        // 北東
+        val methodNorthEast = ItemStack(Material.CHEST)
+        methodNorthEast.editMeta {
+            it.itemName(Component.text("北東に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを右上(北東)方向に拡張します。"),
-                    Component.text(bar),
-                    Component.text("§b█§7█"),
-                    Component.text("§7██"),
-                    Component.text("$index §7灰色: 拡張されるエリア"),
-                    Component.text("$index §7水色: 現在のエリア"),
+                    Component.text("§7ワールドを北東方向に拡張します。"),
                     Component.text(bar),
                 )
             )
         }
 
-        // 右上
-        val methodRightUp = ItemStack(Material.CHEST)
-        methodRightUp.editMeta {
-            it.itemName(Component.text("右下に拡張").color(AQUA))
+        // 南東
+        val methodSouthEast = ItemStack(Material.CHEST)
+        methodSouthEast.editMeta {
+            it.itemName(Component.text("南東に拡張").color(AQUA))
             it.lore(
                 mutableListOf(
                     Component.text(bar),
-                    Component.text("§7ワールドを右下(南東)方向に拡張します。"),
-                    Component.text(bar),
-                    Component.text("§7██"),
-                    Component.text("§b█§7█"),
-                    Component.text("$index §7灰色: 拡張されるエリア"),
-                    Component.text("$index §7水色: 現在のエリア"),
+                    Component.text("§7ワールドを南東方向に拡張します。"),
                     Component.text(bar),
                 )
             )
@@ -162,10 +142,10 @@ class WorldExpandUI(val player: Player, val world: MyWorld) : AbstractInteractiv
 
         // set
         ui.setItem(9, methodCenter)
-        ui.setItem(11, methodLeftUp)
-        ui.setItem(13, methodLeftDown)
-        ui.setItem(15, methodRightDown)
-        ui.setItem(17, methodRightUp)
+        ui.setItem(11, methodNorthWest)
+        ui.setItem(13, methodSouthWest)
+        ui.setItem(15, methodNorthEast)
+        ui.setItem(17, methodSouthEast)
 
         return ui
     }

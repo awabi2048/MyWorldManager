@@ -189,7 +189,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         }
 
         if (world.activityState == state) {
-            sender.sendMessage("§c指定されたワールドは、既に${state.japaneseName}§c状態です。")
+            sender.sendMessage("§c指定されたワールドは、すでに${state.japaneseName}§c状態です。")
             return
         }
 
@@ -212,7 +212,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
         }
 
         if (creationDataSet.any { it.player.uniqueId == targetPlayer.uniqueId }) {
-            targetPlayer.sendMessage("§c既にワールドを作成中です！")
+            targetPlayer.sendMessage("§cすでにワールドを作成中です！")
             targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
             return
         }
@@ -221,7 +221,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 
         // 個人の作成上限
         if (playerData.createdWorlds.size >= playerData.unlockedWorldSlot) {
-            targetPlayer.sendMessage("§c既にワールドの作成数上限に達しています！ §7(${playerData.unlockedWorldSlot} 個中 ${playerData.createdWorlds.size} 個作成済み)")
+            targetPlayer.sendMessage("§cすでにワールドの作成数上限に達しています！ §7(${playerData.unlockedWorldSlot} 個中 ${playerData.createdWorlds.size} 個作成済み)")
             targetPlayer.playSound(targetPlayer, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 0.5f)
             return
         }
@@ -381,7 +381,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 //        val templateDescription = args[3]
 //
 //        if (MyWorldManager.registeredTemplateWorld.any {it.worldId == templateId}) {
-//            sender.sendMessage("$PREFIX §cそのテンプレートIDは既に使用されています。")
+//            sender.sendMessage("$PREFIX §cそのテンプレートIDはすでに使用されています。")
 //            return
 //        }
 //
@@ -402,7 +402,7 @@ class MWMSubCommand(val sender: CommandSender, val args: Array<out String>) {
 //
 ////        try {
 ////            if (MyWorldManager.registeredTemplateWorld.any {it.worldId == args[1]}) {
-////                sender.sendMessage("$PREFIX §cそのテンプレートIDは既に使用されています。")
+////                sender.sendMessage("$PREFIX §cそのテンプレートIDはすでに使用されています。")
 ////                return
 ////            }
 ////
